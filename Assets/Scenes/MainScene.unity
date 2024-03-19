@@ -357,6 +357,9 @@ MonoBehaviour:
   dieAnimationName: 
   skeletonAnimation: {fileID: 0}
   cooldown: 0.567
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 0
   attackRange: 5
 --- !u!61 &734423019
 BoxCollider2D:
@@ -447,7 +450,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dac44efd07a629848acb0481d8204577, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 1529479815}
   enemyPrefab: {fileID: 7559075574629597747, guid: ba24910385665f04a896bc75ce6f0041, type: 3}
 --- !u!1 &1410534750
 GameObject:
@@ -633,6 +635,9 @@ MonoBehaviour:
   dieAnimationName: 1_/die A
   skeletonAnimation: {fileID: 734423011}
   cooldown: 0.5
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 0
   attackRange: 10
 --- !u!50 &1529479817
 Rigidbody2D:
@@ -649,7 +654,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0
-  m_GravityScale: 1
+  m_GravityScale: 5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

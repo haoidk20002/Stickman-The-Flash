@@ -14,7 +14,7 @@ public abstract class Character : MonoBehaviour
     [SerializeField] SkeletonAnimation skeletonAnimation;
     public Spine.AnimationState spineAnimationState=> skeletonAnimation.AnimationState;
 	public Spine.Skeleton skeleton => skeletonAnimation.Skeleton;
-    HealthLogic playerHealth = new HealthLogic();
+    protected HealthLogic playerHealth = new HealthLogic();
 
     void Awake(){
         playerHealth.Init(10);
@@ -24,8 +24,11 @@ public abstract class Character : MonoBehaviour
         start2();
     }
     protected virtual void start2(){}
-    void PlayAnimation(string anim_name, bool is_loop){
+    protected void PlayAnimation(string anim_name, bool is_loop){
         spineAnimationState.SetAnimation(0, anim_name, is_loop);
+    }
+    protected void AddAnimation(string anim_name, bool is_loop, float delay){
+        spineAnimationState.AddAnimation(0, anim_name, is_loop, delay);
     }
 
     protected abstract List<Character> findTarget();
@@ -39,9 +42,16 @@ public abstract class Character : MonoBehaviour
     protected void Run(){
         PlayAnimation(runAnimationName,true);
     }
+    protected void Run(float sec){
+        AddAnimation(runAnimationName,true,sec);
+    }
 
     protected void Idle(){
         PlayAnimation(idleAnimationName,true);
+    }
+
+    protected void Idle(float sec){
+        AddAnimation(idleAnimationName,true,sec);
     }
 
     protected void Die(){
@@ -52,8 +62,12 @@ public abstract class Character : MonoBehaviour
         playerHealth.TakeDamage(5);
         if (playerHealth.IsDead){
             Die();
-            Destroy(gameObject, 2f);
-        }else PlayAnimation(hurtAnimationName,false);
+            Destroy(gameObject, 1f);
+        }else {
+            PlayAnimation(hurtAnimationName,false);
+            //AddAnimation(idleAnimationName,true,0);
+            //AddAnimation(runAnimationName,true,0);
+        }
     }
     void Update(){
 

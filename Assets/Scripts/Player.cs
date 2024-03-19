@@ -20,12 +20,13 @@ public class Player : Character
     bool enemy_detected = false;
     // Coordinates
     Vector2 old_pos, new_pos, target, click_position;
-
+    Rigidbody2D body;
     protected override void start2()
     {
         target = transform.position;
         click_position = transform.position;
         gameObject.tag = "Player";
+        body = GetComponent<Rigidbody2D>();
         Idle();
         GameManager.Instance.RegisterPlayer(this);
     }
@@ -50,6 +51,7 @@ public class Player : Character
             lastAttackedAt = Time.time;
 
             Attack();
+            Idle(0);
 
         }
     }
@@ -81,13 +83,14 @@ public class Player : Character
             TriggerAttack();
             enemy_detected = false;
             transform.position = destination;
+            
         }
         else
         {
             old_pos = transform.position;
             transform.position = target;
-            //new_pos = transform.position;
             float direction = transform.position.x - old_pos.x;
+            Idle();
             if (direction > 0)
             {
                 skeleton.ScaleX = 1;
@@ -97,7 +100,13 @@ public class Player : Character
                 skeleton.ScaleX = -1;
             }
         }
+        // reseting falling velocity
+        body.velocity = Vector3.zero;
     }
+
+    // protected override void BeingHit(){
+
+    // }
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
