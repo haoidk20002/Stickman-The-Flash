@@ -110,6 +110,15 @@ public abstract class Character : MonoBehaviour
             AddAnimation(idleAnimationName, true, 0);
         }
     }
+    protected void Jump()
+    {
+        PlayAnimation(jumpAnimationName, false);
+    }
+
+    protected void Jump(float sec)
+    {
+        AddAnimation(jumpAnimationName, false, sec);
+    }
     void Update()
     {
 
