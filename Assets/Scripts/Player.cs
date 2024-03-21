@@ -26,6 +26,7 @@ public class Player : Character
         target = transform.position;
         click_position = transform.position;
         gameObject.tag = "Player";
+        gameObject.layer = 3;
         body = GetComponent<Rigidbody2D>();
         Idle();
         GameManager.Instance.RegisterPlayer(this);

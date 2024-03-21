@@ -124,7 +124,7 @@ MonoBehaviour:
   runAnimationName: 1_/run
   hurtAnimationName: 1_/hurt center
   dieAnimationName: 1_/die A
-  jumpAnimationName: 1_/jump A
+  jumpAnimationName: 1_/jump B
   skeletonAnimation: {fileID: 3608664967636058157}
 --- !u!1 &7602098857163116204
 GameObject:

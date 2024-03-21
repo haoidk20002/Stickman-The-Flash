@@ -23,11 +23,11 @@ public class Enemy : Character
     private bool player_in_sight;
     private float lastAttackedAt = 0;
 
-    private bool jump;
+    private bool on_ground;
 
     private List<Character> player;
     Vector2 player_location;
-    GameObject target;
+    Vector2 jumping_location;
 
     Rigidbody2D body;
 
@@ -35,7 +35,7 @@ public class Enemy : Character
     protected override void start2()
     {
         player_in_sight = false;
-        jump = false;
+        on_ground = false;
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
@@ -82,52 +82,54 @@ public class Enemy : Character
 
     private void TriggerJump()
     {
-        transform.position = Vector2.MoveTowards(transform.position, new Vector2(transform.position.x, player_location.y), jumpForce * Time.deltaTime);
+        body.velocity = new Vector2(body.velocity.x, jumpForce);
         Jump();
-        Idle(0);
+        //Idle(0);
     }
-    // private bool JumpCondition()
-    // {
-
-    // }
-
-    // If player available then run, else idle
-    // Enemy change to attack state when player is in range,
-    //  After 1s delay, starts attack and attackanim
-    // After that, change back to find state
-    // Change to jump state when enemy reach player's x and the player's y > 0
-
+    private bool CheckLanding()
+    {
+        int enemyLayerMask = 1 << 6;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f,~enemyLayerMask);
+        Debug.DrawRay(transform.position, Vector2.down * 6f,Color.green);
+        //Debug.Log(hit);
+        if(hit.collider != null && hit.collider.CompareTag("Ground")){
+            
+            return true;
+        }
+        else{
+            return false;
+        } 
+    }
     void Update()
     {
 
         player = findTarget();
         player_location = player[0].gameObject.transform.position;
-        target = player[0].gameObject;
-
-        if(transform.position.x == player_location.x){
-            jump = true;
-        }
 
 
+        on_ground = CheckLanding();
+        //Debug.Log(on_ground);
         if (player != null)
         {
             if (playerHealth.IsDead == false && player_in_sight == false)
             {
-                if (jump == false)
+                // check if player is in attack range
+                player_in_sight = inRange();
+                // Move and Jump
+                // only move or jump when attack anim finished and is_jumping false
+                if (Time.time > lastAttackedAt + 0.5f && on_ground == true)
                 {
-                    // check if player is in attack range
-                    player_in_sight = inRange();
-
-                    // only move when attack anim finished
-                    if (Time.time > lastAttackedAt + 0.5f)
+                    if (transform.position.x == player_location.x)
+                    {
+                        TriggerJump();
+                    }
+                    else
                     {
                         Move();
                     }
-                }else{
-                    TriggerJump();
-                    jump = false;
                 }
             }
+            // Attack
             else if (playerHealth.IsDead == false && player_in_sight == true)
             {
                 if (Time.time > lastAttackedAt + 0.5f)
