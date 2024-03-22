@@ -40,7 +40,7 @@ public class Enemy : Character
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
         body = GetComponent<Rigidbody2D>();
-        Run();
+        Idle();
 
 
     }
@@ -66,6 +66,7 @@ public class Enemy : Character
 
     private void Move()
     {
+        Run();
         old_pos = transform.position;
         transform.position = Vector2.MoveTowards(transform.position, new Vector2(player_location.x, transform.position.y), moveSpeed * Time.deltaTime);
         new_pos = transform.position;
@@ -127,7 +128,9 @@ public class Enemy : Character
                     {
                         Move();
                     }
-                }
+                }// else if(on_ground == false){
+                //     Idle();
+                // }
             }
             // Attack
             else if (playerHealth.IsDead == false && player_in_sight == true)
