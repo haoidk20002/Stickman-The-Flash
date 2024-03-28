@@ -13,6 +13,7 @@ public class Player : Character
     private float lastAttackedAt = 0;
     private float radius = 1f;
 
+    private float ratio = 0;
     public LayerMask layerMask;
 
     [SerializeField]
@@ -21,6 +22,8 @@ public class Player : Character
     // Coordinates
     Vector2 old_pos, new_pos, target, click_position;
     Rigidbody2D body;
+
+    private HealthBar health;
     protected override void start2()
     {
         target = transform.position;
@@ -30,6 +33,9 @@ public class Player : Character
         body = GetComponent<Rigidbody2D>();
         Idle();
         GameManager.Instance.RegisterPlayer(this);
+
+        //HealthBar health = new HealthBar();
+        health = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
     }
 
     protected override List<Character> findTarget()
@@ -119,6 +125,9 @@ public class Player : Character
             click_position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Teleport();
         }
+        // Track Player's Health
+        ratio = playerHealth.RatioHealth;
+        health.UpdateHealthBar(ratio);
     }
     void OnDrawGizmosSelected()
     {

@@ -84,6 +84,17 @@ public class GameManager : MonoBehaviour
         Debug.Log("Score: " + score);
     }
 
+
+// show dam pop up
+    public GameObject damagePopUpPrefab;
+
+    public void ShowDamagePopUp(Vector3 position, string damage)
+    {
+        GameObject damagePopUp = Instantiate(damagePopUpPrefab, position, Quaternion.identity);
+        DamagePopUp popUpScript = damagePopUp.GetComponent<DamagePopUp>();
+        popUpScript.SetDamageText(damage);
+    }
+
 }
 
 

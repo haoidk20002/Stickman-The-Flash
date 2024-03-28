@@ -98,6 +98,9 @@ public abstract class Character : MonoBehaviour
     protected void BeingHit()
     {
         playerHealth.TakeDamage(5);
+        //show damage pop up
+        GameManager.Instance.ShowDamagePopUp(transform.position,5.ToString());
+        // different interaction whether character is dead or not
         if (playerHealth.IsDead)
         {
             Die();

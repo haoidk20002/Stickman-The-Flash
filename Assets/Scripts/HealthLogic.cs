@@ -12,10 +12,11 @@ public class HealthLogic
     {
         get
         {
+            //UnityEngine.Debug.Log(currenthealth/maxhealth);
             return (float) currenthealth/maxhealth;
         }
     }
-    //    public float RatioHealth => (float) currenthealth/maxhealth;
+    //    public float RatioHealth => (float) currenthealth/maxhealth; getter
 
 
     public void Init(int health){
