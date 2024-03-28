@@ -6,6 +6,7 @@ using Unity.Collections;
 using UnityEditor.U2D.Animation;
 using System;
 using UnityEngine.UIElements;
+using UnityEngine.Scripting.APIUpdating;
 
 public class Player : Character
 {
@@ -13,15 +14,22 @@ public class Player : Character
     private float lastAttackedAt = 0;
     private float radius = 1f;
 
+    private float moveSpeed = 20f;
     private float ratio = 0;
     public LayerMask layerMask;
 
     [SerializeField]
     private float attackRange = 5f;
-    bool enemy_detected = false;
+    private bool enemy_detected = false;
+
+    private bool isTeleporting = false; // Flag to track teleportation
     // Coordinates
-    Vector2 old_pos, new_pos, target, click_position;
-    Rigidbody2D body;
+    private Vector2 old_pos, new_pos, target, click_position;
+
+    private Vector2 startPos;
+
+    private float minSwipeDistance = 50f; // Adjust as needed
+    private Rigidbody2D body;
 
     private HealthBar health;
     protected override void start2()
@@ -51,7 +59,7 @@ public class Player : Character
         }
         return result;
     }
-    void TriggerAttack()
+    private void TriggerAttack()
     {
         if (Time.time > lastAttackedAt + cooldown)
         {
@@ -69,7 +77,7 @@ public class Player : Character
     //     Debug.Log("Hit");
     //     Idle(0);
     // }
-    void Teleport()
+    private void Teleport()
     {
         var enemies = findTarget();
         //old_pos = transform.position;
@@ -93,7 +101,7 @@ public class Player : Character
             TriggerAttack();
             enemy_detected = false;
             transform.position = destination;
-            
+
         }
         else
         {
@@ -114,11 +122,15 @@ public class Player : Character
         body.velocity = Vector3.zero;
     }
 
-    // protected override void BeingHit(){
-
-    // }
-    void Update()
+    private void MovePlayer(Vector2 direction)
     {
+        transform.Translate(direction * moveSpeed * Time.deltaTime);
+    }
+
+    private void Update()
+    {
+        // this is a mobile game, but for easy development, use pc control (mouse click and swipe) for now
+        // tap to teleport
         if (Input.GetMouseButtonDown(0))
         {
             target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -128,6 +140,26 @@ public class Player : Character
         // Track Player's Health
         ratio = playerHealth.RatioHealth;
         health.UpdateHealthBar(ratio);
+
+        // swipe to move
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Record the start position of the swipe
+            startPos = Input.mousePosition;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            // Calculate the end position of the swipe
+            Vector2 endPos = Input.mousePosition;
+            Vector2 swipeDirection = endPos - startPos;
+
+            // Check if the swipe is horizontal and long enough
+            if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y) && swipeDirection.magnitude > minSwipeDistance)
+            {
+                // Move player based on swipe direction
+                MovePlayer(swipeDirection.normalized);
+            }
+        }
     }
     void OnDrawGizmosSelected()
     {

@@ -69,7 +69,7 @@ public class GameManager : MonoBehaviour
             Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
 
             // Wait for a certain amount of time before spawning the next enemy
-            yield return new WaitForSeconds(30f);
+            yield return new WaitForSeconds(100f);
         }
     }
     Vector2 GetRandomSpawnPosition()
