@@ -13,22 +13,20 @@ public class Player : Character
     public float cooldown = 0.5f;
     private float lastAttackedAt = 0;
     private float radius = 1f;
-
-    private float moveSpeed = 20f;
+    private float moveSpeed = 50f;
     private float ratio = 0;
     public LayerMask layerMask;
 
     [SerializeField]
     private float attackRange = 5f;
     private bool enemy_detected = false;
-
-    private bool isTeleporting = false; // Flag to track teleportation
+    private bool isMoving = false;
     // Coordinates
     private Vector2 old_pos, new_pos, target, click_position;
 
     private Vector2 startPos;
 
-    private float minSwipeDistance = 50f; // Adjust as needed
+    private float minSwipeDistance = 20f; // Adjust as needed
     private Rigidbody2D body;
 
     private HealthBar health;
@@ -122,44 +120,70 @@ public class Player : Character
         body.velocity = Vector3.zero;
     }
 
-    private void MovePlayer(Vector2 direction)
+    private void Move(float direction)
     {
-        transform.Translate(direction * moveSpeed * Time.deltaTime);
+        if (direction > 0)
+        {
+            skeleton.ScaleX = 1;
+            // Apply a constant force to the player's Rigidbody2D
+            direction = 1;
+            body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+        }
+        else if (direction < 0)
+        {
+            skeleton.ScaleX = -1;
+            // Apply a constant force to the player's Rigidbody2D
+            direction = -1;
+            body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+        }
     }
 
     private void Update()
     {
-        // this is a mobile game, but for easy development, use pc control (mouse click and swipe) for now
-        // tap to teleport
+        // Teleport: Click to desired destination and the player teleports after releasing click
+        // Move: Click, swipe, then release to move according to the swipe direction
+        // Teleportation by mouse click, move by mouse swipe
         if (Input.GetMouseButtonDown(0))
         {
+            // target: actual destination
+            // click_position:  desired destination
             target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             click_position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Teleport();
+            startPos = Input.mousePosition; // Detect the start of the swipe
+        }
+        // Detect the end of the swipe
+        if (Input.GetMouseButtonUp(0))
+        {
+            Vector2 endPos = Input.mousePosition;
+            Vector2 swipeDirection = endPos - startPos;
+            // Determine if the swipe was long enough (you can set a threshold)
+            float swipeMagnitude = swipeDirection.magnitude;
+            if (swipeMagnitude > minSwipeDistance) // Adjust the threshold as needed
+            {
+                // Check the direction of the swipe
+                if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y))
+                {
+                    // Horizontal swipe
+                    if (swipeDirection.x > 0)
+                    {
+                        Move(swipeDirection.x);
+                        Debug.Log("Right swipe!");
+                    }
+                    else
+                    {
+                        Move(swipeDirection.x);
+                        Debug.Log("Left swipe!");
+                    }
+                }
+            }
+            else
+            {
+                Teleport();
+            }
         }
         // Track Player's Health
         ratio = playerHealth.RatioHealth;
         health.UpdateHealthBar(ratio);
-
-        // swipe to move
-        if (Input.GetMouseButtonDown(0))
-        {
-            // Record the start position of the swipe
-            startPos = Input.mousePosition;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            // Calculate the end position of the swipe
-            Vector2 endPos = Input.mousePosition;
-            Vector2 swipeDirection = endPos - startPos;
-
-            // Check if the swipe is horizontal and long enough
-            if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y) && swipeDirection.magnitude > minSwipeDistance)
-            {
-                // Move player based on swipe direction
-                MovePlayer(swipeDirection.normalized);
-            }
-        }
     }
     void OnDrawGizmosSelected()
     {
