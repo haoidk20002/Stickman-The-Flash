@@ -19,8 +19,9 @@ public class Player : Character
 
     [SerializeField]
     private float attackRange = 5f;
-    private bool enemy_detected = false;
-    private bool isMoving = false;
+    private bool enemy_detected;
+    private bool isMoving;
+    private bool on_ground;
     // Coordinates
     private Vector2 old_pos, new_pos, target, click_position;
 
@@ -39,6 +40,10 @@ public class Player : Character
         body = GetComponent<Rigidbody2D>();
         Idle();
         GameManager.Instance.RegisterPlayer(this);
+
+        enemy_detected = false;
+        isMoving = false;
+        on_ground = false;
 
         //HealthBar health = new HealthBar();
         health = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
@@ -78,7 +83,8 @@ public class Player : Character
     private void Teleport()
     {
         var enemies = findTarget();
-        //old_pos = transform.position;
+        // if enemy is found, player teleports close to it then attack
+        // else teleport to the clicked point
 
         if (enemies.Count > 0)
         {
@@ -97,7 +103,7 @@ public class Player : Character
             }
 
             TriggerAttack();
-            enemy_detected = false;
+            //enemy_detected = false;
             transform.position = destination;
 
         }
@@ -127,19 +133,41 @@ public class Player : Character
             skeleton.ScaleX = 1;
             // Apply a constant force to the player's Rigidbody2D
             direction = 1;
-            body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+            body.velocity = new Vector2(direction * moveSpeed, 0f);
         }
         else if (direction < 0)
         {
             skeleton.ScaleX = -1;
             // Apply a constant force to the player's Rigidbody2D
             direction = -1;
-            body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+            body.velocity = new Vector2(direction * moveSpeed, 0f);
+        }
+    }
+    private void MoveAttack()
+    {
+        int playerLayerMask = 1 << 3;
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~playerLayerMask);
+        if (hitColliders.Length > 0)
+        {   
+            Debug.Log("Found");
+            TriggerAttack();
         }
     }
 
     private void Update()
     {
+        // Detect if the player is moving horizontally
+
+        isMoving = Mathf.Abs(body.velocity.x) > 0.1f;
+        if (isMoving == true)
+        {
+            MoveAttack();
+        }
+        else
+        {
+            Idle();
+        }
+
         // Teleport: Click to desired destination and the player teleports after releasing click
         // Move: Click, swipe, then release to move according to the swipe direction
         // Teleportation by mouse click, move by mouse swipe
@@ -150,6 +178,8 @@ public class Player : Character
             target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             click_position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             startPos = Input.mousePosition; // Detect the start of the swipe
+
+            //isMoving = true;
         }
         // Detect the end of the swipe
         if (Input.GetMouseButtonUp(0))
@@ -167,12 +197,12 @@ public class Player : Character
                     if (swipeDirection.x > 0)
                     {
                         Move(swipeDirection.x);
-                        Debug.Log("Right swipe!");
+                        //Debug.Log("Right swipe!");
                     }
                     else
                     {
                         Move(swipeDirection.x);
-                        Debug.Log("Left swipe!");
+                        //Debug.Log("Left swipe!");
                     }
                 }
             }

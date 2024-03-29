@@ -163,53 +163,6 @@ public class Enemy : Character
         {
             Idle();
         }
-
-        // if (player != null)
-        // {
-        //     if (playerHealth.IsDead == false)
-        //     {
-        //         if (player_in_sight == false)
-        //         {
-        //             // check if player is in attack range
-        //             player_in_sight = inRange();
-
-        //             // only move when attack anim finished
-        //             if (Time.time > lastAttackedAt + 0.5f)
-        //             {
-        //                 Move();
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (Time.time > lastAttackedAt + 0.5f)
-        //             {
-        //                 Idle();
-        //             }
-        //             delayLeft -= Time.deltaTime;
-        //             if (delayLeft <= 0)
-        //             {
-        //                 if (inRange() == true)
-        //                 {
-        //                     Attack();
-        //                     lastAttackedAt = Time.time;
-        //                     Run(0);
-        //                 }
-        //                 else
-        //                 {
-        //                     EmptyAttack();
-        //                     lastAttackedAt = Time.time;
-        //                     Run(0);
-        //                 }
-        //                 delayLeft = delay;
-        //                 player_in_sight = false;
-        //             }
-        //         }
-        //     }
-        // }
-        // else
-        // {
-        //     Idle();
-        // }
     }
 
 
