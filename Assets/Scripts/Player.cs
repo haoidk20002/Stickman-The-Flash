@@ -73,13 +73,7 @@ public class Player : Character
 
         }
     }
-    // public void DamagedAnim()
-    // {
-    //     Debug.Log("Hit");
-    //     BeingHit();
-    //     Debug.Log("Hit");
-    //     Idle(0);
-    // }
+
     private void Teleport()
     {
         var enemies = findTarget();
