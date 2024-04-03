@@ -5,72 +5,77 @@ using Spine.Unity;
 using Unity.Collections;
 using UnityEditor.U2D.Animation;
 using System;
-using UnityEngine.UIElements;
-using UnityEngine.Scripting.APIUpdating;
+using Unity.VisualScripting;
 
 public class Player : Character
 {
-    public float cooldown = 0.5f;
+    [SerializeField] private UnitAttack dashAttack;
+
+    
+    private float cooldown = 0.5f;
     private float lastAttackedAt = 0;
     private float radius = 1f;
+    private float moveDistance = 75f;
     private float moveSpeed = 50f;
     private float ratio = 0;
-    public LayerMask layerMask;
-
-    [SerializeField]
-    private float attackRange = 5f;
-    private bool enemy_detected;
-    private bool isMoving;
-    private bool on_ground;
-    // Coordinates
-    private Vector2 old_pos, new_pos, target, click_position;
-
-    private Vector2 startPos;
-
+    private float attackRange = 6f;
+    private float timer;
     private float minSwipeDistance = 20f; // Adjust as needed
+    private bool enemyDetected;
+    private bool isMoving;
+    private bool onGround;
+    // Coordinates
+    private Vector2 oldPos, newPos, target, clickPosition;
+    private Vector2 startPos, destination;
     private Rigidbody2D body;
-
     private HealthBar health;
+    public LayerMask DetectLayerMask;
+
     protected override void start2()
     {
         target = transform.position;
-        click_position = transform.position;
+        clickPosition = transform.position;
         gameObject.tag = "Player";
         gameObject.layer = 3;
         body = GetComponent<Rigidbody2D>();
         Idle();
         GameManager.Instance.RegisterPlayer(this);
 
-        enemy_detected = false;
-        isMoving = false;
-        on_ground = false;
+        hitboxOffset = new Vector2(6, 2.5f);
 
-        //HealthBar health = new HealthBar();
+        enemyDetected = false;
+        isMoving = false;
+        onGround = false;
+        timer = 1f;
+        destination = new Vector2(0, 0);
         health = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
+        destination = transform.position;
+
+        dashAttack.Init();
     }
 
-    protected override List<Character> findTarget()
+    protected override Character findTarget()
     {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(target, radius);
-        List<Character> result = new List<Character>();
-        foreach (Collider2D collider in hitColliders)
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(target, radius, DetectLayerMask);
+
+        if (hitColliders.Length > 0)
         {
-            if (collider.CompareTag("Enemy"))
-            {
-                result.Add(collider.gameObject.GetComponent<Character>());
-            }
+            // Return the first character found
+            return hitColliders[0].GetComponent<Character>();
         }
-        return result;
+        else
+        {
+            // No character found, return null or handle the absence of a target accordingly
+            return null;
+        }
     }
     private void TriggerAttack()
     {
         if (Time.time > lastAttackedAt + cooldown)
         {
             lastAttackedAt = Time.time;
-
             Attack();
             Idle(0);
-
         }
     }
 
@@ -80,88 +85,70 @@ public class Player : Character
         // if enemy is found, player teleports close to it then attack
         // else teleport to the clicked point
 
-        if (enemies.Count > 0)
+        if (enemies != null)
         {
-            Debug.Log(enemies);
-            var enemy = enemies[0].gameObject.transform.position;
+            //Debug.Log(enemies);
+            var enemy = enemies.gameObject.transform.position;
             var destination = target;
+            oldPos = transform.position;
+            transform.position = target;
+            float direction = transform.position.x - oldPos.x;
+            Turn(direction);
+
             if (transform.position.x < enemy.x)
             {
                 destination.x = enemy.x - attackRange;
-                skeleton.ScaleX = 1;
+
             }
             else
             {
                 destination.x = enemy.x + attackRange;
-                skeleton.ScaleX = -1;
-            }
 
+            }
             TriggerAttack();
-            //enemy_detected = false;
             transform.position = destination;
 
         }
         else
         {
-            old_pos = transform.position;
+            oldPos = transform.position;
             transform.position = target;
-            float direction = transform.position.x - old_pos.x;
-            Idle();
-            if (direction > 0)
-            {
-                skeleton.ScaleX = 1;
-            }
-            else if (direction < 0)
-            {
-                skeleton.ScaleX = -1;
-            }
+            float direction = transform.position.x - oldPos.x;
+            Turn(direction);
         }
         // reseting falling velocity
         body.velocity = Vector3.zero;
     }
-
-    private void Move(float direction)
+    private void Move()
     {
-        if (direction > 0)
-        {
-            skeleton.ScaleX = 1;
-            // Apply a constant force to the player's Rigidbody2D
-            direction = 1;
-            body.velocity = new Vector2(direction * moveSpeed, 0f);
-        }
-        else if (direction < 0)
-        {
-            skeleton.ScaleX = -1;
-            // Apply a constant force to the player's Rigidbody2D
-            direction = -1;
-            body.velocity = new Vector2(direction * moveSpeed, 0f);
-        }
+        transform.position = Vector2.MoveTowards(transform.position, destination, moveSpeed*Time.deltaTime);
     }
-    private void MoveAttack()
+    private void DashAttack()
     {
-        int playerLayerMask = 1 << 3;
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~playerLayerMask);
-        if (hitColliders.Length > 0)
-        {   
-            Debug.Log("Found");
-            TriggerAttack();
-        }
+        PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime ,false);
+        basicAttackHitBox.enabled = true;
     }
 
-    private void Update()
-    {
-        // Detect if the player is moving horizontally
 
-        isMoving = Mathf.Abs(body.velocity.x) > 0.1f;
+    protected override void update2()
+    {
+        dashAttack.TakeTime(Time.deltaTime);
         if (isMoving == true)
         {
-            MoveAttack();
+            //dashAttack.Init();
+            Move();
+            timer -= Time.deltaTime;
+            if (timer <= 0f)
+            {
+                Debug.Log("Stop");
+                isMoving = false;
+                basicAttackHitBox.enabled = false;
+            }
         }
         else
         {
-            Idle();
+            timer = 1f;
         }
-
         // Teleport: Click to desired destination and the player teleports after releasing click
         // Move: Click, swipe, then release to move according to the swipe direction
         // Teleportation by mouse click, move by mouse swipe
@@ -170,10 +157,8 @@ public class Player : Character
             // target: actual destination
             // click_position:  desired destination
             target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            click_position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             startPos = Input.mousePosition; // Detect the start of the swipe
-
-            //isMoving = true;
         }
         // Detect the end of the swipe
         if (Input.GetMouseButtonUp(0))
@@ -190,19 +175,28 @@ public class Player : Character
                     // Horizontal swipe
                     if (swipeDirection.x > 0)
                     {
-                        Move(swipeDirection.x);
-                        //Debug.Log("Right swipe!");
+                        Turn(swipeDirection.x);
+                        destination.x = transform.position.x + moveDistance;
+                        destination.y = transform.position.y;
+                        isMoving = true;
+                        DashAttack();
+                        Idle(0);
                     }
                     else
                     {
-                        Move(swipeDirection.x);
-                        //Debug.Log("Left swipe!");
+                        Turn(swipeDirection.x);
+                        destination.x = transform.position.x - moveDistance;
+                        destination.y = transform.position.y;
+                        isMoving = true;
+                        DashAttack();
+                        Idle(0);
                     }
                 }
             }
             else
             {
                 Teleport();
+                isMoving = false;
             }
         }
         // Track Player's Health
@@ -212,7 +206,7 @@ public class Player : Character
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(click_position, radius);
+        Gizmos.DrawWireSphere(clickPosition, radius);
     }
 }
 

@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using Spine.Unity;
 using System;
+using Unity.VisualScripting;
 
 public abstract class Character : MonoBehaviour
 {
     // Animation
     [SpineAnimation][SerializeField] private string idleAnimationName;
-    [SpineAnimation][SerializeField] private string attackAnimationName;
+    [Header("Attack")]
+    [SerializeField] private UnitAttack basicAttack;
+    [SerializeField] protected BoxCollider2D basicAttackHitBox;
+
+    [Header("Other Anim")]
     [SpineAnimation][SerializeField] private string runAnimationName;
     [SpineAnimation][SerializeField] private string hurtAnimationName;
     [SpineAnimation][SerializeField] private string dieAnimationName;
@@ -18,14 +23,15 @@ public abstract class Character : MonoBehaviour
     public Spine.AnimationState spineAnimationState => skeletonAnimation.AnimationState;
     public Spine.Skeleton skeleton => skeletonAnimation.Skeleton;
     protected HealthLogic playerHealth = new HealthLogic();
+    protected Vector2 hitboxOffset;
 
-    // // Get the SkeletonData from the SkeletonDataAsset
-    // var skeletonData = skeletonDataAsset.GetSkeletonData(true);
+    protected Coroutine attackCoroutine;
 
-    // // Find the animation by name
-    // var animation = skeletonData.FindAnimation(animationName);
+    protected void Rotate(float degree)
+    {
+        transform.Rotate(0f,degree,0f);
+    }
 
-    //protected float anim_duration;
     protected string playing_anim;
     void Awake()
     {
@@ -34,39 +40,55 @@ public abstract class Character : MonoBehaviour
 
     void Start()
     {
+        basicAttack.Evt_EnableBullet += value => basicAttackHitBox.enabled = value;
+        basicAttack.Init();
         start2();
     }
     protected virtual void start2() { }
-    protected void PlayAnimation(string anim_name, bool is_loop)
-    {
+    protected virtual void update2() {}
 
-        if (anim_name != playing_anim)
+    protected void PlayAnimation(string name, float durationInSeconds, bool isLoop)
         {
-            spineAnimationState.SetAnimation(0, anim_name, is_loop);
-            playing_anim = anim_name;
-        }
+            if (name == playing_anim) return;
+            var spineAnimation = spineAnimationState.Data.SkeletonData.FindAnimation(name);
+            if (spineAnimation == null) return;
 
-        //spineAnimationState.SetAnimation(0, anim_name, is_loop);
-    }
+            if (durationInSeconds > 0)
+            {
+                skeletonAnimation.timeScale = spineAnimation.Duration / durationInSeconds;
+            }
+            else
+            {
+                skeletonAnimation.timeScale = 1;
+            }
+            
+            spineAnimationState.SetAnimation(0, spineAnimation, isLoop);
+            playing_anim = name;
+        }
     protected void AddAnimation(string anim_name, bool is_loop, float delay)
     {
         spineAnimationState.AddAnimation(0, anim_name, is_loop, delay);
         playing_anim = anim_name;
     }
 
-    protected abstract List<Character> findTarget();
+    protected abstract Character findTarget();
     protected void Attack()
     {
-        PlayAnimation(attackAnimationName, false);
-        var charaters = findTarget();
-        foreach (Character c in charaters)
-        {
-            c.BeingHit();
-        }
+        PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime ,false);
+        basicAttack.Trigger();
+        //Debug.Break();
     }
+
+    protected void Turn(float direction)
+    {
+        transform.rotation = Quaternion.Euler(0,direction < 0? -180:0,0);
+    }
+
+
+
     protected void Run()
     {
-        PlayAnimation(runAnimationName, true);
+        PlayAnimation(runAnimationName, 0f ,true);
     }
     protected void Run(float sec)
     {
@@ -75,7 +97,7 @@ public abstract class Character : MonoBehaviour
 
     protected void Idle()
     {
-        PlayAnimation(idleAnimationName, true);
+        PlayAnimation(idleAnimationName, 0f , true);
     }
 
 
@@ -87,19 +109,19 @@ public abstract class Character : MonoBehaviour
 
     protected void Die()
     {
-        PlayAnimation(dieAnimationName, false);
+        PlayAnimation(dieAnimationName, 0f , false);
     }
 
     protected void EmptyAttack()
     {
-        PlayAnimation(attackAnimationName, false);
+        // aPlayAnimation(attackAnimationName, false);
     }
 
-    protected void BeingHit()
+    public void BeingHit()
     {
-        playerHealth.TakeDamage(5);
+        playerHealth.TakeDamage(2);
         //show damage pop up
-        GameManager.Instance.ShowDamagePopUp(transform.position,5.ToString());
+        GameManager.Instance.ShowDamagePopUp(transform.position, 2.ToString());
         // different interaction whether character is dead or not
         if (playerHealth.IsDead)
         {
@@ -109,21 +131,67 @@ public abstract class Character : MonoBehaviour
         else
         {
             //Debug.Log("...");
-            PlayAnimation(hurtAnimationName, false);
+            PlayAnimation(hurtAnimationName, 0f , false);
             AddAnimation(idleAnimationName, true, 0);
         }
     }
     protected void Jump()
     {
-        PlayAnimation(jumpAnimationName, false);
+        PlayAnimation(jumpAnimationName, 0f , false);
     }
 
     protected void Jump(float sec)
     {
         AddAnimation(jumpAnimationName, false, sec);
     }
+
+
+
     void Update()
     {
+        basicAttack.TakeTime(Time.deltaTime);
+        update2();
+    }
+}
 
+[Serializable] 
+public class UnitAttack
+{
+    [SpineAnimation][SerializeField] private string attackAnimationName;
+    public string AttackAnim => attackAnimationName;
+    [SerializeField] private float attackTime;
+    public float AttackTime => attackTime;
+
+    [SerializeField] private float enableBulletTime;
+
+    public event Action<bool> Evt_EnableBullet;
+    private float _currentTime;
+    private bool _isEnableBullet;
+
+    public void Init()
+    {
+        Evt_EnableBullet?.Invoke(false);
+        _currentTime = -1;
+    }
+    public void Trigger()
+    {
+        _currentTime = 0;
+        _isEnableBullet = false;
+    }
+
+    public void TakeTime(float time)
+    {
+        if(_currentTime >= 0 && _currentTime < attackTime)
+        {
+            _currentTime += time;
+            Debug.Log(_currentTime);
+            if(_currentTime >= enableBulletTime && !_isEnableBullet)
+            { 
+                Debug.Log("Hit");
+                Evt_EnableBullet?.Invoke(true);
+                _isEnableBullet = true;
+            }
+            if(_currentTime >= attackTime) Evt_EnableBullet?.Invoke(false);
+        }
     }
 }

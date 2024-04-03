@@ -31,4 +31,5 @@ public class HealthLogic
     }
 
     public bool IsDead => Current <= 0;
+
 }

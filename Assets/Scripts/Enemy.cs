@@ -11,44 +11,40 @@ public class Enemy : Character
 {
     // Logic
     private float moveSpeed = 20f;
-    Vector2 old_pos, new_pos;
+    Vector2 oldPos, newPos;
 
     private float jumpForce = 50f; // Force applied to the enemy when jumping
-    private float jumpCooldown = 2f; // Cooldown between jumps
     private float direction;
     private float delay = 1f;
     private float delayLeft = 0f;
     private float radius = 4f; //old: 5f
     //public LayerMask layerMask;
-    private bool player_in_sight;
+    private bool playerInSight;
     private float lastAttackedAt = 0;
-
-    private bool on_ground;
-
-    private List<Character> player;
-    Vector2 player_location;
-    Vector2 jumping_location;
-
+    private bool onGround;
+    private Character player;
+    private Vector2 playerLocation;
     Rigidbody2D body;
-
     //private Transform player;
     protected override void start2()
     {
-        player_in_sight = false;
-        on_ground = false;
+        playerInSight = false;
+        onGround = false;
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
         body = GetComponent<Rigidbody2D>();
         Idle();
 
-
+        // get melee hitbox
+        Transform meleeHitboxTransform = transform.Find("MeleeHitbox");
+        hitboxOffset = new Vector2(6,2.5f);
     }
 
-    protected override List<Character> findTarget()
+    protected override Character findTarget()
     {
-        var player = GameManager.Instance.MainPlayer;
-        return new List<Character> { player };
+        var main_player = GameManager.Instance.MainPlayer;
+        return main_player;
     }
 
     private bool inRange()
@@ -67,19 +63,14 @@ public class Enemy : Character
     private void Move()
     {
         Run();
-        old_pos = transform.position;
-        transform.position = Vector2.MoveTowards(transform.position, new Vector2(player_location.x, transform.position.y), moveSpeed * Time.deltaTime);
-        new_pos = transform.position;
-        direction = new_pos.x - old_pos.x;
-        if (direction > 0)
-        {
-            skeleton.ScaleX = 1;
-        }
-        else if (direction < 0)
-        {
-            skeleton.ScaleX = -1;
-        }
+        oldPos = transform.position;
+        transform.position = Vector2.MoveTowards(transform.position, new Vector2(playerLocation.x, transform.position.y), moveSpeed * Time.deltaTime);
+        newPos = transform.position;
+        direction = newPos.x - oldPos.x;
+        Turn(direction);
     }
+
+
 
     private void TriggerJump()
     {
@@ -101,26 +92,26 @@ public class Enemy : Character
             return false;
         } 
     }
-    void Update()
+    protected override void update2()
     {
 
         player = findTarget();
-        player_location = player[0].gameObject.transform.position;
+        playerLocation = player.gameObject.transform.position;
 
 
-        on_ground = CheckLanding();
+        onGround = CheckLanding();
         //Debug.Log(on_ground);
         if (player != null)
         {
-            if (playerHealth.IsDead == false && player_in_sight == false)
+            if (playerHealth.IsDead == false && playerInSight == false)
             {
                 // check if player is in attack range
-                player_in_sight = inRange();
+                playerInSight = inRange();
                 // Move and Jump
                 // only move or jump when attack anim finished and is_jumping false
-                if (Time.time > lastAttackedAt + 0.5f && on_ground == true)
+                if (Time.time > lastAttackedAt + 0.5f && onGround == true)
                 {
-                    if (transform.position.x == player_location.x)
+                    if (transform.position.x == playerLocation.x)
                     {
                         TriggerJump();
                     }
@@ -128,12 +119,10 @@ public class Enemy : Character
                     {
                         Move();
                     }
-                }// else if(on_ground == false){
-                //     Idle();
-                // }
+                }
             }
             // Attack
-            else if (playerHealth.IsDead == false && player_in_sight == true)
+            else if (playerHealth.IsDead == false && playerInSight == true)
             {
                 if (Time.time > lastAttackedAt + 0.5f)
                 {
@@ -142,6 +131,7 @@ public class Enemy : Character
                 delayLeft -= Time.deltaTime;
                 if (delayLeft <= 0)
                 {
+                    
                     if (inRange() == true)
                     {
                         Attack();
@@ -155,7 +145,7 @@ public class Enemy : Character
                         Run(0);
                     }
                     delayLeft = delay;
-                    player_in_sight = false;
+                    playerInSight = false;
                 }
             }
         }
@@ -164,9 +154,6 @@ public class Enemy : Character
             Idle();
         }
     }
-
-
-
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
