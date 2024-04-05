@@ -5,37 +5,27 @@ using Spine.Unity;
 using UnityEngine.AI;
 using Unity.VisualScripting;
 using Spine.Unity.Examples;
-//using System.Numerics;
+
 
 public class Enemy : Character
 {
-    // Logic
-    private float moveSpeed = 20f;
-    Vector2 oldPos, newPos;
-
-    private float jumpForce = 50f; // Force applied to the enemy when jumping
+    private float moveSpeed = 20f, jumpForce = 50f;
     private float direction;
-    private float delay = 1f;
-    private float delayLeft = 0f;
-    private float radius = 4f; //old: 5f
+    private float delay = 1f, delayLeft = 0f, radius = 4f;  
     //public LayerMask layerMask;
-    private bool playerInSight;
+    private bool playerInSight = false, onGround = false;
     private float lastAttackedAt = 0;
-    private bool onGround;
     private Character player;
-    private Vector2 playerLocation;
+    private Vector2 playerLocation, oldPos, newPos;
     Rigidbody2D body;
     //private Transform player;
     protected override void start2()
     {
-        playerInSight = false;
-        onGround = false;
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
         body = GetComponent<Rigidbody2D>();
         Idle();
-
         // get melee hitbox
         Transform meleeHitboxTransform = transform.Find("MeleeHitbox");
         hitboxOffset = new Vector2(6,2.5f);

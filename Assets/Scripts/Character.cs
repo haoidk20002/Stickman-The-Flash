@@ -24,20 +24,16 @@ public abstract class Character : MonoBehaviour
     public Spine.Skeleton skeleton => skeletonAnimation.Skeleton;
     protected HealthLogic playerHealth = new HealthLogic();
     protected Vector2 hitboxOffset;
-
     protected Coroutine attackCoroutine;
-
     protected void Rotate(float degree)
     {
         transform.Rotate(0f,degree,0f);
     }
-
     protected string playing_anim;
     void Awake()
     {
         playerHealth.Init(10);
     }
-
     void Start()
     {
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.enabled = value;
@@ -46,7 +42,6 @@ public abstract class Character : MonoBehaviour
     }
     protected virtual void start2() { }
     protected virtual void update2() {}
-
     protected void PlayAnimation(string name, float durationInSeconds, bool isLoop)
         {
             if (name == playing_anim) return;
@@ -70,7 +65,6 @@ public abstract class Character : MonoBehaviour
         spineAnimationState.AddAnimation(0, anim_name, is_loop, delay);
         playing_anim = anim_name;
     }
-
     protected abstract Character findTarget();
     protected void Attack()
     {
@@ -78,14 +72,10 @@ public abstract class Character : MonoBehaviour
         basicAttack.Trigger();
         //Debug.Break();
     }
-
     protected void Turn(float direction)
     {
         transform.rotation = Quaternion.Euler(0,direction < 0? -180:0,0);
     }
-
-
-
     protected void Run()
     {
         PlayAnimation(runAnimationName, 0f ,true);
@@ -94,19 +84,14 @@ public abstract class Character : MonoBehaviour
     {
         AddAnimation(runAnimationName, true, sec);
     }
-
     protected void Idle()
     {
         PlayAnimation(idleAnimationName, 0f , true);
     }
-
-
-
     protected void Idle(float sec)
     {
         AddAnimation(idleAnimationName, true, sec);
     }
-
     protected void Die()
     {
         PlayAnimation(dieAnimationName, 0f , false);
@@ -144,9 +129,6 @@ public abstract class Character : MonoBehaviour
     {
         AddAnimation(jumpAnimationName, false, sec);
     }
-
-
-
     void Update()
     {
         basicAttack.TakeTime(Time.deltaTime);
@@ -154,6 +136,7 @@ public abstract class Character : MonoBehaviour
     }
 }
 
+// Unit Basic Attack
 [Serializable] 
 public class UnitAttack
 {
