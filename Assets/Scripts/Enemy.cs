@@ -11,7 +11,7 @@ public class Enemy : Character
 {
     private float moveSpeed = 20f, jumpForce = 50f;
     private float direction;
-    private float delay = 1f, delayLeft = 0f, radius = 4f;  
+    private float delay = 1f, delayLeft = 0f, radius = 4f;
     //public LayerMask layerMask;
     private bool playerInSight = false, onGround = false;
     private float lastAttackedAt = 0;
@@ -19,6 +19,7 @@ public class Enemy : Character
     private Vector2 playerLocation, oldPos, newPos;
     Rigidbody2D body;
     //private Transform player;
+    private int enemyLayerMask, groundLayerMask;
     protected override void start2()
     {
         delayLeft = delay;
@@ -26,9 +27,9 @@ public class Enemy : Character
         gameObject.layer = 6;
         body = GetComponent<Rigidbody2D>();
         Idle();
-        // get melee hitbox
-        Transform meleeHitboxTransform = transform.Find("MeleeHitbox");
-        hitboxOffset = new Vector2(6,2.5f);
+        //
+        enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
+        groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
     }
 
     protected override Character findTarget()
@@ -39,12 +40,11 @@ public class Enemy : Character
 
     private bool inRange()
     {
-        //ignore enemy layer (layer 6)
-        int enemyLayerMask = 1 << 6;
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~enemyLayerMask);
+        int groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~enemyLayerMask,~groundLayerMask);
         if (hitColliders.Length > 0)
         {
-            //Debug.Log(hitColliders.Length);
+            //Debug.Log("Hit");
             return true;
         }
         else return false;
@@ -70,23 +70,24 @@ public class Enemy : Character
     }
     private bool CheckLanding()
     {
-        int enemyLayerMask = 1 << 6;
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f,~enemyLayerMask);
-        Debug.DrawRay(transform.position, Vector2.down * 6f,Color.green);
-        //Debug.Log(hit);
-        if(hit.collider != null && hit.collider.CompareTag("Ground")){
-            
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f, ~enemyLayerMask);
+        Debug.DrawRay(transform.position, Vector2.down * 6f, Color.green);
+        if (hit.collider != null && hit.collider.CompareTag("Ground"))
+        {
             return true;
         }
-        else{
+        else
+        {
             return false;
-        } 
+        }
     }
     protected override void update2()
     {
 
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
+
+        //Debug.Log(onGround);
 
 
         onGround = CheckLanding();
@@ -103,6 +104,7 @@ public class Enemy : Character
                 {
                     if (transform.position.x == playerLocation.x)
                     {
+                        Debug.Log("Jump");
                         TriggerJump();
                     }
                     else
@@ -121,18 +123,16 @@ public class Enemy : Character
                 delayLeft -= Time.deltaTime;
                 if (delayLeft <= 0)
                 {
-                    
+
                     if (inRange() == true)
                     {
                         Attack();
                         lastAttackedAt = Time.time;
-                        Run(0);
                     }
                     else
                     {
                         EmptyAttack();
                         lastAttackedAt = Time.time;
-                        Run(0);
                     }
                     delayLeft = delay;
                     playerInSight = false;

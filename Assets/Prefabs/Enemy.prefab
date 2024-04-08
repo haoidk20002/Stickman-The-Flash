@@ -245,8 +245,8 @@ MonoBehaviour:
   idleAnimationName: 1_/idle
   basicAttack:
     attackAnimationName: 1_/uppercut
-    attackTime: 0.2
-    enableBulletTime: 0.1
+    attackTime: 0.3
+    enableBulletTime: 0.2
   basicAttackHitBox: {fileID: 2976105309621597679}
   runAnimationName: 1_/run
   hurtAnimationName: 1_/hurt center

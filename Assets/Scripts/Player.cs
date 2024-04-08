@@ -9,7 +9,7 @@ using System.ComponentModel;
 public class Player : Character
 {
     [SerializeField] private UnitAttack dashAttack;
-    private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1f;
+    private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.5f;
     private float moveDistance = 75f, moveSpeed = 50f, ratio = 0; 
     private float attackRange = 6f, timer = 1f, minSwipeDistance = 20f;
     private bool enemyDetected = false, isMoving = false, onGround = false;
@@ -19,6 +19,9 @@ public class Player : Character
     private Rigidbody2D body;
     private HealthBar health;
     public LayerMask DetectLayerMask;
+
+    private event Action<int> Evt_DashAttack;
+    private Bullet bullet;
     protected override void start2()
     {
         SettingMainCharacterValue1();
@@ -42,6 +45,7 @@ public class Player : Character
         health = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
         dashDestination = transform.position;
         dashAttack.Init();
+
     }
     protected override Character findTarget()
     {

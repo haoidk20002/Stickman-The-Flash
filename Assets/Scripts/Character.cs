@@ -30,6 +30,8 @@ public abstract class Character : MonoBehaviour
         transform.Rotate(0f,degree,0f);
     }
     protected string playing_anim;
+
+    protected event Action<int> Evt_MeleeAttack;
     void Awake()
     {
         playerHealth.Init(10);
@@ -99,14 +101,14 @@ public abstract class Character : MonoBehaviour
 
     protected void EmptyAttack()
     {
-        // aPlayAnimation(attackAnimationName, false);
+        PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime ,false);
     }
 
-    public void BeingHit()
+    public void BeingHit(int damage)
     {
-        playerHealth.TakeDamage(2);
+        playerHealth.TakeDamage(damage);
         //show damage pop up
-        GameManager.Instance.ShowDamagePopUp(transform.position, 2.ToString());
+        GameManager.Instance.ShowDamagePopUp(transform.position, damage.ToString());
         // different interaction whether character is dead or not
         if (playerHealth.IsDead)
         {
@@ -134,7 +136,12 @@ public abstract class Character : MonoBehaviour
         basicAttack.TakeTime(Time.deltaTime);
         update2();
     }
+
+    public void CallMeleeAttack(int damage){
+        Evt_MeleeAttack?.Invoke(damage);
+    }
 }
+
 
 // Unit Basic Attack
 [Serializable] 
@@ -167,10 +174,10 @@ public class UnitAttack
         if(_currentTime >= 0 && _currentTime < attackTime)
         {
             _currentTime += time;
-            Debug.Log(_currentTime);
+            //Debug.Log(_currentTime);
             if(_currentTime >= enableBulletTime && !_isEnableBullet)
             { 
-                Debug.Log("Hit");
+                //Debug.Log("Hit");
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }
