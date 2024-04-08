@@ -11,7 +11,7 @@ public abstract class Character : MonoBehaviour
     [SpineAnimation][SerializeField] private string idleAnimationName;
     [Header("Attack")]
     [SerializeField] private UnitAttack basicAttack;
-    [SerializeField] protected BoxCollider2D basicAttackHitBox;
+    [SerializeField] protected Bullet basicAttackHitBox;
 
     [Header("Other Anim")]
     [SpineAnimation][SerializeField] private string runAnimationName;
@@ -38,8 +38,9 @@ public abstract class Character : MonoBehaviour
     }
     void Start()
     {
-        basicAttack.Evt_EnableBullet += value => basicAttackHitBox.enabled = value;
         basicAttack.Init();
+        basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
+        basicAttackHitBox.OnHit += dealDmg;
         start2();
     }
     protected virtual void start2() { }
@@ -103,8 +104,14 @@ public abstract class Character : MonoBehaviour
     {
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime ,false);
     }
-
-    public void BeingHit(int damage)
+    protected void dealDmg(Character enemy, int value)
+    {
+        Debug.Log("enemy" + enemy.name + ", this: " + this.name);
+        if (enemy != this){
+            enemy.beingHit(value);
+        }
+    }
+    private void beingHit(int damage)
     {
         playerHealth.TakeDamage(damage);
         //show damage pop up
@@ -160,6 +167,7 @@ public class UnitAttack
 
     public void Init()
     {
+        Debug.Log("Init");
         Evt_EnableBullet?.Invoke(false);
         _currentTime = -1;
     }
@@ -177,7 +185,7 @@ public class UnitAttack
             //Debug.Log(_currentTime);
             if(_currentTime >= enableBulletTime && !_isEnableBullet)
             { 
-                //Debug.Log("Hit");
+                Debug.Log("Hit");
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }

@@ -40,11 +40,10 @@ public class Enemy : Character
 
     private bool inRange()
     {
-        int groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~enemyLayerMask,~groundLayerMask);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~enemyLayerMask, ~groundLayerMask);
         if (hitColliders.Length > 0)
         {
-            //Debug.Log("Hit");
+            Debug.Log("Colliders: " + hitColliders[0].name);
             return true;
         }
         else return false;
@@ -116,6 +115,7 @@ public class Enemy : Character
             // Attack
             else if (playerHealth.IsDead == false && playerInSight == true)
             {
+                //Debug.Log(playerInSight);
                 if (Time.time > lastAttackedAt + 0.5f)
                 {
                     Idle();
