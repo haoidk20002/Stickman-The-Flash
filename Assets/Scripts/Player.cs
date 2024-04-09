@@ -10,18 +10,17 @@ public class Player : Character
 {
     [SerializeField] private UnitAttack dashAttack;
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.5f;
-    private float moveDistance = 75f, moveSpeed = 50f, ratio = 0; 
+    private float moveDistance = 75f, moveSpeed = 50f, ratio = 0;
     private float attackRange = 6f, timer = 1f, minSwipeDistance = 20f;
     private bool enemyDetected = false, isMoving = false, onGround = false;
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition;
-    private Vector2 startPos, dashDestination,teleportDestination;
+    private Vector2 startPos, dashDestination, teleportDestination, swipeDirection;
     private Rigidbody2D body;
     private HealthBar health;
     public LayerMask DetectLayerMask;
 
-    private event Action<int> Evt_DashAttack;
-    private Bullet bullet;
+    private int damage = 4;
     protected override void start2()
     {
         SettingMainCharacterValue1();
@@ -45,22 +44,15 @@ public class Player : Character
         health = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
         dashDestination = transform.position;
         dashAttack.Init();
+        dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
+        basicAttackHitBox.OnHit += dealDmg;
 
     }
     protected override Character findTarget()
     {
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(target, radius, DetectLayerMask);
-
-        if (hitColliders.Length > 0)
-        {
-            // Return the first character found
-            return hitColliders[0].GetComponent<Character>();
-        }
-        else
-        {
-            // No character found, return null or handle the absence of a target accordingly
-            return null;
-        }
+        if (hitColliders.Length > 0) { return hitColliders[0].GetComponent<Character>(); } /* Return the first character found*/
+        else { return null; }
     }
     private void TriggerAttack()
     {
@@ -68,14 +60,14 @@ public class Player : Character
         {
             lastAttackedAt = Time.time;
             Attack();
+            Evt_MeleeAttack?.Invoke(damage);
             Idle(0);
         }
     }
     private void Teleport()
     {
         var enemies = findTarget();
-        // if enemy is found, player teleports close to it then attack
-        // else teleport to the clicked point
+        // if enemy is found, player teleports close to it then attack, else teleport to the clicked point
         if (enemies != null)
         {
             var enemy = enemies.gameObject.transform.position;
@@ -85,8 +77,8 @@ public class Player : Character
             transform.position = target;
             float direction = transform.position.x - oldPos.x; // calculate direction
             Turn(direction);
-            if (transform.position.x < enemy.x) {teleportDestination.x = enemy.x - attackRange;}
-            else    {teleportDestination.x = enemy.x + attackRange;}
+            if (transform.position.x < enemy.x) { teleportDestination.x = enemy.x - attackRange; }
+            else { teleportDestination.x = enemy.x + attackRange; }
             TriggerAttack();
             transform.position = teleportDestination;
         }
@@ -104,17 +96,63 @@ public class Player : Character
     {
         transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
     }
+
+    private void SwipeOrTeleport()
+    {
+        Vector2 endPos = Input.mousePosition;
+        swipeDirection = endPos - startPos;
+        // Determine if the swipe was long enough (you can set a threshold)
+        float swipeMagnitude = swipeDirection.magnitude;
+        if (swipeMagnitude > minSwipeDistance)
+        {
+            if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y)) // Check the direction of the swipe
+            {
+                CalculateMove();
+            }
+        }
+        else
+        {
+            Teleport();
+            isMoving = false;
+        }
+    }
+
+    private void CalculateMove()
+    {
+        if (swipeDirection.x > 0)
+        {
+            Turn(swipeDirection.x);
+            dashDestination.x = transform.position.x + moveDistance;
+            dashDestination.y = transform.position.y;
+            isMoving = true;
+            timer = 1f;
+            DashAttack();
+            Idle(0);
+        }
+        else
+        {
+            Turn(swipeDirection.x);
+            dashDestination.x = transform.position.x - moveDistance;
+            dashDestination.y = transform.position.y;
+            isMoving = true;
+            timer = 1f;
+            DashAttack();
+            Idle(0);
+        }
+    }
     private void DashAttack()
     {
         PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-        basicAttackHitBox.enabled = true;
+        // Already intialized, triggered but melee hitbox still not enabled despite isEnable = true ???
+        dashAttack.Trigger();
+        Evt_MeleeAttack?.Invoke((int)damage / 2);
+
     }
 
 
     protected override void update2()
     {
         dashAttack.TakeTime(Time.deltaTime);
-
         if (isMoving == true)
         {
             Move();
@@ -129,7 +167,6 @@ public class Player : Character
         {
             timer = 1f;
         }
-
         // Teleport: Click to desired destination and the player teleports after releasing click
         // Move: Click, swipe, then release to move according to the swipe direction
         if (Input.GetMouseButtonDown(0))
@@ -137,45 +174,12 @@ public class Player : Character
             // target: actual destination, click_position:  desired destination
             target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            // swipe
             startPos = Input.mousePosition; // Detect the start of the swipe
         }
         if (Input.GetMouseButtonUp(0))
         {
-            // Detect the end of the swipe
-            Vector2 endPos = Input.mousePosition;
-            Vector2 swipeDirection = endPos - startPos;
-            // Determine if the swipe was long enough (you can set a threshold)
-            float swipeMagnitude = swipeDirection.magnitude;
-            if (swipeMagnitude > minSwipeDistance) // Adjust the threshold as needed
-            {
-                if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y)) // Check the direction of the swipe
-                {
-                    // Horizontal swipe
-                    if (swipeDirection.x > 0)
-                    {
-                        Turn(swipeDirection.x);
-                        dashDestination.x = transform.position.x + moveDistance;
-                        dashDestination.y = transform.position.y;
-                        isMoving = true;
-                        DashAttack();
-                        Idle(0);
-                    }
-                    else
-                    {
-                        Turn(swipeDirection.x);
-                        dashDestination.x = transform.position.x - moveDistance;
-                        dashDestination.y = transform.position.y;
-                        isMoving = true;
-                        DashAttack();
-                        Idle(0);
-                    }
-                }
-            }
-            else
-            {
-                Teleport();
-                isMoving = false;
-            }
+            SwipeOrTeleport();
         }
         // Track Player's Health
         ratio = playerHealth.RatioHealth;

@@ -31,7 +31,7 @@ public abstract class Character : MonoBehaviour
     }
     protected string playing_anim;
 
-    protected event Action<int> Evt_MeleeAttack;
+    public Action<int> Evt_MeleeAttack;
     void Awake()
     {
         playerHealth.Init(10);
@@ -167,12 +167,13 @@ public class UnitAttack
 
     public void Init()
     {
-        Debug.Log("Init");
+        //Debug.Log("Init");
         Evt_EnableBullet?.Invoke(false);
         _currentTime = -1;
     }
     public void Trigger()
     {
+        //Debug.Log("Trigger");
         _currentTime = 0;
         _isEnableBullet = false;
     }
@@ -182,7 +183,7 @@ public class UnitAttack
         if(_currentTime >= 0 && _currentTime < attackTime)
         {
             _currentTime += time;
-            //Debug.Log(_currentTime);
+            Debug.Log("Current: "+_currentTime +"Enable at: " + enableBulletTime + "Enable?: " + _isEnableBullet);
             if(_currentTime >= enableBulletTime && !_isEnableBullet)
             { 
                 Debug.Log("Hit");

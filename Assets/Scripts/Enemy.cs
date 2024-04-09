@@ -20,6 +20,7 @@ public class Enemy : Character
     Rigidbody2D body;
     //private Transform player;
     private int enemyLayerMask, groundLayerMask;
+    public int damage = 2;
     protected override void start2()
     {
         delayLeft = delay;

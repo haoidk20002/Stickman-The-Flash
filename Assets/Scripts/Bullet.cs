@@ -6,7 +6,18 @@ using UnityEngine.Events;
 
 
 public class Bullet : MonoBehaviour
-{   public int damage = 2;
+{   //public int damage = 2;
+    private int damage = 2;
+
+    public Character character;
+    private void HandleDamage(int value)
+    {
+        damage = value;
+    }
+    void Awake(){
+        character.Evt_MeleeAttack += HandleDamage;
+    }
+
     public Action <Character, int> OnHit;
     private void OnTriggerEnter2D(Collider2D other){
         Debug.Log("Result: " + other.name);
