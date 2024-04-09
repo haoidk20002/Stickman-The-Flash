@@ -823,6 +823,7 @@ MonoBehaviour:
     attackAnimationName: 1_/kick straight
     attackTime: 1
     enableBulletTime: 0
+  dashAttackHitbox: {fileID: 0}
   DetectLayerMask:
     serializedVersion: 2
     m_Bits: 64

@@ -10,8 +10,8 @@ public class Player : Character
 {
     [SerializeField] private UnitAttack dashAttack;
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.5f;
-    private float moveDistance = 75f, moveSpeed = 50f, ratio = 0;
-    private float attackRange = 6f, timer = 1f, minSwipeDistance = 20f;
+    private float moveDistance = 75f, moveSpeed = 75f, ratio = 0;
+    private float attackRange = 6f, timer = 1f, minSwipeDistance = 50f;
     private bool enemyDetected = false, isMoving = false, onGround = false;
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition;
@@ -21,6 +21,8 @@ public class Player : Character
     public LayerMask DetectLayerMask;
 
     private int damage = 4;
+
+    // private int health = 20;
     protected override void start2()
     {
         SettingMainCharacterValue1();
@@ -45,7 +47,7 @@ public class Player : Character
         dashDestination = transform.position;
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
-        basicAttackHitBox.OnHit += dealDmg;
+        //basicAttackHitBox.OnHit += dealDmg;
 
     }
     protected override Character findTarget()
@@ -58,6 +60,7 @@ public class Player : Character
     {
         if (Time.time > lastAttackedAt + cooldown)
         {
+            //Debug.Log("Hit");
             lastAttackedAt = Time.time;
             Attack();
             Evt_MeleeAttack?.Invoke(damage);

@@ -11,7 +11,7 @@ public abstract class Character : MonoBehaviour
     [SpineAnimation][SerializeField] private string idleAnimationName;
     [Header("Attack")]
     [SerializeField] private UnitAttack basicAttack;
-    [SerializeField] protected Bullet basicAttackHitBox;
+    [SerializeField] protected MeleeBullet basicAttackHitBox;
 
     [Header("Other Anim")]
     [SpineAnimation][SerializeField] private string runAnimationName;
@@ -106,9 +106,10 @@ public abstract class Character : MonoBehaviour
     }
     protected void dealDmg(Character enemy, int value)
     {
-        Debug.Log("enemy" + enemy.name + ", this: " + this.name);
+        //Debug.Log("enemy" + enemy.name + ", this: " + this.name);
         if (enemy != this){
             enemy.beingHit(value);
+            Debug.Log("Hit");
         }
     }
     private void beingHit(int damage)
@@ -183,10 +184,10 @@ public class UnitAttack
         if(_currentTime >= 0 && _currentTime < attackTime)
         {
             _currentTime += time;
-            Debug.Log("Current: "+_currentTime +"Enable at: " + enableBulletTime + "Enable?: " + _isEnableBullet);
+            //Debug.Log("Current: "+_currentTime +"Enable at: " + enableBulletTime + "Enable?: " + _isEnableBullet);
             if(_currentTime >= enableBulletTime && !_isEnableBullet)
             { 
-                Debug.Log("Hit");
+                //Debug.Log("Hit");
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }

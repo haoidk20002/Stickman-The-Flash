@@ -20,7 +20,8 @@ public class Enemy : Character
     Rigidbody2D body;
     //private Transform player;
     private int enemyLayerMask, groundLayerMask;
-    public int damage = 2;
+    private int damage = 1;
+     // private int health = 10;
     protected override void start2()
     {
         delayLeft = delay;
@@ -128,6 +129,7 @@ public class Enemy : Character
                     if (inRange() == true)
                     {
                         Attack();
+                        Evt_MeleeAttack?.Invoke(damage);
                         lastAttackedAt = Time.time;
                     }
                     else
