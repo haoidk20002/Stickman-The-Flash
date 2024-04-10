@@ -32,12 +32,17 @@ public abstract class Character : MonoBehaviour
     protected string playing_anim;
 
     public Action<int> Evt_MeleeAttack;
-    void Awake()
-    {
-        playerHealth.Init(10);
-    }
+
+    [Header("Stats")]
+    [SerializeField] protected int health;
+    [SerializeField] protected int damage;
+    // void Awake()
+    // {
+    //     playerHealth.Init(10);
+    // }
     void Start()
     {
+        playerHealth.Init(health);
         basicAttack.Init();
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         basicAttackHitBox.OnHit += dealDmg;

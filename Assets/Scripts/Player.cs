@@ -6,27 +6,44 @@ using System;
 using Unity.VisualScripting;
 using System.ComponentModel;
 
+
 public class Player : Character
 {
     [SerializeField] private UnitAttack dashAttack;
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.5f;
-    private float moveDistance = 75f, moveSpeed = 75f, ratio = 0;
-    private float attackRange = 6f, timer = 1f, minSwipeDistance = 50f;
+    private float moveDistance = 5f, ratio = 0;
+    [SerializeField] private float moveSpeed = 50f;
+    private float attackRange = 6f, minSwipeDistance = 8f;
+    private float minX, maxX, minY, maxY;
+    [SerializeField] private float timer;
+    private float currentTimer;
+    private float multiplier = 10f;
+    private float swipeMagnitude;
+
+    private float playerWidth;
     private bool enemyDetected = false, isMoving = false, onGround = false;
     // Coordinates
-    private Vector2 oldPos, newPos, target, clickPosition;
+    private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
     private Vector2 startPos, dashDestination, teleportDestination, swipeDirection;
+    // get camera bonuds first, then lock player in bounds
     private Rigidbody2D body;
-    private HealthBar health;
+    private HealthBar healthBar;
     public LayerMask DetectLayerMask;
 
-    private int damage = 4;
 
-    // private int health = 20;
+    private void Awake(){
+        health = 20;
+        damage = 4;
+    }
     protected override void start2()
     {
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
+        GetCameraBounds();
+
+        // Vector3 a = new Vector3(3,4,0);
+        // Debug.Log(a.magnitude + " / " + a.normalized.magnitude);
+        // Debug.Log(a.normalized);
     }
 
     private void SettingMainCharacterValue1()
@@ -43,12 +60,50 @@ public class Player : Character
     private void SettingMainCharacterValue2()
     {
         dashDestination = new Vector2(0, 0);
-        health = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
+        healthBar = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
         dashDestination = transform.position;
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
-        //basicAttackHitBox.OnHit += dealDmg;
+        currentTimer = timer;
 
+    }
+
+    private void GetCameraBounds() //camera's bounds depending on aspect ratio
+    {
+        // way 1
+        float height = 2f * Camera.main.orthographicSize;
+        float width = height * Camera.main.aspect; // aspect ratio * height => width*height /height 
+
+        cameraBounds = new Vector2(width, height);
+
+        // way 2 (no need calculate bound location)
+        // var leftBounds = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0));
+        // var rightBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0));
+        // cameraBounds = rightBounds - leftBounds;
+
+        // way 3 (no need calculate bound location)
+        // var leftBounds = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0));
+        // var rightBounds = Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 0));
+        // cameraBounds = rightBounds - leftBounds;
+
+        Debug.Log("Camera Bounds: " + cameraBounds);
+    }
+    private void CalculateBoundsLocation()
+    {
+        cameraPos = Camera.main.transform.position; //cam's pos
+
+        minX = cameraPos.x - cameraBounds.x / 2f;
+        maxX = cameraPos.x + cameraBounds.x / 2f;
+        minY = cameraPos.y - cameraBounds.y / 2f;
+        maxY = cameraPos.y + cameraBounds.y / 2f;
+
+        // // way 2 
+        // minX = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0)).x;
+        // maxX = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0)).x;
+    }
+    private void GetPlayerStat()
+    {
+        playerWidth = transform.GetComponent<BoxCollider2D>().size.x;
     }
     protected override Character findTarget()
     {
@@ -102,10 +157,12 @@ public class Player : Character
 
     private void SwipeOrTeleport()
     {
-        Vector2 endPos = Input.mousePosition;
+        Vector2 endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //Debug.Log(endPos);
         swipeDirection = endPos - startPos;
         // Determine if the swipe was long enough (you can set a threshold)
-        float swipeMagnitude = swipeDirection.magnitude;
+        swipeMagnitude = swipeDirection.magnitude;
+        //Debug.Log(swipeMagnitude*multiplier);
         if (swipeMagnitude > minSwipeDistance)
         {
             if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y)) // Check the direction of the swipe
@@ -115,38 +172,37 @@ public class Player : Character
         }
         else
         {
-            Teleport();
             isMoving = false;
+            Teleport();
         }
     }
 
     private void CalculateMove()
-    {
+    {   // Distance depend on swipe distance, get to destination in time duration
+        currentTimer = timer;
+        dashDestination.y = transform.position.y;
+        int value;
         if (swipeDirection.x > 0)
         {
-            Turn(swipeDirection.x);
-            dashDestination.x = transform.position.x + moveDistance;
-            dashDestination.y = transform.position.y;
-            isMoving = true;
-            timer = 1f;
-            DashAttack();
-            Idle(0);
+            value = 1;
         }
         else
         {
-            Turn(swipeDirection.x);
-            dashDestination.x = transform.position.x - moveDistance;
-            dashDestination.y = transform.position.y;
-            isMoving = true;
-            timer = 1f;
-            DashAttack();
-            Idle(0);
+            value = -1;
         }
+        Turn(swipeDirection.x);
+        dashDestination.x = transform.position.x + value * swipeMagnitude * multiplier;
+        DashAttack();
+        Idle(0);
+        //Debug.Log("Swipe Distance:" + swipeMagnitude + " Move Distance: " + swipeMagnitude);
     }
     private void DashAttack()
     {
+        //moveSpeed = multiplier * swipeMagnitude / timer;
+        //Debug.Log("MoveSpeed: " + moveSpeed);
+        isMoving = true;
         PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-        // Already intialized, triggered but melee hitbox still not enabled despite isEnable = true ???
+
         dashAttack.Trigger();
         Evt_MeleeAttack?.Invoke((int)damage / 2);
 
@@ -155,12 +211,16 @@ public class Player : Character
 
     protected override void update2()
     {
+        CalculateBoundsLocation();
+        GetPlayerStat();
+
         dashAttack.TakeTime(Time.deltaTime);
         if (isMoving == true)
         {
             Move();
-            timer -= Time.deltaTime;
-            if (timer <= 0f)
+            currentTimer -= Time.deltaTime;
+            //Debug.Log(currentTimer);
+            if (currentTimer <= 0f)
             {
                 isMoving = false;
                 basicAttackHitBox.enabled = false;
@@ -168,7 +228,7 @@ public class Player : Character
         }
         else
         {
-            timer = 1f;
+            currentTimer = timer;
         }
         // Teleport: Click to desired destination and the player teleports after releasing click
         // Move: Click, swipe, then release to move according to the swipe direction
@@ -176,9 +236,8 @@ public class Player : Character
         {
             // target: actual destination, click_position:  desired destination
             target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             // swipe
-            startPos = Input.mousePosition; // Detect the start of the swipe
+            startPos = target; // Detect the start of the swipe
         }
         if (Input.GetMouseButtonUp(0))
         {
@@ -186,12 +245,13 @@ public class Player : Character
         }
         // Track Player's Health
         ratio = playerHealth.RatioHealth;
-        health.UpdateHealthBar(ratio);
+        healthBar.UpdateHealthBar(ratio);
+
+        //
+        Vector3 clampedPosition = transform.position;
+        clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
+        transform.position = clampedPosition;
     }
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(clickPosition, radius);
-    }
+
 }
 

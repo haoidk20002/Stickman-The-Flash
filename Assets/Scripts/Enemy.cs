@@ -12,16 +12,19 @@ public class Enemy : Character
     private float moveSpeed = 20f, jumpForce = 50f;
     private float direction;
     private float delay = 1f, delayLeft = 0f, radius = 4f;
-    //public LayerMask layerMask;
     private bool playerInSight = false, onGround = false;
     private float lastAttackedAt = 0;
     private Character player;
     private Vector2 playerLocation, oldPos, newPos;
     Rigidbody2D body;
-    //private Transform player;
     private int enemyLayerMask, groundLayerMask;
-    private int damage = 1;
-     // private int health = 10;
+
+
+    
+    private void Awake(){
+        health = 10;
+        damage = 1;
+    }
     protected override void start2()
     {
         delayLeft = delay;
@@ -67,7 +70,6 @@ public class Enemy : Character
     {
         body.velocity = new Vector2(body.velocity.x, jumpForce);
         Jump();
-        //Idle(0);
     }
     private bool CheckLanding()
     {
@@ -88,11 +90,8 @@ public class Enemy : Character
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
 
-        //Debug.Log(onGround);
-
 
         onGround = CheckLanding();
-        //Debug.Log(on_ground);
         if (player != null)
         {
             if (playerHealth.IsDead == false && playerInSight == false)
@@ -117,7 +116,6 @@ public class Enemy : Character
             // Attack
             else if (playerHealth.IsDead == false && playerInSight == true)
             {
-                //Debug.Log(playerInSight);
                 if (Time.time > lastAttackedAt + 0.5f)
                 {
                     Idle();
@@ -147,11 +145,11 @@ public class Enemy : Character
             Idle();
         }
     }
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, radius);
-    }
+    // void OnDrawGizmosSelected()
+    // {
+    //     Gizmos.color = Color.yellow;
+    //     Gizmos.DrawWireSphere(transform.position, radius);
+    // }
 }
 
 

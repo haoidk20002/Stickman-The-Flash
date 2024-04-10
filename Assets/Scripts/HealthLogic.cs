@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class HealthLogic
 {
-    private int maxhealth = 10;
+    private int maxhealth;
 
-    private int currenthealth = 10;
+    private int currenthealth;
     public int Current=> currenthealth;
 
     public float RatioHealth
