@@ -65,12 +65,12 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            //yield return new WaitForSeconds(100f);
+            yield return new WaitForSeconds(360f);
             // Spawn an enemy
             Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
 
             // Wait for a certain amount of time before spawning the next enemy
-            yield return new WaitForSeconds(15f);
+            yield return new WaitForSeconds(100f);
         }
     }
     Vector2 GetRandomSpawnPosition()

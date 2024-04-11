@@ -30,6 +30,10 @@ public class Player : Character
     private HealthBar healthBar;
     public LayerMask DetectLayerMask;
 
+    public GameObject bullet;
+
+    private Vector3 bulletStartPos;
+
 
     private void Awake(){
         health = 20;
@@ -40,7 +44,7 @@ public class Player : Character
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
         GetCameraBounds();
-
+        bulletStartPos = transform.position;
         // Vector3 a = new Vector3(3,4,0);
         // Debug.Log(a.magnitude + " / " + a.normalized.magnitude);
         // Debug.Log(a.normalized);
@@ -207,13 +211,25 @@ public class Player : Character
         Evt_MeleeAttack?.Invoke((int)damage / 2);
 
     }
+    // may be set as protected in Character class
+    private void GetShootPosAndDirection()
+    {
+        
+        if(transform.rotation.y == 0){
+            bulletStartPos.x = transform.position.x + 5;
+            //invoke info to bullet's direction
+        }else {bulletStartPos.x = transform.position.x - 5;}
+        bulletStartPos.y = transform.position.y;
+    }
 
 
     protected override void update2()
     {
         CalculateBoundsLocation();
         GetPlayerStat();
-
+        // need a function here
+        GetShootPosAndDirection();
+        //
         dashAttack.TakeTime(Time.deltaTime);
         if (isMoving == true)
         {
@@ -247,10 +263,16 @@ public class Player : Character
         ratio = playerHealth.RatioHealth;
         healthBar.UpdateHealthBar(ratio);
 
-        //
+        // lock player in camera
         Vector3 clampedPosition = transform.position;
         clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
         transform.position = clampedPosition;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Debug.Log("pressed");
+            Instantiate(bullet,bulletStartPos,bullet.transform.rotation);
+        }
     }
 
 }

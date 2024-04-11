@@ -32,6 +32,8 @@ public abstract class Character : MonoBehaviour
     protected string playing_anim;
 
     public Action<int> Evt_MeleeAttack;
+    public Action<int> Evt_ShootingAttack;
+
 
     [Header("Stats")]
     [SerializeField] protected int health;

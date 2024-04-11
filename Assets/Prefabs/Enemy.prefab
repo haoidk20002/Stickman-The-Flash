@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 4887279241445398300}
   - component: {fileID: 2976105309621597679}
   - component: {fileID: 7839990486623856305}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: MeleeHitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,6 +254,7 @@ MonoBehaviour:
   dieAnimationName: 1_/die A
   jumpAnimationName: 1_/jump B
   skeletonAnimation: {fileID: 3608664967636058157}
+  health: 0
   damage: 2
 --- !u!1 &7602098857163116204
 GameObject:
