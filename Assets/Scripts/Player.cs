@@ -18,9 +18,7 @@ public class Player : Character
     [SerializeField] private float timer;
     private float currentTimer;
     private float multiplier = 10f;
-    private float swipeMagnitude;
-
-    private float playerWidth;
+    private float swipeMagnitude, playerWidth, direction;
     private bool enemyDetected = false, isMoving = false, onGround = false;
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
@@ -90,7 +88,7 @@ public class Player : Character
         // var rightBounds = Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 0));
         // cameraBounds = rightBounds - leftBounds;
 
-        Debug.Log("Camera Bounds: " + cameraBounds);
+        //Debug.Log("Camera Bounds: " + cameraBounds);
     }
     private void CalculateBoundsLocation()
     {
@@ -137,7 +135,7 @@ public class Player : Character
             teleportDestination = target;
             oldPos = transform.position;
             transform.position = target;
-            float direction = transform.position.x - oldPos.x; // calculate direction
+            direction = transform.position.x - oldPos.x; // calculate direction
             Turn(direction);
             if (transform.position.x < enemy.x) { teleportDestination.x = enemy.x - attackRange; }
             else { teleportDestination.x = enemy.x + attackRange; }
@@ -148,7 +146,7 @@ public class Player : Character
         {
             oldPos = transform.position;
             transform.position = target;
-            float direction = transform.position.x - oldPos.x;
+            direction = transform.position.x - oldPos.x;
             Turn(direction);
         }
         // reseting falling velocity
@@ -214,11 +212,13 @@ public class Player : Character
     // may be set as protected in Character class
     private void GetShootPosAndDirection()
     {
-        
-        if(transform.rotation.y == 0){
-            bulletStartPos.x = transform.position.x + 5;
-            //invoke info to bullet's direction
-        }else {bulletStartPos.x = transform.position.x - 5;}
+        int bulletDirection;
+        // if(direction > 0){
+        //     bulletDirection = 1;
+        // }else {bulletDirection = -1;}
+        bulletDirection = direction >0?  1:-1; // forward (direction > 0) => 1 // short typing
+        bulletStartPos.x = transform.position.x + bulletDirection*5;
+
         bulletStartPos.y = transform.position.y;
     }
 

@@ -5,6 +5,8 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager instance; // Singleton instance
     private int score;
+    private int enemiesCount, enemiesSpawnNumber = 0, waveNumber;
+    private bool spawningWave = false;
     public Character MainPlayer
     {
         get;
@@ -47,12 +49,22 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Start spawning enemies
-        StartCoroutine(SpawnEnemy());
+
     }
 
     private void Update()
     {
+        // get enemy count
+        enemiesCount = FindObjectsOfType<Enemy>().Length;
+        //Debug.Log(enemiesCount);
+        // if enemy count < 0 then spawn next wave
+        if (enemiesCount == 0 && !spawningWave)
+        {
+            waveNumber++;
+            enemiesSpawnNumber++;
+            StartCoroutine(SpawnEnemiesWave());
+        }
+        //StartCoroutine(SpawnEnemiesWave());
     }
 
     public void RegisterPlayer(Character player)
@@ -61,22 +73,38 @@ public class GameManager : MonoBehaviour
     }
 
     // Method to spawn an enemy
-    IEnumerator SpawnEnemy()
+    IEnumerator SpawnEnemiesWave()
     {
-        while (true)
-        {
-            yield return new WaitForSeconds(360f);
-            // Spawn an enemy
-            Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
+        spawningWave = true;
+        Debug.Log("Wait for 5s");
+        Debug.Log("Enemies Spawn Number: " + enemiesSpawnNumber);
 
-            // Wait for a certain amount of time before spawning the next enemy
-            yield return new WaitForSeconds(100f);
+        yield return new WaitForSeconds(5f);
+        // Spawn an enemy
+        while (enemiesCount < enemiesSpawnNumber)
+        {
+            if (waveNumber % 5 == 0)
+            {
+                Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
+                enemiesSpawnNumber = 0;
+                break;
+            } //boss every 5 wave
+            else
+            {
+                Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
+                yield return new WaitForSeconds(0.5f);
+            }
+            // Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
+            // yield return new WaitForSeconds(1f);
         }
+        spawningWave = false;
+        // Wait for a certain amount of time before spawning the next enemy
+        //yield return new WaitForSeconds(1f);
     }
     Vector2 GetRandomSpawnPosition()
     {
         // Return a random position within some bounds (adjust to your needs)
-        return new Vector2(Random.Range(-5f, 5f), Random.Range(0f, 10f));
+        return new Vector2(Random.Range(-50f, 50f), Random.Range(0f, 30f));
     }
     // Method to update score
     public void UpdateScore(int amount)
@@ -86,7 +114,7 @@ public class GameManager : MonoBehaviour
     }
 
 
-// show dam pop up
+    // show dam pop up
     public GameObject damagePopUpPrefab;
 
     public void ShowDamagePopUp(Vector3 position, string damage)

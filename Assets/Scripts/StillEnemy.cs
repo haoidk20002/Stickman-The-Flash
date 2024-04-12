@@ -7,7 +7,7 @@ using Unity.VisualScripting;
 using Spine.Unity.Examples;
 
 
-public class Enemy : Character
+public class StillEnemy : Character
 {
     private float moveSpeed = 20f, jumpForce = 50f;
     private float direction;
@@ -48,6 +48,7 @@ public class Enemy : Character
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~enemyLayerMask, ~groundLayerMask);
         if (hitColliders.Length > 0)
         {
+            //Debug.Log("Colliders: " + hitColliders[0].name);
             return true;
         }
         else return false;
@@ -108,7 +109,7 @@ public class Enemy : Character
                     }
                     else
                     {
-                        Move();
+                        //Move();
                     }
                 }
             }

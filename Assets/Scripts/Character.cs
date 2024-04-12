@@ -32,7 +32,9 @@ public abstract class Character : MonoBehaviour
     protected string playing_anim;
 
     public Action<int> Evt_MeleeAttack;
-    public Action<int> Evt_ShootingAttack;
+    public Action<Character,int> Evt_ShootingAttack;
+
+    // public Action or event? <int> shootingDirection;
 
 
     [Header("Stats")]
@@ -116,7 +118,7 @@ public abstract class Character : MonoBehaviour
         //Debug.Log("enemy" + enemy.name + ", this: " + this.name);
         if (enemy != this){
             enemy.beingHit(value);
-            Debug.Log("Hit");
+            //Debug.Log("Hit");
         }
     }
     private void beingHit(int damage)

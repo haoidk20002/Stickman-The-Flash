@@ -14,21 +14,20 @@ public class MeleeBullet : MonoBehaviour
     {
         damage = value;
     }
-    void Awake(){
+    void Awake()
+    {
         character.Evt_MeleeAttack += HandleDamage;
     }
 
-    public Action <Character, int> OnHit;
-    private void OnTriggerEnter2D(Collider2D other){
-        //Debug.Log("Result: " + other.name);
-        // var target = other.GetComponent<Character>();
-        // target.BeingHit(damage);
+    public Action<Character, int> OnHit;
+    private void OnTriggerEnter2D(Collider2D other)
+    {
         var character = other.GetComponent<Character>();
-        // get other characters except the main one 
-        if(character != null){
-            
+        Debug.Log("Character1: " + character);
+        if (character != null)
+        { 
             OnHit(character, damage);
-        } 
+        }
     }
 
 }
