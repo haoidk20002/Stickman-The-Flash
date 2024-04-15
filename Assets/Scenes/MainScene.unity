@@ -231,6 +231,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1529479815}
   cameraSpeed: 20
+  cameraRangeLimit: 250
+  positionDifference: 10
 --- !u!61 &519420034
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -860,6 +862,7 @@ MonoBehaviour:
     attackTime: 0.4
     enableBulletTime: 0.2
   basicAttackHitBox: {fileID: 2117003002}
+  fallAnimationName: 1_/block bottom
   runAnimationName: 1_/run
   hurtAnimationName: 1_/hurt center
   dieAnimationName: 1_/die A

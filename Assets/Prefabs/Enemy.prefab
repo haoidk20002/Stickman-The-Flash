@@ -249,6 +249,7 @@ MonoBehaviour:
     attackTime: 0.3
     enableBulletTime: 0.2
   basicAttackHitBox: {fileID: 7839990486623856305}
+  fallAnimationName: 1_/block bottom
   runAnimationName: 1_/run
   hurtAnimationName: 1_/hurt center
   dieAnimationName: 1_/die A

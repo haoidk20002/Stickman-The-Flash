@@ -28,12 +28,15 @@ public class Player : Character
     private HealthBar healthBar;
     public LayerMask DetectLayerMask;
 
+    private LayerMask playerLayerMask;
+
     public GameObject bullet;
 
     private Vector3 bulletStartPos;
 
 
-    private void Awake(){
+    private void Awake()
+    {
         health = 20;
         damage = 4;
     }
@@ -67,7 +70,7 @@ public class Player : Character
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         currentTimer = timer;
-
+        playerLayerMask = 1 << LayerMask.NameToLayer("Enemy");
     }
 
     private void GetCameraBounds() //camera's bounds depending on aspect ratio
@@ -216,10 +219,25 @@ public class Player : Character
         // if(direction > 0){
         //     bulletDirection = 1;
         // }else {bulletDirection = -1;}
-        bulletDirection = direction >0?  1:-1; // forward (direction > 0) => 1 // short typing
-        bulletStartPos.x = transform.position.x + bulletDirection*5;
+        bulletDirection = direction > 0 ? 1 : -1; // forward (direction > 0) => 1 // short typing
+        bulletStartPos.x = transform.position.x + bulletDirection * 5;
 
         bulletStartPos.y = transform.position.y;
+    }
+
+    private bool CheckLanding()
+    {
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f, ~playerLayerMask);
+        Debug.DrawRay(transform.position, Vector2.down * 6f, Color.green);
+        if (hit.collider != null && hit.collider.CompareTag("Ground"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
 
@@ -271,7 +289,7 @@ public class Player : Character
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Debug.Log("pressed");
-            Instantiate(bullet,bulletStartPos,bullet.transform.rotation);
+            Instantiate(bullet, bulletStartPos, bullet.transform.rotation);
         }
     }
 

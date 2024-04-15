@@ -17,7 +17,7 @@ public class Enemy : Character
     private Character player;
     private Vector2 playerLocation, oldPos, newPos;
     Rigidbody2D body;
-    private int enemyLayerMask, groundLayerMask;
+    private int enemyLayerMask, groundLayerMask, playerLayerMask;
 
 
     
@@ -35,6 +35,7 @@ public class Enemy : Character
         //
         enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
         groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
+        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
     }
 
     protected override Character findTarget()
@@ -72,7 +73,7 @@ public class Enemy : Character
     }
     private bool CheckLanding()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f, ~enemyLayerMask);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f, ~enemyLayerMask, ~playerLayerMask);
         Debug.DrawRay(transform.position, Vector2.down * 6f, Color.green);
         if (hit.collider != null && hit.collider.CompareTag("Ground"))
         {
@@ -85,12 +86,14 @@ public class Enemy : Character
     }
     protected override void update2()
     {
-
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
-
-
-        onGround = CheckLanding();
+        onGround = CheckLanding(); // check landing
+        Debug.Log(onGround);
+        // play fall animation
+        if(onGround != true){
+            Fall();
+        }
         if (player != null)
         {
             if (playerHealth.IsDead == false && playerInSight == false)

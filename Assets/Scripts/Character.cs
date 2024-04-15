@@ -14,6 +14,7 @@ public abstract class Character : MonoBehaviour
     [SerializeField] protected MeleeBullet basicAttackHitBox;
 
     [Header("Other Anim")]
+    [SpineAnimation][SerializeField] private string fallAnimationName;    
     [SpineAnimation][SerializeField] private string runAnimationName;
     [SpineAnimation][SerializeField] private string hurtAnimationName;
     [SpineAnimation][SerializeField] private string dieAnimationName;
@@ -147,6 +148,14 @@ public abstract class Character : MonoBehaviour
     protected void Jump(float sec)
     {
         AddAnimation(jumpAnimationName, false, sec);
+    }
+
+    protected void Fall()
+    { 
+        PlayAnimation(fallAnimationName, 0f , false);
+    }
+    protected void Fall(float sec){
+        AddAnimation(fallAnimationName, false , sec);
     }
     void Update()
     {
