@@ -78,6 +78,9 @@ public class Enemy : Character
         playerLocation = player.gameObject.transform.position;
         //Debug.Log(onGround);
 
+        if (body.velocity.y < 0){
+            moveDelay = setMoveDelay;
+        }
         if (player != null)
         {
             // Run or Jump
@@ -100,7 +103,6 @@ public class Enemy : Character
                         {
                             //Debug.Log("Jump");
                             TriggerJump();
-                            moveDelay = setMoveDelay;
                         }
                         else
                         {

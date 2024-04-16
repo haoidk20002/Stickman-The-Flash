@@ -231,8 +231,8 @@ public abstract class Character : MonoBehaviour
 
         onGround = CheckLanding();
         basicAttack.TakeTime(Time.deltaTime);
-        Debug.Log("isMoving: " + isMoving +  " isAttacking: " +isAttacking);
-        Debug.Log("onGround: " + onGround + " isJumping: " + isJumping + " isFalling: " + isFalling);
+        //Debug.Log("isMoving: " + isMoving +  " isAttacking: " +isAttacking);
+        //Debug.Log("onGround: " + onGround + " isJumping: " + isJumping + " isFalling: " + isFalling);
         ControlJumpingAnim();
 
         update2();
