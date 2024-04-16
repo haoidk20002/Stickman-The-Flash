@@ -83,12 +83,12 @@ public class Enemy : Character
         }
         if (player != null)
         {
-            // check if player is in attack range
-            playerInSight = inRange();
             // Run or Jump
             if (playerHealth.IsDead == false && playerInSight == false)
             {
                 // Move and Jump
+                // check if player is in attack range
+                playerInSight = inRange();
                 // only move or jump when attack anim finished and is_jumping false
                 if (Time.time > lastAttackedAt + 0.5f && onGround == true)
                 {
@@ -133,6 +133,7 @@ public class Enemy : Character
                         EmptyAttack();
                         lastAttackedAt = Time.time;
                     }
+                    playerInSight = false;
                     delayLeft = delay;
                 }
             }
