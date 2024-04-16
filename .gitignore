@@ -68,3 +68,17 @@ crashlytics-build.properties
 
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets*
+
+Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
+spine-unity.csproj
+spine-unity-editor.csproj
+spine-unity-examples.csproj
+spine-unity-examples-editor.csproj
+.vscode
+Library
+Logs
+obj
+Temp
+UserSettings
+Stickman-The-Flash.sin
