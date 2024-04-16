@@ -17,7 +17,7 @@ public class StillEnemy : Character
     private Character player;
     private Vector2 playerLocation, oldPos, newPos;
     Rigidbody2D body;
-    private int enemyLayerMask, groundLayerMask;
+
 
 
     
@@ -32,9 +32,6 @@ public class StillEnemy : Character
         gameObject.layer = 6;
         body = GetComponent<Rigidbody2D>();
         Idle();
-        //
-        enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
-        groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
     }
 
     protected override Character findTarget()
@@ -69,7 +66,7 @@ public class StillEnemy : Character
     private void TriggerJump()
     {
         body.velocity = new Vector2(body.velocity.x, jumpForce);
-        Jump();
+        Jump1();
     }
     private bool CheckLanding()
     {

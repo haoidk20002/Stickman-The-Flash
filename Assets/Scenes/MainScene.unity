@@ -862,12 +862,15 @@ MonoBehaviour:
     attackTime: 0.4
     enableBulletTime: 0.2
   basicAttackHitBox: {fileID: 2117003002}
-  fallAnimationName: 1_/block bottom
+  fallAnimationName1: 1_/jump C
+  fallAnimationName2: 1_/jump D
   runAnimationName: 1_/run
   hurtAnimationName: 1_/hurt center
   dieAnimationName: 1_/die A
-  jumpAnimationName: 1_/jump B
+  jumpAnimationName1: 1_/jump A
+  jumpAnimationName2: 1_/jump B
   skeletonAnimation: {fileID: 734423011}
+  playing_anim: 
   health: 0
   damage: 0
   dashAttack:
@@ -875,7 +878,8 @@ MonoBehaviour:
     attackTime: 0.5
     enableBulletTime: 0
   moveSpeed: 100
-  timer: 1
+  timer: 0.5
+  setIdleAnimDelay: 0.6
   DetectLayerMask:
     serializedVersion: 2
     m_Bits: 64

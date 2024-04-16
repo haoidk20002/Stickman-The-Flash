@@ -11,17 +11,21 @@ public class Enemy : Character
 {
     private float moveSpeed = 20f, jumpForce = 50f;
     private float direction;
-    private float delay = 1f, delayLeft = 0f, radius = 4f;
-    private bool playerInSight = false, onGround = false;
+    private float delay = 0.5f, delayLeft = 0f, radius = 4f;
+    private float moveDelay =-1f;
+    [SerializeField] private float setMoveDelay;
+
+    private bool playerInSight = false;
     private float lastAttackedAt = 0;
     private Character player;
     private Vector2 playerLocation, oldPos, newPos;
-    Rigidbody2D body;
-    private int enemyLayerMask, groundLayerMask, playerLayerMask;
+    //Rigidbody2D body;
 
 
-    
-    private void Awake(){
+
+
+    private void Awake()
+    {
         health = 10;
         damage = 1;
     }
@@ -30,12 +34,8 @@ public class Enemy : Character
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
-        body = GetComponent<Rigidbody2D>();
-        Idle();
-        //
-        enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
-        groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
-        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+
+        
     }
 
     protected override Character findTarget()
@@ -46,7 +46,7 @@ public class Enemy : Character
 
     private bool inRange()
     {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, ~enemyLayerMask, ~groundLayerMask);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, playerLayerMask);
         if (hitColliders.Length > 0)
         {
             return true;
@@ -56,6 +56,7 @@ public class Enemy : Character
 
     private void Move()
     {
+        isMoving = true;
         Run();
         oldPos = transform.position;
         transform.position = Vector2.MoveTowards(transform.position, new Vector2(playerLocation.x, transform.position.y), moveSpeed * Time.deltaTime);
@@ -68,34 +69,18 @@ public class Enemy : Character
 
     private void TriggerJump()
     {
+        isMoving = false;
         body.velocity = new Vector2(body.velocity.x, jumpForce);
-        Jump();
-    }
-    private bool CheckLanding()
-    {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f, ~enemyLayerMask, ~playerLayerMask);
-        Debug.DrawRay(transform.position, Vector2.down * 6f, Color.green);
-        if (hit.collider != null && hit.collider.CompareTag("Ground"))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
     protected override void update2()
     {
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
-        onGround = CheckLanding(); // check landing
-        Debug.Log(onGround);
-        // play fall animation
-        if(onGround != true){
-            Fall();
-        }
+        //Debug.Log(onGround);
+
         if (player != null)
         {
+            // Run or Jump
             if (playerHealth.IsDead == false && playerInSight == false)
             {
                 // check if player is in attack range
@@ -104,14 +89,23 @@ public class Enemy : Character
                 // only move or jump when attack anim finished and is_jumping false
                 if (Time.time > lastAttackedAt + 0.5f && onGround == true)
                 {
-                    if (transform.position.x == playerLocation.x)
+                    if (moveDelay > 0)
                     {
-                        //Debug.Log("Jump");
-                        TriggerJump();
+                        moveDelay -= Time.deltaTime;
+                        Debug.Log(moveDelay);
                     }
                     else
                     {
-                        Move();
+                        if (transform.position.x == playerLocation.x)
+                        {
+                            //Debug.Log("Jump");
+                            TriggerJump();
+                            moveDelay = setMoveDelay;
+                        }
+                        else
+                        {
+                            Move();
+                        }
                     }
                 }
             }

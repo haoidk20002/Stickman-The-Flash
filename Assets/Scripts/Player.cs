@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using System.ComponentModel;
 
 
+
 public class Player : Character
 {
     [SerializeField] private UnitAttack dashAttack;
@@ -19,16 +20,16 @@ public class Player : Character
     private float currentTimer;
     private float multiplier = 10f;
     private float swipeMagnitude, playerWidth, direction;
-    private bool enemyDetected = false, isMoving = false, onGround = false;
+    private float idleAnimDelay = 0.5f;
+    [SerializeField] private float setIdleAnimDelay;
+    private bool enemyDetected = false;
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
     private Vector2 startPos, dashDestination, teleportDestination, swipeDirection;
     // get camera bonuds first, then lock player in bounds
-    private Rigidbody2D body;
+    //private Rigidbody2D body;
     private HealthBar healthBar;
     public LayerMask DetectLayerMask;
-
-    private LayerMask playerLayerMask;
 
     public GameObject bullet;
 
@@ -57,8 +58,7 @@ public class Player : Character
         clickPosition = transform.position;
         gameObject.tag = "Player";
         gameObject.layer = 3;
-        body = GetComponent<Rigidbody2D>();
-        Idle();
+
         GameManager.Instance.RegisterPlayer(this);
         hitboxOffset = new Vector2(6, 2.5f);
     }
@@ -97,10 +97,8 @@ public class Player : Character
     {
         cameraPos = Camera.main.transform.position; //cam's pos
 
-        minX = cameraPos.x - cameraBounds.x / 2f;
-        maxX = cameraPos.x + cameraBounds.x / 2f;
-        minY = cameraPos.y - cameraBounds.y / 2f;
-        maxY = cameraPos.y + cameraBounds.y / 2f;
+        minX = cameraPos.x - cameraBounds.x / 2f;   maxX = cameraPos.x + cameraBounds.x / 2f;
+        minY = cameraPos.y - cameraBounds.y / 2f;   maxY = cameraPos.y + cameraBounds.y / 2f;
 
         // // way 2 
         // minX = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0)).x;
@@ -123,7 +121,9 @@ public class Player : Character
             //Debug.Log("Hit");
             lastAttackedAt = Time.time;
             Attack();
+            isAttacking = true;
             Evt_MeleeAttack?.Invoke(damage);
+            isAttacking = false;
             Idle(0);
         }
     }
@@ -147,8 +147,7 @@ public class Player : Character
         }
         else
         {
-            oldPos = transform.position;
-            transform.position = target;
+            oldPos = transform.position;    transform.position = target;
             direction = transform.position.x - oldPos.x;
             Turn(direction);
         }
@@ -158,12 +157,13 @@ public class Player : Character
     private void Move()
     {
         transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
+        Vector2 verlocity = body.velocity;  verlocity.y = 0;
+        body.velocity = verlocity;
     }
 
     private void SwipeOrTeleport()
     {
         Vector2 endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //Debug.Log(endPos);
         swipeDirection = endPos - startPos;
         // Determine if the swipe was long enough (you can set a threshold)
         swipeMagnitude = swipeDirection.magnitude;
@@ -179,6 +179,7 @@ public class Player : Character
         {
             isMoving = false;
             Teleport();
+            idleAnimDelay = setIdleAnimDelay;
         }
     }
 
@@ -197,14 +198,13 @@ public class Player : Character
         }
         Turn(swipeDirection.x);
         dashDestination.x = transform.position.x + value * swipeMagnitude * multiplier;
+        //Debug.Break();
         DashAttack();
         Idle(0);
         //Debug.Log("Swipe Distance:" + swipeMagnitude + " Move Distance: " + swipeMagnitude);
     }
     private void DashAttack()
     {
-        //moveSpeed = multiplier * swipeMagnitude / timer;
-        //Debug.Log("MoveSpeed: " + moveSpeed);
         isMoving = true;
         PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
 
@@ -225,38 +225,30 @@ public class Player : Character
         bulletStartPos.y = transform.position.y;
     }
 
-    private bool CheckLanding()
-    {
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 6f, ~playerLayerMask);
-        Debug.DrawRay(transform.position, Vector2.down * 6f, Color.green);
-        if (hit.collider != null && hit.collider.CompareTag("Ground"))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-
     protected override void update2()
     {
+        //Debug.Log(body.velocity);
+        //Debug.Log(dashDestination);
+        // dashDestination doesn't change => body.velocity = 0 yet it is still falling
+        if (isFalling == false && onGround == true && idleAnimDelay > 0){
+            idleAnimDelay -= Time.deltaTime;
+        } else if (isFalling == false && onGround == true && idleAnimDelay < 0) {Idle();}
+        //
         CalculateBoundsLocation();
         GetPlayerStat();
-        // need a function here
         GetShootPosAndDirection();
-        //
         dashAttack.TakeTime(Time.deltaTime);
         if (isMoving == true)
         {
             Move();
+            isFalling = false;
+            isAttacking = true;
             currentTimer -= Time.deltaTime;
             //Debug.Log(currentTimer);
             if (currentTimer <= 0f)
             {
                 isMoving = false;
+                isAttacking = false;
                 basicAttackHitBox.enabled = false;
             }
         }
