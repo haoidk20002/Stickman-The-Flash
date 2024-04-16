@@ -257,6 +257,7 @@ MonoBehaviour:
   jumpAnimationName1: 1_/jump A
   jumpAnimationName2: 1_/jump B
   skeletonAnimation: {fileID: 3608664967636058157}
+  playing_anim: 
   health: 0
   damage: 2
   setMoveDelay: 0.5

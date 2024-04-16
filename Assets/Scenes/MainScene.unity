@@ -879,7 +879,7 @@ MonoBehaviour:
     enableBulletTime: 0
   moveSpeed: 100
   timer: 0.5
-  setIdleAnimDelay: 0.6
+  SetFloatingTime: 0.4
   DetectLayerMask:
     serializedVersion: 2
     m_Bits: 64

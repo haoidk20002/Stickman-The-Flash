@@ -146,6 +146,7 @@ public abstract class Character : MonoBehaviour
         {
             //Debug.Log("...");
             PlayAnimation(hurtAnimationName, 0f, false);
+            Debug.Log("Hurt");
             AddAnimation(idleAnimationName, true, 0);
         }
     }
@@ -201,12 +202,7 @@ public abstract class Character : MonoBehaviour
                 isFalling = true;
                 isJumping = false;
             }
-        } else if (onGround == true && isMoving == false && isAttacking == false)
-        {
-            Fall2();
-            isFalling = false;
         }
-        
     }
 
     protected bool CheckLanding() 

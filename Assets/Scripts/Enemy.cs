@@ -101,7 +101,6 @@ public class Enemy : Character
                     {
                         if (transform.position.x == playerLocation.x)
                         {
-                            //Debug.Log("Jump");
                             TriggerJump();
                         }
                         else
@@ -114,6 +113,7 @@ public class Enemy : Character
             // Attack
             else if (playerHealth.IsDead == false && playerInSight == true)
             {
+                
                 if (Time.time > lastAttackedAt + 0.5f)
                 {
                     Idle();
@@ -133,14 +133,24 @@ public class Enemy : Character
                         EmptyAttack();
                         lastAttackedAt = Time.time;
                     }
-                    playerInSight = false;
                     delayLeft = delay;
+                    playerInSight = false;
                 }
             }
         }
         else
         {
             Idle();
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Ground"))
+        {
+            isFalling = false;
+            Fall2();
+            Idle(0);
         }
     }
     // void OnDrawGizmosSelected()
