@@ -190,7 +190,7 @@ public abstract class Character : MonoBehaviour
     protected void ControlJumpingAnim()
     {// teleport then swipe: no falling anim (cause isFalling = true) when teleport => isFalling = true
         if (onGround == false){
-            if(body.velocity.y > 0 && isJumping == false /*&& isAttacking == false*/){
+            if(body.velocity.y > 0 && isJumping == false && isAttacking == false){
                 Jump1(); Jump2(0);
                 isJumping = true;
                 isFalling = false;
@@ -201,7 +201,7 @@ public abstract class Character : MonoBehaviour
                 isFalling = true;
                 isJumping = false;
             }
-        } else if (onGround == true && isMoving == false)
+        } else if (onGround == true && isMoving == false && isAttacking == false)
         {
             Fall2();
             isFalling = false;
