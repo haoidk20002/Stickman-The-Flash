@@ -34,7 +34,7 @@ public abstract class Character : MonoBehaviour
 
     protected int enemyLayerMask, groundLayerMask, playerLayerMask;
     // Check all state using boolean
-    protected bool isMoving = false, isAttacking = false, onGround = false, isJumping = false, isFalling = false;
+    protected bool isMoving = false, isAttacking = false, onGround = false, isJumping = false, isFalling = false, isDamaged = false;
     // need these functions: 
 
     public Action<int> Evt_MeleeAttack;
@@ -118,6 +118,11 @@ public abstract class Character : MonoBehaviour
         PlayAnimation(dieAnimationName, 0f, false);
     }
 
+    protected void Hurt()
+    {
+        PlayAnimation(hurtAnimationName, 0f, false);
+    }
+
     protected void EmptyAttack()
     {
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
@@ -133,6 +138,7 @@ public abstract class Character : MonoBehaviour
     }
     private void beingHit(int damage)
     {
+        isDamaged = true;
         playerHealth.TakeDamage(damage);
         //show damage pop up
         GameManager.Instance.ShowDamagePopUp(transform.position, damage.ToString());
@@ -145,9 +151,9 @@ public abstract class Character : MonoBehaviour
         else
         {
             //Debug.Log("...");
-            PlayAnimation(hurtAnimationName, 0f, false);
-            Debug.Log("Hurt");
-            AddAnimation(idleAnimationName, true, 0);
+            Hurt();
+            Debug.Log("hurt");
+            Idle(0);
         }
     }
     protected void Jump1()

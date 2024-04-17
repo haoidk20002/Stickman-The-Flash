@@ -12,7 +12,7 @@ public class Enemy : Character
     private float moveSpeed = 20f, jumpForce = 50f;
     private float direction;
     private float delay = 0.5f, delayLeft = 0f, radius = 4f;
-    private float moveDelay =-1f;
+    private float moveDelay = -1f, recoverTimer = 0.5f;
     [SerializeField] private float setMoveDelay;
 
     private bool playerInSight = false;
@@ -35,7 +35,7 @@ public class Enemy : Character
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
 
-        
+
     }
 
     protected override Character findTarget()
@@ -57,11 +57,11 @@ public class Enemy : Character
     private void Move()
     {
         isMoving = true;
-        Run();
         oldPos = transform.position;
         transform.position = Vector2.MoveTowards(transform.position, new Vector2(playerLocation.x, transform.position.y), moveSpeed * Time.deltaTime);
         newPos = transform.position;
         direction = newPos.x - oldPos.x;
+        Run();
         Turn(direction);
     }
 
@@ -78,7 +78,8 @@ public class Enemy : Character
         playerLocation = player.gameObject.transform.position;
         //Debug.Log(onGround);
 
-        if (body.velocity.y < 0){
+        if (body.velocity.y < 0)
+        {
             moveDelay = setMoveDelay;
         }
         if (player != null)
@@ -113,28 +114,41 @@ public class Enemy : Character
             // Attack
             else if (playerHealth.IsDead == false && playerInSight == true)
             {
-                
-                if (Time.time > lastAttackedAt + 0.5f)
-                {
-                    Idle();
+                Debug.Log("Seen");
+                if (isDamaged == true)
+                {   
+                    Hurt();
+                    recoverTimer -= Time.deltaTime;
+                    if (recoverTimer < 0)
+                    {
+                        recoverTimer = 0.5f;
+                        isDamaged = false;
+                    }
                 }
-                delayLeft -= Time.deltaTime;
-                if (delayLeft <= 0)
+                else
                 {
+                    if (Time.time > lastAttackedAt + 0.5f)
+                    {
+                        Idle();
+                    }
+                    delayLeft -= Time.deltaTime;
+                    if (delayLeft <= 0)
+                    {
 
-                    if (inRange() == true)
-                    {
-                        Attack();
-                        Evt_MeleeAttack?.Invoke(damage);
-                        lastAttackedAt = Time.time;
+                        if (inRange() == true)
+                        {
+                            Attack();
+                            Evt_MeleeAttack?.Invoke(damage);
+                            lastAttackedAt = Time.time;
+                        }
+                        else
+                        {
+                            EmptyAttack();
+                            lastAttackedAt = Time.time;
+                        }
+                        delayLeft = delay;
+                        playerInSight = false;
                     }
-                    else
-                    {
-                        EmptyAttack();
-                        lastAttackedAt = Time.time;
-                    }
-                    delayLeft = delay;
-                    playerInSight = false;
                 }
             }
         }
