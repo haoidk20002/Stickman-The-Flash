@@ -66,7 +66,7 @@ public class StillEnemy : Character
     private void TriggerJump()
     {
         body.velocity = new Vector2(body.velocity.x, jumpForce);
-        Jump1();
+        Jump();
     }
     private bool CheckLanding()
     {
@@ -129,7 +129,7 @@ public class StillEnemy : Character
                     }
                     else
                     {
-                        EmptyAttack();
+                        //EmptyAttack();
                         lastAttackedAt = Time.time;
                     }
                     delayLeft = delay;

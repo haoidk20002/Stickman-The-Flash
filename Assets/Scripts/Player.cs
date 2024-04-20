@@ -10,6 +10,7 @@ using System.ComponentModel;
 
 public class Player : Character
 {
+    [Header("Dash Attack")]
     [SerializeField] private UnitAttack dashAttack;
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.5f;
     private float moveDistance = 5f, ratio = 0;
@@ -48,9 +49,6 @@ public class Player : Character
         SettingMainCharacterValue2();
         GetCameraBounds();
         bulletStartPos = transform.position;
-        // Vector3 a = new Vector3(3,4,0);
-        // Debug.Log(a.magnitude + " / " + a.normalized.magnitude);
-        // Debug.Log(a.normalized);
     }
 
     private void SettingMainCharacterValue1()
@@ -71,7 +69,7 @@ public class Player : Character
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         currentTimer = timer;
-        playerLayerMask = 1 << LayerMask.NameToLayer("Enemy");
+        //playerLayerMask = 1 << LayerMask.NameToLayer("Enemy");
     }
 
     private void GetCameraBounds() //camera's bounds depending on aspect ratio
@@ -123,7 +121,6 @@ public class Player : Character
             lastAttackedAt = Time.time;
             Attack();
             Evt_MeleeAttack?.Invoke(damage);
-            Idle(0);
         }
     }
     private void Teleport()
@@ -200,17 +197,18 @@ public class Player : Character
         dashDestination.x = transform.position.x + value * swipeMagnitude * multiplier;
         //Debug.Break();
         DashAttack();
-        Idle(0);
+
         //Debug.Log("Swipe Distance:" + swipeMagnitude + " Move Distance: " + swipeMagnitude);
     }
     private void DashAttack()
     {
         isMoving = true;
+        isAttacking = true;
+        attackAnimTime = dashAttack.AttackTime;
         PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-
         dashAttack.Trigger();
         Evt_MeleeAttack?.Invoke((int)damage / 2);
-
+        AddAnimation(idleAnimationName, true, 0f);
     }
     // may be set as protected in Character class
     private void GetShootPosAndDirection()
@@ -228,73 +226,62 @@ public class Player : Character
     protected override void update2()
     {
         //Debug.Log(isFalling);
-        if (floatingTime > 0)
-        {
-            isFalling = false;
-            isAttacking = true;
-            Vector2 verlocity = body.velocity; verlocity.y = 0;
-            body.velocity = verlocity;
-            floatingTime -= Time.deltaTime;
-        } else isAttacking = false;
+        // if (floatingTime > 0)
+        // {
+        //     isAttacking = true;
+        //     Vector2 verlocity = body.velocity; verlocity.y = 0;
+        //     body.velocity = verlocity;
+        //     floatingTime -= Time.deltaTime;
+        // } else isAttacking = false;
 
         CalculateBoundsLocation();
         GetPlayerStat();
         GetShootPosAndDirection();
         dashAttack.TakeTime(Time.deltaTime);
-        if (isMoving == true)
+        if (playerHealth.IsDead == false)
         {
-            Move();
-            isFalling = false;
-            isAttacking = true;
-            currentTimer -= Time.deltaTime;
-            //Debug.Log(currentTimer);
-            if (currentTimer <= 0f)
+            if (isMoving == true)
             {
-                isMoving = false;
-                isAttacking = false;
-                basicAttackHitBox.enabled = false;
+                Move();
+                currentTimer -= Time.deltaTime;
+                if (currentTimer <= 0f)
+                {
+                    isMoving = false;
+                    isAttacking = false;
+                    basicAttackHitBox.enabled = false;
+                }
             }
-        }
-        else
-        {
-            currentTimer = timer;
-        }
-        // Teleport: Click to desired destination and the player teleports after releasing click
-        // Move: Click, swipe, then release to move according to the swipe direction
-        if (Input.GetMouseButtonDown(0))
-        {
-            // target: actual destination, click_position:  desired destination
-            target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            // swipe
-            startPos = target; // Detect the start of the swipe
-        }
-        if (Input.GetMouseButtonUp(0))
-        {
-            SwipeOrTeleport();
-        }
-        // Track Player's Health
-        ratio = playerHealth.RatioHealth;
-        healthBar.UpdateHealthBar(ratio);
+            else
+            {
+                currentTimer = timer;
+            }
+            // Teleport: Click to desired destination and the player teleports after releasing click
+            // Move: Click, swipe, then release to move according to the swipe direction
+            if (Input.GetMouseButtonDown(0))
+            {
+                // target: actual destination, click_position:  desired destination
+                target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                // swipe
+                startPos = target; // Detect the start of the swipe
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                SwipeOrTeleport();
+            }
+            // Track Player's Health
+            ratio = playerHealth.RatioHealth;
+            healthBar.UpdateHealthBar(ratio);
 
-        // lock player in camera
-        Vector3 clampedPosition = transform.position;
-        clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
-        transform.position = clampedPosition;
+            // lock player in camera
+            Vector3 clampedPosition = transform.position;
+            clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
+            transform.position = clampedPosition;
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Debug.Log("pressed");
-            Instantiate(bullet, bulletStartPos, bullet.transform.rotation);
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        if (other.gameObject.CompareTag("Ground"))
-        {
-            isFalling = false;
-            Fall2();
-            Idle(0);
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Debug.Log("pressed");
+                Instantiate(bullet, bulletStartPos, bullet.transform.rotation);
+            }
         }
     }
 }

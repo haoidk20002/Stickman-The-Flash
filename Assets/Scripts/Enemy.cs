@@ -19,12 +19,8 @@ public class Enemy : Character
     private float lastAttackedAt = 0;
     private Character player;
     private Vector2 playerLocation, oldPos, newPos;
-    //Rigidbody2D body;
 
-
-
-
-    private void Awake()
+    private void Awake() // setting stats
     {
         health = 10;
         damage = 1;
@@ -38,13 +34,13 @@ public class Enemy : Character
 
     }
 
-    protected override Character findTarget()
+    protected override Character findTarget() // following player's pos
     {
         var main_player = GameManager.Instance.MainPlayer;
         return main_player;
     }
 
-    private bool inRange()
+    private bool inRange() // check if the player is in enemy's range
     {
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, playerLayerMask);
         if (hitColliders.Length > 0)
@@ -56,16 +52,14 @@ public class Enemy : Character
 
     private void Move()
     {
+        Run();
         isMoving = true;
         oldPos = transform.position;
         transform.position = Vector2.MoveTowards(transform.position, new Vector2(playerLocation.x, transform.position.y), moveSpeed * Time.deltaTime);
         newPos = transform.position;
         direction = newPos.x - oldPos.x;
-        Run();
         Turn(direction);
     }
-
-
 
     private void TriggerJump()
     {
@@ -76,7 +70,6 @@ public class Enemy : Character
     {
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
-        //Debug.Log(onGround);
 
         if (body.velocity.y < 0)
         {
@@ -84,87 +77,56 @@ public class Enemy : Character
         }
         if (player != null)
         {
-            // Run or Jump
-            if (playerHealth.IsDead == false && playerInSight == false)
+            if (playerHealth.IsDead == false)
             {
-                // Move and Jump
-                // check if player is in attack range
-                playerInSight = inRange();
-                // only move or jump when attack anim finished and is_jumping false
-                if (Time.time > lastAttackedAt + 0.5f && onGround == true)
+                if (playerInSight == false)
                 {
-                    if (moveDelay > 0)
+                    // Run or Jump
+                    playerInSight = inRange();  // check if player is in attack range
+                    // only move or jump when attack anim finished and is_jumping false
+                    if (Time.time > lastAttackedAt + 0.5f  && isGrounded == true)
                     {
-                        moveDelay -= Time.deltaTime;
-                        Debug.Log(moveDelay);
-                    }
-                    else
-                    {
-                        if (transform.position.x == playerLocation.x)
+                        if (moveDelay > 0)
                         {
-                            TriggerJump();
+                            moveDelay -= Time.deltaTime;
+                            Debug.Log(moveDelay);
                         }
                         else
                         {
-                            Move();
+                            if (Mathf.Abs(transform.position.x - playerLocation.x) < 2)
+                            {
+                                TriggerJump();
+                            }
+                            else
+                            {
+                                Move();
+                            }
                         }
-                    }
-                }
-            }
-            // Attack
-            else if (playerHealth.IsDead == false && playerInSight == true)
-            {
-                Debug.Log("Seen");
-                if (isDamaged == true)
-                {   
-                    Hurt();
-                    recoverTimer -= Time.deltaTime;
-                    if (recoverTimer < 0)
-                    {
-                        recoverTimer = 0.5f;
-                        isDamaged = false;
                     }
                 }
                 else
                 {
-                    if (Time.time > lastAttackedAt + 0.5f)
-                    {
-                        Idle();
-                    }
+                    // Attack
+                    // Damaged then idle
+                    // 0.5s cooldown before continue attacking
+                    Debug.Log("Idle");
+                    Idle();
                     delayLeft -= Time.deltaTime;
                     if (delayLeft <= 0)
                     {
-
-                        if (inRange() == true)
-                        {
-                            Attack();
-                            Evt_MeleeAttack?.Invoke(damage);
-                            lastAttackedAt = Time.time;
-                        }
-                        else
-                        {
-                            EmptyAttack();
-                            lastAttackedAt = Time.time;
-                        }
+                        Attack();
+                        Evt_MeleeAttack?.Invoke(damage);
+                        lastAttackedAt = Time.time;
                         delayLeft = delay;
                         playerInSight = false;
                     }
+                    // }
                 }
             }
         }
         else
         {
             Idle();
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        if (other.gameObject.CompareTag("Ground"))
-        {
-            isFalling = false;
-            Fall2();
-            Idle(0);
         }
     }
     // void OnDrawGizmosSelected()

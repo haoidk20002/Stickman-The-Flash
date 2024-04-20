@@ -249,15 +249,15 @@ MonoBehaviour:
     attackTime: 0.5
     enableBulletTime: 0.35
   basicAttackHitBox: {fileID: 7839990486623856305}
-  fallAnimationName1: 1_/jump C
-  fallAnimationName2: 1_/jump D
+  fallAnimationName: 1_/jump C
+  landAnimationName: 1_/jump D
   runAnimationName: 1_/run
   hurtAnimationName: 1_/hurt center
   dieAnimationName: 1_/die A
   jumpAnimationName1: 1_/jump A
   jumpAnimationName2: 1_/jump B
   skeletonAnimation: {fileID: 3608664967636058157}
-  playing_anim: 
+  playingAnim: 
   health: 0
   damage: 2
   setMoveDelay: 0.5
