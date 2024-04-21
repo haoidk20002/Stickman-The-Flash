@@ -8,58 +8,45 @@ public class InfiniteBackgroundAndPlatform : MonoBehaviour
     public Camera mainCamera;
 
     // Prefab for generating background scenes
-    public GameObject backgroundPrefab;
+    public GameObject[] backgroundPrefab;
 
     // Distance from the camera at which to spawn new background scenes
-    public float spawnDistance = 50f;
+    [SerializeField] private float spawnDistance = 25f;
 
     // Distance from the camera at which to delete background scenes
-    public float deletionDistance = 100f;
+    [SerializeField] private float deletionDistance = 25f;
 
-    // List to store spawned background scenes
-    private List<GameObject> backgroundScenes = new List<GameObject>();
+    private Vector3 cameraBounds;
+    private float minX, maxX;
 
-    // Start is called before the first frame update
-    void Start()
+    private void GetCameraBounds() //camera's bounds depending on aspect ratio
     {
-        //SpawnInitialBackgrounds();
+        var leftBounds = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0));
+        var rightBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0));
+        cameraBounds = rightBounds - leftBounds;
+
+        //Debug.Log("Camera Bounds: " + cameraBounds);
     }
 
-    // Update is called once per frame
-    /*void Update()
+    private void CalculateBoundsLocation()
     {
-        // Check if camera is close to the boundary for spawning new background scenes
-        if (Vector3.Distance(mainCamera.transform.position, backgroundScenes[backgroundScenes.Count - 1].transform.position) < spawnDistance)
-        {
-            SpawnBackground();
-        }
-
-        // Delete background scenes that are far from the camera
-        for (int i = 0; i < backgroundScenes.Count; i++)
-        {
-            if (Vector3.Distance(mainCamera.transform.position, backgroundScenes[i].transform.position) > deletionDistance)
-            {
-                Destroy(backgroundScenes[i]);
-                backgroundScenes.RemoveAt(i);
-                i--; // Decrement i to account for removed item
-            }
-        }
-    }*/
-
-    // Spawn initial background scenes to fill the starting area
-    void SpawnInitialBackgrounds()
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            SpawnBackground();
-        }
+        minX = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0)).x;
+        maxX = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0)).x;
     }
 
-    // Spawn a new background scene
-    void SpawnBackground()
-    {
-        Vector3 spawnPosition = backgroundScenes.Count == 0 ? Vector3.zero : backgroundScenes[backgroundScenes.Count - 1].transform.position + Vector3.forward * spawnDistance;
-        GameObject newBackground = Instantiate(backgroundPrefab, spawnPosition, Quaternion.identity);
-        backgroundScenes.Add(newBackground);
+    void Start(){
+        // Camera boundaries
+        GetCameraBounds();
+    }
+    void LateUpdate(){
+        CalculateBoundsLocation();
+        // if camera's bound is near the background boundaries, the part of the background being far from camera is move the location the connects
+        // to the one being near the camera
+        // if (transform.position.x < 25){
+
+        // }
+        // if(){
+
+        // }
     }
 }

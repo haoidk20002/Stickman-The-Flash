@@ -80,12 +80,12 @@ public class Player : Character
 
         cameraBounds = new Vector2(width, height);
 
-        // way 2 (no need calculate bound location)
+        // way 2
         // var leftBounds = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0));
         // var rightBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0));
         // cameraBounds = rightBounds - leftBounds;
 
-        // way 3 (no need calculate bound location)
+        // way 3
         // var leftBounds = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0));
         // var rightBounds = Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 0));
         // cameraBounds = rightBounds - leftBounds;
