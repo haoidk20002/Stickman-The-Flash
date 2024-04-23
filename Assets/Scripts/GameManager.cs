@@ -5,15 +5,24 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager instance; // Singleton instance
     private int score;
-    private int enemiesCount, enemiesSpawnNumber = 0, waveNumber;
+    private int enemiesCount, enemiesSpawnNumber = 0, waveNumber = 4;
     private bool spawningWave = false;
+
+    private float minX,maxX;
     public Character MainPlayer
     {
         get;
         private set;
 
     } // Reference to the player
-    public GameObject enemyPrefab;  // Prefab of the enemy to spawn
+    public Character Boss
+    {
+        get;
+        private set;
+
+    } // Reference to the boss
+
+    public GameObject[] enemyPrefab;  // Prefab of the enemy to spawn
     // Getter for the singleton instance
     public static GameManager Instance
     {
@@ -47,6 +56,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public GameObject[] HealthBars;
+
     private void Start()
     {
 
@@ -54,22 +65,37 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX);
+        // if player or boss dies, its respective health bar toggles off
+        // Toggle on when it appears.
+        if (MainPlayer == null)
+        {
+            HealthBars[0].SetActive(false);
+        } else HealthBars[0].SetActive(true);
+        if (Boss == null)
+        {
+            HealthBars[1].SetActive(false);
+        } else {HealthBars[1].SetActive(true);}
         // get enemy count
         enemiesCount = FindObjectsOfType<Enemy>().Length;
         //Debug.Log(enemiesCount);
-        // if enemy count < 0 then spawn next wave
-        // if (enemiesCount == 0 && !spawningWave)
-        // {
-        //     waveNumber++;
-        //     enemiesSpawnNumber++;
-        //     StartCoroutine(SpawnEnemiesWave());
-        // }
+        //if enemy count < 0 then spawn next wave
+        if (enemiesCount == 0 && !spawningWave)
+        {
+            waveNumber++;
+            enemiesSpawnNumber++;
+            StartCoroutine(SpawnEnemiesWave());
+        }
         //StartCoroutine(SpawnEnemiesWave());
     }
 
     public void RegisterPlayer(Character player)
     {
         MainPlayer = player;
+    }
+    public void RegisterBoss(Character boss)
+    {
+        Boss = boss;
     }
 
     // Method to spawn an enemy
@@ -85,13 +111,13 @@ public class GameManager : MonoBehaviour
         {
             if (waveNumber % 5 == 0)
             {
-                Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
+                Instantiate(enemyPrefab[1], GetRandomSpawnPosition(), Quaternion.identity);
                 enemiesSpawnNumber = 0;
                 break;
             } //boss every 5 wave
             else
             {
-                Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
+                Instantiate(enemyPrefab[0], GetRandomSpawnPosition(), Quaternion.identity);
                 yield return new WaitForSeconds(0.5f);
             }
             // Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
@@ -104,7 +130,7 @@ public class GameManager : MonoBehaviour
     Vector2 GetRandomSpawnPosition()
     {
         // Return a random position within some bounds (adjust to your needs)
-        return new Vector2(Random.Range(-50f, 50f), Random.Range(0f, 30f));
+        return new Vector2(Random.Range(minX, maxX), Random.Range(0f, 30f));
     }
     // Method to update score
     public void UpdateScore(int amount)

@@ -3,7 +3,6 @@ using Spine.Unity;
 using Unity.Collections;
 using UnityEditor.U2D.Animation;
 using System;
-using Unity.VisualScripting;
 using System.ComponentModel;
 
 
@@ -12,17 +11,17 @@ public class Player : Character
 {
     [Header("Dash Attack")]
     [SerializeField] private UnitAttack dashAttack;
-    private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.5f;
-    private float moveDistance = 5f, ratio = 0;
+    private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.25f;
+    private float moveDistance = 5f;
     [SerializeField] private float moveSpeed = 50f;
     private float attackRange = 6f, minSwipeDistance = 8f;
-    private float minX, maxX, minY, maxY;
+    private float minX, maxX;
     [SerializeField] private float timer;
     private float currentTimer;
     private float multiplier = 10f;
     private float swipeMagnitude, playerWidth, direction;
-    [SerializeField] private float SetFloatingTime;
-    private float floatingTime;
+    [SerializeField] private float SetInvincibilityTime;
+    private float invincibilityTime;
     private bool enemyDetected = false;
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
@@ -30,12 +29,12 @@ public class Player : Character
 
     // get camera bonuds first, then lock player in bounds
     //private Rigidbody2D body;
-    private HealthBar healthBar;
     public LayerMask DetectLayerMask;
 
     public GameObject bullet;
 
     private Vector3 bulletStartPos;
+
 
 
     private void Awake()
@@ -47,7 +46,6 @@ public class Player : Character
     {
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
-        GetCameraBounds();
         bulletStartPos = transform.position;
     }
 
@@ -57,7 +55,7 @@ public class Player : Character
         clickPosition = transform.position;
         gameObject.tag = "Player";
         gameObject.layer = 3;
-
+        //GetCameraBounds();
         GameManager.Instance.RegisterPlayer(this);
         hitboxOffset = new Vector2(6, 2.5f);
     }
@@ -97,7 +95,7 @@ public class Player : Character
         cameraPos = Camera.main.transform.position; //cam's pos
 
         minX = cameraPos.x - cameraBounds.x / 2f; maxX = cameraPos.x + cameraBounds.x / 2f;
-        minY = cameraPos.y - cameraBounds.y / 2f; maxY = cameraPos.y + cameraBounds.y / 2f;
+
 
         // // way 2 
         // minX = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0)).x;
@@ -126,16 +124,14 @@ public class Player : Character
     private void Teleport()
     {
         var enemies = findTarget();
-        floatingTime = SetFloatingTime;
+
         // if enemy is found, player teleports close to it then attack, else teleport to the clicked point
         if (enemies != null)
         {
             var enemy = enemies.gameObject.transform.position;
-
             teleportDestination = target;
             oldPos = transform.position;
-            transform.position = target;
-            direction = transform.position.x - oldPos.x; // calculate direction
+            direction = teleportDestination.x - oldPos.x;
             Turn(direction);
             if (transform.position.x < enemy.x) { teleportDestination.x = enemy.x - attackRange; }
             else { teleportDestination.x = enemy.x + attackRange; }
@@ -225,16 +221,26 @@ public class Player : Character
 
     protected override void update2()
     {
-        //Debug.Log(isFalling);
-        // if (floatingTime > 0)
-        // {
-        //     isAttacking = true;
-        //     Vector2 verlocity = body.velocity; verlocity.y = 0;
-        //     body.velocity = verlocity;
-        //     floatingTime -= Time.deltaTime;
-        // } else isAttacking = false;
+        // if got hit, immune to damage for duration
+        if (isDamaged){
+            isImmune = true;
+        }
+        if(isImmune){
+            invincibilityTime -= Time.deltaTime;
+            //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(invincibleColor);
+            //Physics2D.IgnoreLayerCollision(3, 11, true);
+            // block beingHit() method
 
-        CalculateBoundsLocation();
+            if (invincibilityTime < 0){
+                
+                isImmune = false;
+                //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(originalColor);
+                //Physics2D.IgnoreLayerCollision(3, 11, false);
+                invincibilityTime = SetInvincibilityTime;
+            }
+        }
+        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX);
+        //CalculateBoundsLocation();
         GetPlayerStat();
         GetShootPosAndDirection();
         dashAttack.TakeTime(Time.deltaTime);
@@ -277,11 +283,11 @@ public class Player : Character
             clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
             transform.position = clampedPosition;
 
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                Debug.Log("pressed");
-                Instantiate(bullet, bulletStartPos, bullet.transform.rotation);
-            }
+            // if (Input.GetKeyDown(KeyCode.Space))
+            // {
+            //     Debug.Log("pressed");
+            //     Instantiate(bullet, bulletStartPos, bullet.transform.rotation);
+            // }
         }
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 
 public class MeleeBullet : MonoBehaviour
-{   //public int damage = 2;
+{   
     private int damage;
 
     public Character character;

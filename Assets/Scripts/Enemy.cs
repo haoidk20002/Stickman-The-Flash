@@ -9,18 +9,22 @@ using Spine.Unity.Examples;
 
 public class Enemy : Character
 {
-    private float moveSpeed = 20f, jumpForce = 50f;
-    private float direction;
-    private float delay = 0.5f, delayLeft = 0f, radius = 4f;
-    private float moveDelay = -1f, recoverTimer = 0.5f;
-    [SerializeField] private float setMoveDelay;
+    protected float moveSpeed = 20f, jumpForce = 50f;
+    protected float direction;
+    protected float delay = 0.5f, delayLeft = 0f;
+    [SerializeField] protected float detectRange = 4.5f;
+    protected float moveDelay = -1f, recoverTimer = 0.5f;
+    [SerializeField] protected float setMoveDelay;
 
-    private bool playerInSight = false;
-    private float lastAttackedAt = 0;
-    private Character player;
-    private Vector2 playerLocation, oldPos, newPos;
+    protected bool playerInSight = false;
+    protected float lastAttackedAt = 0;
+    protected Character player;
+    protected Vector2 playerLocation, oldPos, newPos;
 
-    private void Awake() // setting stats
+    protected float playerVerticalLocation;
+
+
+    protected void Awake() // setting stats
     {
         health = 10;
         damage = 1;
@@ -40,17 +44,13 @@ public class Enemy : Character
         return main_player;
     }
 
-    private bool inRange() // check if the player is in enemy's range
+    protected bool inRange() // check if the player is in enemy's range
     {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, radius, playerLayerMask);
-        if (hitColliders.Length > 0)
-        {
-            return true;
-        }
-        else return false;
+        RaycastHit2D hitColliders = Physics2D.Raycast(transform.position, directionSign* Vector2.right, detectRange, playerLayerMask);
+        return hitColliders;
     }
 
-    private void Move()
+    protected void Move()
     {
         Run();
         isMoving = true;
@@ -61,15 +61,18 @@ public class Enemy : Character
         Turn(direction);
     }
 
-    private void TriggerJump()
+    protected void TriggerJump()
     {
         isMoving = false;
+        isJumping =true;
         body.velocity = new Vector2(body.velocity.x, jumpForce);
+        Debug.Log("Jump force: " + body.velocity.y);
     }
     protected override void update2()
     {
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
+
 
         if (body.velocity.y < 0)
         {
@@ -79,48 +82,50 @@ public class Enemy : Character
         {
             if (playerHealth.IsDead == false)
             {
-                if (playerInSight == false)
+                if (!isDamaged) // when damaged can't do anything until the damaged anim is inactive
                 {
-                    // Run or Jump
-                    playerInSight = inRange();  // check if player is in attack range
-                    // only move or jump when attack anim finished and is_jumping false
-                    if (Time.time > lastAttackedAt + 0.5f  && isGrounded == true)
+                    if (playerInSight == false)
                     {
-                        if (moveDelay > 0)
+                        // Run or Jump
+                        playerInSight = inRange();  // check if player is in attack range
+                        // only move or jump when attack anim finished and is_jumping false
+                        if (Time.time > lastAttackedAt + 0.5f && isGrounded == true)
                         {
-                            moveDelay -= Time.deltaTime;
-                            Debug.Log(moveDelay);
-                        }
-                        else
-                        {
-                            if (Mathf.Abs(transform.position.x - playerLocation.x) < 2)
+                            if (moveDelay > 0)
                             {
-                                TriggerJump();
+                                moveDelay -= Time.deltaTime;
+                                Debug.Log(moveDelay);
                             }
                             else
                             {
-                                Move();
+                                if (Mathf.Abs(transform.position.x - playerLocation.x) < 3f && (playerLocation.y - transform.position.y > 8f) && isJumping == false) // change this jump condition
+                                {// TriggerJump called more than once
+                                    TriggerJump();
+                                }
+                                else
+                                {
+                                    Move();
+                                }
                             }
                         }
                     }
-                }
-                else
-                {
-                    // Attack
-                    // Damaged then idle
-                    // 0.5s cooldown before continue attacking
-                    Debug.Log("Idle");
-                    Idle();
-                    delayLeft -= Time.deltaTime;
-                    if (delayLeft <= 0)
+                    else
                     {
-                        Attack();
-                        Evt_MeleeAttack?.Invoke(damage);
-                        lastAttackedAt = Time.time;
-                        delayLeft = delay;
-                        playerInSight = false;
+                        // Attack
+                        // Damaged then idle
+                        // 0.5s cooldown before continue attacking
+                        Idle();
+                        delayLeft -= Time.deltaTime;
+                        if (delayLeft <= 0)
+                        {
+                            Attack();
+                            Evt_MeleeAttack?.Invoke(damage);
+                            lastAttackedAt = Time.time;
+                            delayLeft = delay;
+                            playerInSight = false;
+                        }
+                        // }
                     }
-                    // }
                 }
             }
         }
@@ -129,11 +134,12 @@ public class Enemy : Character
             Idle();
         }
     }
-    // void OnDrawGizmosSelected()
-    // {
-    //     Gizmos.color = Color.yellow;
-    //     Gizmos.DrawWireSphere(transform.position, radius);
-    // }
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange,transform.position.y,transform.position.z));
+        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange,transform.position.y,transform.position.z));
+    }
 }
 
 

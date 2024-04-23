@@ -34,20 +34,30 @@ public abstract class Character : MonoBehaviour
 
     // Check all state using boolean
     protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false;
+    protected int directionSign;
     protected float damagedAnimTime;
     [SerializeField] protected float setdamagedAnimTime = 0.5f;
+
+    protected float ratio;
+    protected HealthBar healthBar;
 
     protected float attackAnimTime;
 
     protected bool wasGrounded, isGrounded;
+    protected bool isImmune = false;
 
     public Action<int> Evt_MeleeAttack;
     public Action<Character, int> Evt_ShootingAttack;
     protected Rigidbody2D body;
 
-    protected BoxCollider2D characterHitBox;
+    protected BoxCollider2D characterHurtBox;
     protected Vector2 offset;
     protected Vector3 offset3D;
+
+    [SerializeField] protected string flashColor;
+    [SerializeField] protected string invincibleColor;
+    protected string originalColor; //skeleton animation's initial color
+
 
 
 
@@ -57,27 +67,26 @@ public abstract class Character : MonoBehaviour
 
     void Start()
     {
-        body = GetComponent<Rigidbody2D>();
-        playerHealth.Init(health);
-        basicAttack.Init();
+        originalColor = gameObject.GetComponentInChildren<SkeletonAnimation>().initialSkinName;
+
+        Debug.Log("Color: " + originalColor + "Flash Color: " + flashColor); // get inital color
+        body = GetComponent<Rigidbody2D>(); // get character's Rigidbody
+        playerHealth.Init(health); // Initialize HP
+        basicAttack.Init(); // Initialize Basic Attack Hitbox
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         basicAttackHitBox.OnHit += DealDmg;
-
+        // Specifying layer masks
         enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
         groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
         playerLayerMask = 1 << LayerMask.NameToLayer("Player");
-
-        characterHitBox = GetComponent<BoxCollider2D>();
-        offset = characterHitBox.offset; offset3D = offset; offset3D.x = 0;
+        // Setting Hurtbox's offset
+        characterHurtBox = GetComponent<BoxCollider2D>();
+        offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
         start2();
     }
     protected virtual void start2() { }
     protected virtual void update2() { }
 
-    protected void Rotate(float degree)
-    {
-        transform.Rotate(0f, degree, 0f);
-    }
     protected void PlayAnimation(string name, float durationInSeconds, bool isLoop)
     {
         if (name == playingAnim) return;
@@ -110,10 +119,12 @@ public abstract class Character : MonoBehaviour
         attackAnimTime = basicAttack.AttackTime;
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
         basicAttack.Trigger();
+        Debug.Log("Triggered");
         AddAnimation(idleAnimationName, true, 0f);
     }
     protected void Turn(float direction)
     {
+        directionSign = direction < 0 ? -1 : 1;
         transform.rotation = Quaternion.Euler(0, direction < 0 ? -180 : 0, 0);
     }
     protected void Run()
@@ -125,21 +136,20 @@ public abstract class Character : MonoBehaviour
     }
     protected void Idle()
     {
-        if(isDamaged == false){
-            PlayAnimation(idleAnimationName, 0f, true);
-        }
-        //PlayAnimation(idleAnimationName, 0f, true);
+        // if(isDamaged == false){
+        //     PlayAnimation(idleAnimationName, 0f, true);
+        // }
+        PlayAnimation(idleAnimationName, 0f, true);
     }
     protected void Die()
     {
-        Debug.Break();
         PlayAnimation(dieAnimationName, 0f, false);
         Destroy(gameObject, 1f);
     }
 
     protected void Hurt()
     {
-        Debug.Log("Damaged");
+        //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(flashColor);
         PlayAnimation(hurtAnimationName, 0f, false);
         AddAnimation(idleAnimationName, true, 0);
     }
@@ -152,6 +162,8 @@ public abstract class Character : MonoBehaviour
     }
     private void beingHit(int damage)
     {
+        if (isImmune) return;
+        
         isDamaged = true;
         playerHealth.TakeDamage(damage);
         //show damage pop up
@@ -159,7 +171,6 @@ public abstract class Character : MonoBehaviour
         // different anim whether character is dead or not
         if (playerHealth.IsDead)
         {
-            Debug.Break();
             Die();
         }
         else
@@ -192,20 +203,22 @@ public abstract class Character : MonoBehaviour
             AddAnimation(idleAnimationName, true, 0);
         }
     }
-    void Update()
+    protected void SettingDamagedEffect()
     {
-        basicAttack.TakeTime(Time.deltaTime);
-
-        // Controlling isDamaged
         if (isDamaged == true)
         {
             damagedAnimTime -= Time.deltaTime;
             if (damagedAnimTime < 0)
             {
+                //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(originalColor);
                 damagedAnimTime = setdamagedAnimTime;
                 isDamaged = false;
             }
         }
+    }
+    void Update()
+    {
+        basicAttack.TakeTime(Time.deltaTime);
 
         if (isAttacking == true)
         {
@@ -215,6 +228,8 @@ public abstract class Character : MonoBehaviour
                 isAttacking = false;
             }
         }
+        // Controlling isDamaged
+        SettingDamagedEffect();
         update2();
     }
     void FixedUpdate()
@@ -222,11 +237,12 @@ public abstract class Character : MonoBehaviour
         // The old frame data (old isGounded value) is stored in wasGrounded
         wasGrounded = isGrounded;
         // The new frame data is collected using raycast and put in isGrounded
-        RaycastHit2D hit = Physics2D.Raycast(transform.position + offset3D, Vector2.down, characterHitBox.size.y / 2 + 0.1f, groundLayerMask);
-        Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset3D.x, transform.position.y + offset3D.y - characterHitBox.size.y / 2), Color.green);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position + offset3D, Vector2.down, characterHurtBox.size.y / 2 + 0.1f, groundLayerMask);
+        Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset3D.x, transform.position.y + offset3D.y - characterHurtBox.size.y / 2), Color.green);
         if (hit.collider != null)
         {
             isGrounded = true;
+            isJumping = false;
         }
         else isGrounded = false;
         // Land not called during attack and damaged

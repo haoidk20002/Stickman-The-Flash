@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BackgroundManager : MonoBehaviour
 {
     public GameObject background;
+
     private float minX, maxX;
     [SerializeField] private float movePoint;
     private Vector3 desiredPos;
@@ -12,18 +11,12 @@ public class BackgroundManager : MonoBehaviour
     {
         desiredPos = transform.position;
     }
-
-    void GetCameraBoundsLocation()
-    {
-        minX = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0)).x;
-        maxX = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0)).x;
-        Debug.Log("MinX: " + minX + " MaxX: " + maxX);
-    }
-
     // Update is called once per frame
     void Update()
     {
-        GetCameraBoundsLocation();
+        // more convenient way (Use a static method from static class)
+        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX);
+        // GetCameraBoundsLocation();
         if(maxX > transform.position.x + movePoint){
             desiredPos.x += movePoint;
             transform.position = desiredPos;
@@ -32,5 +25,6 @@ public class BackgroundManager : MonoBehaviour
             desiredPos.x -= movePoint;
             transform.position = desiredPos;
         }
+
     }
 }
