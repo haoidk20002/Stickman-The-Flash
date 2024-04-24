@@ -14,9 +14,13 @@ public class MeleeBullet : MonoBehaviour
     {
         damage = value;
     }
-    void Awake()
+    private void Awake()
     {
         character.Evt_MeleeAttack += HandleDamage;
+    }
+    private void ApplyKnockback()
+    {
+        
     }
 
     public Action<Character, int> OnHit;

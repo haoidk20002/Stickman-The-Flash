@@ -33,7 +33,7 @@ public abstract class Character : MonoBehaviour
     protected int enemyLayerMask, groundLayerMask, playerLayerMask;
 
     // Check all state using boolean
-    protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false;
+    protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false, isFalling = false;
     protected int directionSign;
     protected float damagedAnimTime;
     [SerializeField] protected float setdamagedAnimTime = 0.5f;
@@ -42,7 +42,8 @@ public abstract class Character : MonoBehaviour
     protected HealthBar healthBar;
 
     protected float attackAnimTime;
-
+    protected Vector3 groundPos, backgroundPos, groundLocalPos;
+    protected float groundYPos;
     protected bool wasGrounded, isGrounded;
     protected bool isImmune = false;
 
@@ -69,7 +70,7 @@ public abstract class Character : MonoBehaviour
     {
         originalColor = gameObject.GetComponentInChildren<SkeletonAnimation>().initialSkinName;
 
-        Debug.Log("Color: " + originalColor + "Flash Color: " + flashColor); // get inital color
+        //Debug.Log("Color: " + originalColor + "Flash Color: " + flashColor); // get inital color
         body = GetComponent<Rigidbody2D>(); // get character's Rigidbody
         playerHealth.Init(health); // Initialize HP
         basicAttack.Init(); // Initialize Basic Attack Hitbox
@@ -157,10 +158,10 @@ public abstract class Character : MonoBehaviour
     {
         if (enemy != this)
         {
-            enemy.beingHit(value);
+            enemy.BeingHit(value);
         }
     }
-    private void beingHit(int damage)
+    private void BeingHit(int damage)
     {
         if (isImmune) return;
         
@@ -189,18 +190,21 @@ public abstract class Character : MonoBehaviour
     }
     protected void Fall()
     {
-        if (!isAttacking)
+        if (!isAttacking && Mathf.Abs(transform.position.y - groundYPos) > 14.5f)
         {
             PlayAnimation(fallAnimationName, 0f, false);
+            isFalling = true;
         }
     }
 
     protected void Land()
     {
-        if (isAttacking == false && isDamaged == false)
+        if (!isFalling) return;
+        if (isAttacking == false && isDamaged == false) // vertical distance > 6
         {
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
+            isFalling = false;
         }
     }
     protected void SettingDamagedEffect()
@@ -218,8 +222,13 @@ public abstract class Character : MonoBehaviour
     }
     void Update()
     {
+        groundLocalPos = GameObject.Find("Ground").transform.localPosition; // ground's local pos relative to parent (LvlBackground)
+        Debug.Log("Local: "+ groundLocalPos);
+        groundPos = GameObject.Find("Ground").transform.parent.TransformPoint(groundLocalPos); // Convert local pos to global pos
+        Debug.Log("Global: "+ groundPos);
+        groundYPos = groundPos.y; // only care ground Y pos
         basicAttack.TakeTime(Time.deltaTime);
-
+        // controlling isAttacking
         if (isAttacking == true)
         {
             attackAnimTime -= Time.deltaTime;
@@ -234,6 +243,7 @@ public abstract class Character : MonoBehaviour
     }
     void FixedUpdate()
     {
+
         // The old frame data (old isGounded value) is stored in wasGrounded
         wasGrounded = isGrounded;
         // The new frame data is collected using raycast and put in isGrounded

@@ -37,6 +37,7 @@ public class Player : Character
 
 
 
+
     private void Awake()
     {
         health = 20;
@@ -47,6 +48,7 @@ public class Player : Character
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
         bulletStartPos = transform.position;
+
     }
 
     private void SettingMainCharacterValue1()
@@ -140,10 +142,10 @@ public class Player : Character
         }
         else
         {
+            //Idle();
             oldPos = transform.position; transform.position = target;
             direction = transform.position.x - oldPos.x;
             Turn(direction);
-            Idle();
         }
         // reseting falling velocity
         body.velocity = Vector3.zero;
@@ -291,4 +293,6 @@ public class Player : Character
         }
     }
 }
+
+
 

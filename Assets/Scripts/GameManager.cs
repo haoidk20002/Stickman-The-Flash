@@ -80,12 +80,12 @@ public class GameManager : MonoBehaviour
         enemiesCount = FindObjectsOfType<Enemy>().Length;
         //Debug.Log(enemiesCount);
         //if enemy count < 0 then spawn next wave
-        if (enemiesCount == 0 && !spawningWave)
-        {
-            waveNumber++;
-            enemiesSpawnNumber++;
-            StartCoroutine(SpawnEnemiesWave());
-        }
+        // if (enemiesCount == 0 && !spawningWave)
+        // {
+        //     waveNumber++;
+        //     enemiesSpawnNumber++;
+        //     StartCoroutine(SpawnEnemiesWave());
+        // }
         //StartCoroutine(SpawnEnemiesWave());
     }
 
