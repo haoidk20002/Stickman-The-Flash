@@ -8,6 +8,7 @@ using UnityEngine.Events;
 public class MeleeBullet : MonoBehaviour
 {   
     private int damage;
+    private float knockbackForce = 150f;
 
     public Character character;
     private void HandleDamage(int value)
@@ -18,19 +19,28 @@ public class MeleeBullet : MonoBehaviour
     {
         character.Evt_MeleeAttack += HandleDamage;
     }
-    private void ApplyKnockback()
+    private void ApplyKnockback(int direction, Character other)
     {
-        
+        //Debug.Log("Knockback");
+        Rigidbody2D otherRigidbody = other.GetComponent<Rigidbody2D>();
+        Debug.Log(otherRigidbody);
+        otherRigidbody.AddForce(new Vector2(direction * knockbackForce,0), ForceMode2D.Impulse);
     }
 
     public Action<Character, int> OnHit;
     private void OnTriggerEnter2D(Collider2D other)
     {
         var character = other.GetComponent<Character>();
-        Debug.Log("Character1: " + character);
+        //Debug.Log("Character1: " + character);
         if (character != null)
         { 
+            int direction = (transform.position.x > character.transform.position.x)? -1:1;
             OnHit(character, damage);
+            if (character.CompareTag("Boss")){
+                
+                return;
+            }
+            //ApplyKnockback(direction,character);
         }
     }
 

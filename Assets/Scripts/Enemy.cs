@@ -111,6 +111,7 @@ public class Enemy : Character
                     }
                     else
                     {
+                        //Debug.Log("Idle");
                         // Attack
                         // Damaged then idle
                         // 0.5s cooldown before continue attacking

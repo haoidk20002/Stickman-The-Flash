@@ -48,6 +48,7 @@ public class Player : Character
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
         bulletStartPos = transform.position;
+        isImmune = true;
 
     }
 
@@ -221,12 +222,18 @@ public class Player : Character
         bulletStartPos.y = transform.position.y;
     }
 
+    protected override void BeingHit2(){
+        Debug.Log("isImmune: "+ isImmune);
+        isImmune = true;
+    }
+
     protected override void update2()
     {
         // if got hit, immune to damage for duration
-        if (isDamaged){
-            isImmune = true;
-        }
+        // if (isDamaged){
+        //     isImmune = true;
+        //     Debug.Log("Hit");
+        // }
         if(isImmune){
             invincibilityTime -= Time.deltaTime;
             //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(invincibleColor);
@@ -280,7 +287,10 @@ public class Player : Character
             ratio = playerHealth.RatioHealth;
             healthBar.UpdateHealthBar(ratio);
 
-            // lock player in camera
+            // lock player in camera, reset velocity when hit camera bound
+            if (transform.position.x < minX + playerWidth / 2 + 5f|| transform.position.x > maxX - playerWidth / 2 - 5f){
+                body.velocity = Vector3.zero;
+            }
             Vector3 clampedPosition = transform.position;
             clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
             transform.position = clampedPosition;

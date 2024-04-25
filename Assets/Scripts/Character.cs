@@ -55,6 +55,8 @@ public abstract class Character : MonoBehaviour
     protected Vector2 offset;
     protected Vector3 offset3D;
 
+    protected Material material;
+
     [SerializeField] protected string flashColor;
     [SerializeField] protected string invincibleColor;
     protected string originalColor; //skeleton animation's initial color
@@ -150,7 +152,6 @@ public abstract class Character : MonoBehaviour
 
     protected void Hurt()
     {
-        //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(flashColor);
         PlayAnimation(hurtAnimationName, 0f, false);
         AddAnimation(idleAnimationName, true, 0);
     }
@@ -158,13 +159,13 @@ public abstract class Character : MonoBehaviour
     {
         if (enemy != this)
         {
+            if (enemy.isImmune) return;
             enemy.BeingHit(value);
         }
     }
-    private void BeingHit(int damage)
-    {
-        if (isImmune) return;
-        
+    protected void BeingHit(int damage)
+    {      
+        BeingHit2();
         isDamaged = true;
         playerHealth.TakeDamage(damage);
         //show damage pop up
@@ -179,6 +180,7 @@ public abstract class Character : MonoBehaviour
             Hurt();
         }
     }
+    protected virtual void BeingHit2(){}
 
     protected void Jump()
     {
@@ -211,6 +213,7 @@ public abstract class Character : MonoBehaviour
     {
         if (isDamaged == true)
         {
+            //material =
             damagedAnimTime -= Time.deltaTime;
             if (damagedAnimTime < 0)
             {
@@ -223,9 +226,9 @@ public abstract class Character : MonoBehaviour
     void Update()
     {
         groundLocalPos = GameObject.Find("Ground").transform.localPosition; // ground's local pos relative to parent (LvlBackground)
-        Debug.Log("Local: "+ groundLocalPos);
+        //Debug.Log("Local: "+ groundLocalPos);
         groundPos = GameObject.Find("Ground").transform.parent.TransformPoint(groundLocalPos); // Convert local pos to global pos
-        Debug.Log("Global: "+ groundPos);
+        //Debug.Log("Global: "+ groundPos);
         groundYPos = groundPos.y; // only care ground Y pos
         basicAttack.TakeTime(Time.deltaTime);
         // controlling isAttacking
