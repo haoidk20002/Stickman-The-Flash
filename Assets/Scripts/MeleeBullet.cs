@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-
 public class MeleeBullet : MonoBehaviour
 {   
     private int damage;
     private float knockbackForce = 150f;
-
     public Character character;
     private void HandleDamage(int value)
     {
@@ -23,10 +21,9 @@ public class MeleeBullet : MonoBehaviour
     {
         //Debug.Log("Knockback");
         Rigidbody2D otherRigidbody = other.GetComponent<Rigidbody2D>();
-        Debug.Log(otherRigidbody);
+        if (other.isImmune == true) return;
         otherRigidbody.AddForce(new Vector2(direction * knockbackForce,0), ForceMode2D.Impulse);
     }
-
     public Action<Character, int> OnHit;
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -35,12 +32,10 @@ public class MeleeBullet : MonoBehaviour
         if (character != null)
         { 
             int direction = (transform.position.x > character.transform.position.x)? -1:1;
-            OnHit(character, damage);
-            if (character.CompareTag("Boss")){
-                
-                return;
+            if (character.CompareTag("Enemy") || character.CompareTag("Player")){
+                //ApplyKnockback(direction,character);
             }
-            //ApplyKnockback(direction,character);
+            OnHit(character, damage); // OnHit invoked b4 checking => player's immunity is already set as true
         }
     }
 

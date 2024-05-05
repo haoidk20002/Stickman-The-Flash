@@ -22,7 +22,7 @@ public class Player : Character
     private float swipeMagnitude, playerWidth, direction;
     [SerializeField] private float SetInvincibilityTime;
     private float invincibilityTime;
-    private bool enemyDetected = false;
+
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
     private Vector2 startPos, dashDestination, teleportDestination, swipeDirection;
@@ -30,14 +30,8 @@ public class Player : Character
     // get camera bonuds first, then lock player in bounds
     //private Rigidbody2D body;
     public LayerMask DetectLayerMask;
-
     public GameObject bullet;
-
     private Vector3 bulletStartPos;
-
-
-
-
     private void Awake()
     {
         health = 20;
@@ -48,10 +42,10 @@ public class Player : Character
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
         bulletStartPos = transform.position;
-        isImmune = true;
+        //isImmune = true;
+        invincibilityTime = SetInvincibilityTime;
 
     }
-
     private void SettingMainCharacterValue1()
     {
         target = transform.position;
@@ -143,7 +137,7 @@ public class Player : Character
         }
         else
         {
-            //Idle();
+            Idle();
             oldPos = transform.position; transform.position = target;
             direction = transform.position.x - oldPos.x;
             Turn(direction);
@@ -218,7 +212,6 @@ public class Player : Character
         // }else {bulletDirection = -1;}
         bulletDirection = direction > 0 ? 1 : -1; // forward (direction > 0) => 1 // short typing
         bulletStartPos.x = transform.position.x + bulletDirection * 5;
-
         bulletStartPos.y = transform.position.y;
     }
 
@@ -237,14 +230,11 @@ public class Player : Character
         if(isImmune){
             invincibilityTime -= Time.deltaTime;
             //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(invincibleColor);
-            //Physics2D.IgnoreLayerCollision(3, 11, true);
-            // block beingHit() method
 
             if (invincibilityTime < 0){
                 
                 isImmune = false;
                 //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(originalColor);
-                //Physics2D.IgnoreLayerCollision(3, 11, false);
                 invincibilityTime = SetInvincibilityTime;
             }
         }

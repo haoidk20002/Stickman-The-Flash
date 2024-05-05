@@ -1,29 +1,24 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Spine.Unity;
-using UnityEngine.AI;
-using Unity.VisualScripting;
-using Spine.Unity.Examples;
+using UnityEngine.SocialPlatforms.Impl;
 
 
 public class Enemy : Character
 {
     protected float moveSpeed = 20f, jumpForce = 50f;
     protected float direction;
-    protected float delay = 0.5f, delayLeft = 0f;
+    protected float delay = 1f, delayLeft = 0f;
     [SerializeField] protected float detectRange = 4.5f;
     protected float moveDelay = -1f, recoverTimer = 0.5f;
     [SerializeField] protected float setMoveDelay;
-
     protected bool playerInSight = false;
     protected float lastAttackedAt = 0;
     protected Character player;
     protected Vector2 playerLocation, oldPos, newPos;
-
     protected float playerVerticalLocation;
 
-
+    protected bool attackState = false;
     protected void Awake() // setting stats
     {
         health = 10;
@@ -34,22 +29,17 @@ public class Enemy : Character
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
-
-
     }
-
     protected override Character findTarget() // following player's pos
     {
         var main_player = GameManager.Instance.MainPlayer;
         return main_player;
     }
-
     protected bool inRange() // check if the player is in enemy's range
     {
-        RaycastHit2D hitColliders = Physics2D.Raycast(transform.position, directionSign* Vector2.right, detectRange, playerLayerMask);
+        RaycastHit2D hitColliders = Physics2D.Raycast(transform.position, directionSign * Vector2.right, detectRange, playerLayerMask);
         return hitColliders;
     }
-
     protected void Move()
     {
         Run();
@@ -64,16 +54,26 @@ public class Enemy : Character
     protected void TriggerJump()
     {
         isMoving = false;
-        isJumping =true;
+        isJumping = true;
         body.velocity = new Vector2(body.velocity.x, jumpForce);
         Debug.Log("Jump force: " + body.velocity.y);
+    }
+
+    protected virtual IEnumerator WaitToAttack()
+    {
+        Idle();
+        yield return new WaitForSeconds(0.6f);
+        Attack();
+        Evt_MeleeAttack?.Invoke(damage); 
+        lastAttackedAt = Time.time;
+        playerInSight = false;
+        attackState = false;
+
     }
     protected override void update2()
     {
         player = findTarget();
         playerLocation = player.gameObject.transform.position;
-
-
         if (body.velocity.y < 0)
         {
             moveDelay = setMoveDelay;
@@ -84,17 +84,17 @@ public class Enemy : Character
             {
                 if (!isDamaged) // when damaged can't do anything until the damaged anim is inactive
                 {
-                    if (playerInSight == false)
+                    if (!playerInSight && !attackState)
                     {
                         // Run or Jump
                         playerInSight = inRange();  // check if player is in attack range
-                        // only move or jump when attack anim finished and is_jumping false
+                        // only move or jump when attack anim (0.5f) finished and isGround == true
                         if (Time.time > lastAttackedAt + 0.5f && isGrounded == true)
                         {
                             if (moveDelay > 0)
                             {
                                 moveDelay -= Time.deltaTime;
-                                Debug.Log(moveDelay);
+                                //Debug.Log(moveDelay);
                             }
                             else
                             {
@@ -109,23 +109,10 @@ public class Enemy : Character
                             }
                         }
                     }
-                    else
+                    else if (!attackState && Time.time > lastAttackedAt + 0.5f)
                     {
-                        //Debug.Log("Idle");
-                        // Attack
-                        // Damaged then idle
-                        // 0.5s cooldown before continue attacking
-                        Idle();
-                        delayLeft -= Time.deltaTime;
-                        if (delayLeft <= 0)
-                        {
-                            Attack();
-                            Evt_MeleeAttack?.Invoke(damage);
-                            lastAttackedAt = Time.time;
-                            delayLeft = delay;
-                            playerInSight = false;
-                        }
-                        // }
+                        StartCoroutine(WaitToAttack());
+                        attackState = true;
                     }
                 }
             }
@@ -138,8 +125,8 @@ public class Enemy : Character
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange,transform.position.y,transform.position.z));
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange,transform.position.y,transform.position.z));
+        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange, transform.position.y, transform.position.z));
+        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange, transform.position.y, transform.position.z));
     }
 }
 

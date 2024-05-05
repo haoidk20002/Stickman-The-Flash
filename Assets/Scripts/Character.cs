@@ -45,7 +45,7 @@ public abstract class Character : MonoBehaviour
     protected Vector3 groundPos, backgroundPos, groundLocalPos;
     protected float groundYPos;
     protected bool wasGrounded, isGrounded;
-    protected bool isImmune = false;
+    public bool isImmune = false;
 
     public Action<int> Evt_MeleeAttack;
     public Action<Character, int> Evt_ShootingAttack;
@@ -56,23 +56,27 @@ public abstract class Character : MonoBehaviour
     protected Vector3 offset3D;
 
     protected Material material;
+    protected Spine.TrackEntry playing;
 
     [SerializeField] protected string flashColor;
     [SerializeField] protected string invincibleColor;
     protected string originalColor; //skeleton animation's initial color
 
-
+    // Please set value for damagedAnimTime
 
 
     [Header("Stats")]
     [SerializeField] protected int health;
     [SerializeField] protected int damage;
+    MaterialPropertyBlock mpb;
 
     void Start()
     {
-        originalColor = gameObject.GetComponentInChildren<SkeletonAnimation>().initialSkinName;
+        damagedAnimTime = setdamagedAnimTime;
+        // Access spine Unity sprite marterial
+        mpb = new MaterialPropertyBlock();
+        FillPhase(0f);
 
-        //Debug.Log("Color: " + originalColor + "Flash Color: " + flashColor); // get inital color
         body = GetComponent<Rigidbody2D>(); // get character's Rigidbody
         playerHealth.Init(health); // Initialize HP
         basicAttack.Init(); // Initialize Basic Attack Hitbox
@@ -106,14 +110,15 @@ public abstract class Character : MonoBehaviour
         }
 
         spineAnimationState.SetAnimation(0, spineAnimation, isLoop);
-        playingAnim = name;
+
+        //playingAnim = name;
     }
     protected void AddAnimation(string anim_name, bool is_loop, float delay)
     {
         spineAnimationState.AddAnimation(0, anim_name, is_loop, delay);
         // only set value playingAnim after the added anim started playing
 
-        playingAnim = anim_name;
+        //playingAnim = anim_name;
     }
     protected abstract Character findTarget();
     protected void Attack()
@@ -139,19 +144,23 @@ public abstract class Character : MonoBehaviour
     }
     protected void Idle()
     {
-        // if(isDamaged == false){
-        //     PlayAnimation(idleAnimationName, 0f, true);
-        // }
         PlayAnimation(idleAnimationName, 0f, true);
     }
     protected void Die()
     {
+        if (gameObject.tag == "Boss"){
+            GameManager.Instance.AddScore(200);
+        }
+        if (gameObject.tag == "Enemy"){
+            GameManager.Instance.AddScore(100);
+        }
         PlayAnimation(dieAnimationName, 0f, false);
         Destroy(gameObject, 1f);
     }
 
     protected void Hurt()
     {
+        //if (GameObject.FindWithTag("Boss")) { return;}
         PlayAnimation(hurtAnimationName, 0f, false);
         AddAnimation(idleAnimationName, true, 0);
     }
@@ -164,9 +173,10 @@ public abstract class Character : MonoBehaviour
         }
     }
     protected void BeingHit(int damage)
-    {      
+    {
         BeingHit2();
         isDamaged = true;
+        damagedAnimTime = setdamagedAnimTime;
         playerHealth.TakeDamage(damage);
         //show damage pop up
         GameManager.Instance.ShowDamagePopUp(transform.position, damage.ToString());
@@ -180,7 +190,7 @@ public abstract class Character : MonoBehaviour
             Hurt();
         }
     }
-    protected virtual void BeingHit2(){}
+    protected virtual void BeingHit2() { }
 
     protected void Jump()
     {
@@ -202,7 +212,7 @@ public abstract class Character : MonoBehaviour
     protected void Land()
     {
         if (!isFalling) return;
-        if (isAttacking == false && isDamaged == false) // vertical distance > 6
+        if (isAttacking == false && isDamaged == false)
         {
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
@@ -213,23 +223,40 @@ public abstract class Character : MonoBehaviour
     {
         if (isDamaged == true)
         {
-            //material =
+            //Debug.Log(damagedAnimTime);
             damagedAnimTime -= Time.deltaTime;
+            FillPhase(0.5f);
             if (damagedAnimTime < 0)
             {
-                //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(originalColor);
+            FillPhase(0f);
                 damagedAnimTime = setdamagedAnimTime;
                 isDamaged = false;
             }
         }
     }
+    protected void FillPhase(float value){
+        mpb.SetFloat("_FillPhase", value);
+        gameObject.GetComponentInChildren<MeshRenderer>().SetPropertyBlock(mpb);
+    }
     void Update()
     {
+        try
+        {
+            playing = spineAnimationState.GetCurrent(0);
+            playingAnim = playing.ToString();
+        }
+        catch (Exception e) {
+            
+        }
+        //playingAnim = playing.ToString();
+
+        // calculating ground y's pos
         groundLocalPos = GameObject.Find("Ground").transform.localPosition; // ground's local pos relative to parent (LvlBackground)
         //Debug.Log("Local: "+ groundLocalPos);
         groundPos = GameObject.Find("Ground").transform.parent.TransformPoint(groundLocalPos); // Convert local pos to global pos
         //Debug.Log("Global: "+ groundPos);
         groundYPos = groundPos.y; // only care ground Y pos
+
         basicAttack.TakeTime(Time.deltaTime);
         // controlling isAttacking
         if (isAttacking == true)
@@ -242,6 +269,10 @@ public abstract class Character : MonoBehaviour
         }
         // Controlling isDamaged
         SettingDamagedEffect();
+        // Idle if nothing happens
+        // if (!isFalling && !isAttacking && !isMoving && !isAttacking && !isJumping && !isDamaged && !isFalling){
+        //     Idle();
+        // }
         update2();
     }
     void FixedUpdate()
@@ -262,6 +293,7 @@ public abstract class Character : MonoBehaviour
         if (isGrounded == true && wasGrounded == false)
         {
             Land();
+            //Debug.Log("Land");
         }
         if (body.velocity.y < 0 && !isGrounded)
         {

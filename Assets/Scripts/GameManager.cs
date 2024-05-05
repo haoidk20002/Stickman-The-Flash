@@ -1,14 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     private static GameManager instance; // Singleton instance
-    private int score;
+    private int score = 0, highScore = 0;
     private int enemiesCount, enemiesSpawnNumber = 0, waveNumber = 4;
     private bool spawningWave = false;
 
-    private float minX,maxX;
+    private float minX, maxX;
+
+    public GameObject ScoreText;
+    public GameObject HighScoreText;
+
     public Character MainPlayer
     {
         get;
@@ -21,6 +27,16 @@ public class GameManager : MonoBehaviour
         private set;
 
     } // Reference to the boss
+
+    public int Score
+    {
+        get { return score; }
+    }
+
+    public int HighScore
+    {
+        get { return highScore; }
+    }
 
     public GameObject[] enemyPrefab;  // Prefab of the enemy to spawn
     // Getter for the singleton instance
@@ -44,6 +60,7 @@ public class GameManager : MonoBehaviour
     }
     private void Awake()
     {
+
         // Ensure there is only one instance of the GameManager
         if (instance != null && instance != this)
         {
@@ -56,11 +73,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public GameObject[] HealthBars;
+    public GameObject[] HealthBars; // Health Bars
 
     private void Start()
     {
-
+        ScoreText.GetComponent<TextMeshProUGUI>().text = "Score: "  + score.ToString();
+        HighScoreText.GetComponent<TextMeshProUGUI>().text = "High Score: " + highScore.ToString();
     }
 
     private void Update()
@@ -71,11 +89,13 @@ public class GameManager : MonoBehaviour
         if (MainPlayer == null)
         {
             HealthBars[0].SetActive(false);
-        } else HealthBars[0].SetActive(true);
+        }
+        else HealthBars[0].SetActive(true);
         if (Boss == null)
         {
             HealthBars[1].SetActive(false);
-        } else {HealthBars[1].SetActive(true);}
+        }
+        else { HealthBars[1].SetActive(true); }
         // get enemy count
         enemiesCount = FindObjectsOfType<Enemy>().Length;
         //Debug.Log(enemiesCount);
@@ -87,6 +107,15 @@ public class GameManager : MonoBehaviour
             StartCoroutine(SpawnEnemiesWave());
         }
         //StartCoroutine(SpawnEnemiesWave());
+
+        // show score and high score
+        ScoreText.GetComponent<TextMeshProUGUI>().text = "Score: "  + score.ToString();
+        HighScoreText.GetComponent<TextMeshProUGUI>().text = "High Score: " + highScore.ToString();
+        // Check for high score update
+        if (score > highScore)
+        {
+            highScore = score;
+        }
     }
 
     public void RegisterPlayer(Character player)
@@ -102,8 +131,8 @@ public class GameManager : MonoBehaviour
     IEnumerator SpawnEnemiesWave()
     {
         spawningWave = true;
-        Debug.Log("Wait for 5s");
-        Debug.Log("Enemies Spawn Number: " + enemiesSpawnNumber);
+        //Debug.Log("Wait for 5s");
+        //Debug.Log("Enemies Spawn Number: " + enemiesSpawnNumber);
 
         yield return new WaitForSeconds(5f);
         // Spawn an enemy
@@ -132,12 +161,6 @@ public class GameManager : MonoBehaviour
         // Return a random position within some bounds (adjust to your needs)
         return new Vector2(Random.Range(minX, maxX), Random.Range(0f, 30f));
     }
-    // Method to update score
-    public void UpdateScore(int amount)
-    {
-        score += amount;
-        Debug.Log("Score: " + score);
-    }
 
 
     // show dam pop up
@@ -148,6 +171,33 @@ public class GameManager : MonoBehaviour
         GameObject damagePopUp = Instantiate(damagePopUpPrefab, position, Quaternion.identity);
         DamagePopUp popUpScript = damagePopUp.GetComponent<DamagePopUp>();
         popUpScript.SetDamageText(damage);
+    }
+
+    // Method to update score
+    public void AddScore(int amount)
+    {
+        score += amount;
+    }
+
+    // Method to reset score
+    public void ResetScore()
+    {
+        score = 0;
+    }
+
+    // Method to update high score
+    public void UpdateHighScore()
+    {
+        if (score > highScore)
+        {
+            highScore = score;
+        }
+    }
+
+    // Method to reset high score
+    public void ResetHighScore()
+    {
+        highScore = 0;
     }
 
 }
