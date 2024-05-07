@@ -26,10 +26,12 @@ public class CameraFollowPlayer : MonoBehaviour
     }
     void Update()
     {
+        if (player == null) { return;}
         desiredLocation.x = player.position.x;
     }
     void MoveCamera()
     {
+        if (player == null) { return;}
         if (player.position.x < transform.position.x - positionDifference)
         {
             transform.position = Vector3.MoveTowards(transform.position, desiredLocation, cameraSpeed * Time.deltaTime);

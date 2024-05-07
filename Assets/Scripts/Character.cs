@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 
 public abstract class Character : MonoBehaviour
 {
+    //public GameObject ground;
     // Animation
     [SpineAnimation][SerializeField] protected string idleAnimationName;
     [Header("Basic Attack")]
@@ -43,9 +44,12 @@ public abstract class Character : MonoBehaviour
 
     protected float attackAnimTime;
     protected Vector3 groundPos, backgroundPos, groundLocalPos;
-    protected float groundYPos;
+    protected float groundYPos => getGroundPos.transform.position.y;
+
+    protected RaycastHit2D getGroundPos;
     protected bool wasGrounded, isGrounded;
-    public bool isImmune = false;
+    protected bool isImmune = false;
+    public bool CheckImmunity => isImmune;
 
     public Action<int> Evt_MeleeAttack;
     public Action<Character, int> Evt_ShootingAttack;
@@ -58,19 +62,30 @@ public abstract class Character : MonoBehaviour
     protected Material material;
     protected Spine.TrackEntry playing;
 
-    [SerializeField] protected string flashColor;
-    [SerializeField] protected string invincibleColor;
-    protected string originalColor; //skeleton animation's initial color
+    protected MeshRenderer meshRenderer;
 
-    // Please set value for damagedAnimTime
 
 
     [Header("Stats")]
-    [SerializeField] protected int health;
-    [SerializeField] protected int damage;
-    MaterialPropertyBlock mpb;
+    // [SerializeField] protected int health;
+    // [SerializeField] protected int damage;
+    [SerializeField] protected int setDamage;
+    [SerializeField] protected int setHealth;
+    [SerializeField] protected int currentDamage;
+    [SerializeField] protected int currentHealth;
+    protected int health, damage;
 
-    void Start()
+    //
+    private MaterialPropertyBlock mpb;
+
+    private void Awake()
+    {
+        // Assign stats
+        health = setHealth;
+        damage = setDamage;
+    }
+
+    private void Start()
     {
         damagedAnimTime = setdamagedAnimTime;
         // Access spine Unity sprite marterial
@@ -89,6 +104,8 @@ public abstract class Character : MonoBehaviour
         // Setting Hurtbox's offset
         characterHurtBox = GetComponent<BoxCollider2D>();
         offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
+        // Get ground's y pos
+        getGroundPos = Physics2D.Raycast(transform.position, Vector2.down,  1000f, groundLayerMask); 
         start2();
     }
     protected virtual void start2() { }
@@ -127,7 +144,6 @@ public abstract class Character : MonoBehaviour
         attackAnimTime = basicAttack.AttackTime;
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
         basicAttack.Trigger();
-        Debug.Log("Triggered");
         AddAnimation(idleAnimationName, true, 0f);
     }
     protected void Turn(float direction)
@@ -148,10 +164,12 @@ public abstract class Character : MonoBehaviour
     }
     protected void Die()
     {
-        if (gameObject.tag == "Boss"){
+        if (gameObject.tag == "Boss")
+        {
             GameManager.Instance.AddScore(200);
         }
-        if (gameObject.tag == "Enemy"){
+        if (gameObject.tag == "Enemy")
+        {
             GameManager.Instance.AddScore(100);
         }
         PlayAnimation(dieAnimationName, 0f, false);
@@ -160,9 +178,17 @@ public abstract class Character : MonoBehaviour
 
     protected void Hurt()
     {
-        //if (GameObject.FindWithTag("Boss")) { return;}
+        StartCoroutine(Flickering());
+        if (this == gameObject.CompareTag("Boss")) { return; }
         PlayAnimation(hurtAnimationName, 0f, false);
         AddAnimation(idleAnimationName, true, 0);
+    }
+
+    protected virtual IEnumerator Flickering()
+    {
+        FillPhase(0.4f);
+        yield return new WaitForSeconds(0.2f);
+        FillPhase(0f);
     }
     protected void DealDmg(Character enemy, int value)
     {
@@ -219,65 +245,63 @@ public abstract class Character : MonoBehaviour
             isFalling = false;
         }
     }
-    protected void SettingDamagedEffect()
+    protected virtual void IsDamagedControl()
     {
         if (isDamaged == true)
         {
-            //Debug.Log(damagedAnimTime);
             damagedAnimTime -= Time.deltaTime;
-            FillPhase(0.5f);
             if (damagedAnimTime < 0)
             {
-            FillPhase(0f);
                 damagedAnimTime = setdamagedAnimTime;
                 isDamaged = false;
             }
         }
     }
-    protected void FillPhase(float value){
+    protected void FillPhase(float value)
+    {
         mpb.SetFloat("_FillPhase", value);
         gameObject.GetComponentInChildren<MeshRenderer>().SetPropertyBlock(mpb);
     }
-    void Update()
+
+    private void Update()
     {
-        try
+        if (!PauseAndContinue.gameIsPaused)
         {
-            playing = spineAnimationState.GetCurrent(0);
-            playingAnim = playing.ToString();
-        }
-        catch (Exception e) {
-            
-        }
-        //playingAnim = playing.ToString();
+            // view current stats
+            currentDamage = damage;
+            currentHealth = playerHealth.Current;
 
-        // calculating ground y's pos
-        groundLocalPos = GameObject.Find("Ground").transform.localPosition; // ground's local pos relative to parent (LvlBackground)
-        //Debug.Log("Local: "+ groundLocalPos);
-        groundPos = GameObject.Find("Ground").transform.parent.TransformPoint(groundLocalPos); // Convert local pos to global pos
-        //Debug.Log("Global: "+ groundPos);
-        groundYPos = groundPos.y; // only care ground Y pos
-
-        basicAttack.TakeTime(Time.deltaTime);
-        // controlling isAttacking
-        if (isAttacking == true)
-        {
-            attackAnimTime -= Time.deltaTime;
-            if (attackAnimTime < 0)
+            if (!playerHealth.IsDead)
             {
-                isAttacking = false;
+                try
+                {
+                    playing = spineAnimationState.GetCurrent(0);
+                    playingAnim = playing.ToString();
+                }
+                catch (Exception e) { }
+                //playingAnim = playing.ToString();
+                // calculating ground y's pos
+
+
+                basicAttack.TakeTime(Time.deltaTime);
+                // controlling isAttacking
+                if (isAttacking == true)
+                {
+                    attackAnimTime -= Time.deltaTime;
+                    if (attackAnimTime < 0)
+                    {
+                        isAttacking = false;
+                    }
+                }
+                // Controlling isDamaged
+                IsDamagedControl(); // 
+                update2();
             }
         }
-        // Controlling isDamaged
-        SettingDamagedEffect();
-        // Idle if nothing happens
-        // if (!isFalling && !isAttacking && !isMoving && !isAttacking && !isJumping && !isDamaged && !isFalling){
-        //     Idle();
-        // }
-        update2();
+
     }
     void FixedUpdate()
     {
-
         // The old frame data (old isGounded value) is stored in wasGrounded
         wasGrounded = isGrounded;
         // The new frame data is collected using raycast and put in isGrounded

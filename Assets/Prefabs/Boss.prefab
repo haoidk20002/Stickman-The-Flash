@@ -380,9 +380,10 @@ MonoBehaviour:
   skeletonAnimation: {fileID: 1130804989135027027}
   playingAnim: 
   setdamagedAnimTime: 0.5
-  flashColor: white
-  invincibleColor: 
-  health: 0
-  damage: 0
+  setDamage: 20
+  setHealth: 30
+  currentDamage: 0
+  currentHealth: 0
   detectRange: 4.5
   setMoveDelay: 0.5
+  BossHealthBar: {fileID: 0}

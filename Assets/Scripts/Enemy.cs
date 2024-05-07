@@ -19,11 +19,11 @@ public class Enemy : Character
     protected float playerVerticalLocation;
 
     protected bool attackState = false;
-    protected void Awake() // setting stats
-    {
-        health = 10;
-        damage = 1;
-    }
+    // protected void Awake() // setting stats
+    // {
+    //     health = 10;
+    //     damage = 1;
+    // }
     protected override void start2()
     {
         delayLeft = delay;
@@ -73,7 +73,9 @@ public class Enemy : Character
     protected override void update2()
     {
         player = findTarget();
-        playerLocation = player.gameObject.transform.position;
+        if (player != null){
+            playerLocation = player.gameObject.transform.position;
+        }
         if (body.velocity.y < 0)
         {
             moveDelay = setMoveDelay;
@@ -127,6 +129,9 @@ public class Enemy : Character
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange, transform.position.y, transform.position.z));
         Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange, transform.position.y, transform.position.z));
+    }
+    protected void OnDestroy(){
+        GameManager.Instance.EnemiesCountDecrease();
     }
 }
 

@@ -32,7 +32,7 @@ Material:
     m_Floats:
     - _Cutoff: 0.1
     - _DarkColorAlphaAdditive: 0
-    - _FillPhase: 0
+    - _FillPhase: 0.364
     - _OutlineMipLevel: 0
     - _OutlineReferenceTexWidth: 1024
     - _OutlineSmoothness: 1

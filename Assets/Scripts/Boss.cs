@@ -1,71 +1,55 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class Boss : Enemy
 { // boss immune to knockback and his attack can't be disabled
-    private bool healthBarAvailable = false;
+
+    private HealthBar _bossHealth;
+
+    public void AddBossHealth(HealthBar bossHealth){
+        _bossHealth = bossHealth;
+    }
     //new private float detectRange = 8f;
     // Boss immune to knockback and only flash when damaged
-    new private void Awake() // setting stats
-    {
-        health = 30;
-        damage = 1;
-    }
+
     protected override IEnumerator WaitToAttack()
     {
         Idle();
         yield return new WaitForSeconds(1f);
         Attack();
-        Evt_MeleeAttack?.Invoke(damage); 
+        Evt_MeleeAttack?.Invoke(damage);
         lastAttackedAt = Time.time;
         playerInSight = false;
         attackState = false;
 
     }
-
     protected override void start2()
     {
         GameManager.Instance.RegisterBoss(this);
+        AddBossHealth(GameManager.Instance.HealthBars[1]);
         base.start2(); // extends from start2 of enemy class (base class)
         gameObject.tag = "Boss";
     }
-
-    // protected override void update2()
-    // {
-    //     base.update2();
-    //     if (!healthBarAvailable)
-    //     {
-    //         healthBar = GameObject.Find("BossHealth").GetComponentInChildren<HealthBar>();
-    //         healthBarAvailable = true;
-    //     }
-    //     else
-    //     {
-    //         ratio = playerHealth.RatioHealth;
-    //         healthBar.UpdateHealthBar(ratio);
-    //     }
-    // }
     protected override void update2()
     {
         // Player's location
         player = findTarget();
-        playerLocation = player.gameObject.transform.position;
+        if (player != null)
+        {
+            playerLocation = player.gameObject.transform.position;
+        }
 
         if (body.velocity.y < 0)
         {
             moveDelay = setMoveDelay;
         }
-        // Health Bar
-        if (!healthBarAvailable)
-        {
-            healthBar = GameObject.Find("BossHealth").GetComponentInChildren<HealthBar>();
-            healthBarAvailable = true;
-        }
-        else
-        {
-            ratio = playerHealth.RatioHealth;
-            healthBar.UpdateHealthBar(ratio);
-        }
+
+        // tracking boss health
+        ratio = playerHealth.RatioHealth;
+        _bossHealth.UpdateHealthBar(ratio);
+
         if (player != null)
         {
             if (playerHealth.IsDead == false)
@@ -80,7 +64,7 @@ public class Boss : Enemy
                         if (moveDelay > 0)
                         {
                             moveDelay -= Time.deltaTime;
-                            Debug.Log(moveDelay);
+                            //Debug.Log(moveDelay);
                         }
                         else
                         {

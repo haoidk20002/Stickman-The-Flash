@@ -4,11 +4,13 @@ using Unity.Collections;
 using UnityEditor.U2D.Animation;
 using System;
 using System.ComponentModel;
+using System.Collections;
 
 
 
 public class Player : Character
 {
+    private HealthBar _playerHealth;
     [Header("Dash Attack")]
     [SerializeField] private UnitAttack dashAttack;
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.25f;
@@ -32,13 +34,13 @@ public class Player : Character
     public LayerMask DetectLayerMask;
     public GameObject bullet;
     private Vector3 bulletStartPos;
-    private void Awake()
-    {
-        health = 20;
-        damage = 4;
+
+    public void AddPlayerHealth(HealthBar playerHealth){
+        _playerHealth = playerHealth;
     }
     protected override void start2()
     {
+        AddPlayerHealth(GameManager.Instance.HealthBars[0]);
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
         bulletStartPos = transform.position;
@@ -59,7 +61,6 @@ public class Player : Character
     private void SettingMainCharacterValue2()
     {
         dashDestination = new Vector2(0, 0);
-        healthBar = GameObject.Find("PlayerHealth").GetComponentInChildren<HealthBar>();
         dashDestination = transform.position;
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
@@ -215,26 +216,30 @@ public class Player : Character
         bulletStartPos.y = transform.position.y;
     }
 
-    protected override void BeingHit2(){
-        Debug.Log("isImmune: "+ isImmune);
+    protected override void BeingHit2()
+    {
+        Debug.Log("isImmune: " + isImmune);
         isImmune = true;
+    }
+    protected override IEnumerator Flickering()
+    {
+        while (isImmune)
+        {
+            FillPhase(0.4f);
+            yield return new WaitForSeconds(0.05f);
+            FillPhase(0f);
+            yield return new WaitForSeconds(0.05f);
+        }
     }
 
     protected override void update2()
     {
-        // if got hit, immune to damage for duration
-        // if (isDamaged){
-        //     isImmune = true;
-        //     Debug.Log("Hit");
-        // }
-        if(isImmune){
+        if (isImmune)
+        {
             invincibilityTime -= Time.deltaTime;
-            //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(invincibleColor);
-
-            if (invincibilityTime < 0){
-                
+            if (invincibilityTime < 0)
+            {
                 isImmune = false;
-                //gameObject.GetComponentInChildren<SkeletonAnimation>().skeleton.SetSkin(originalColor);
                 invincibilityTime = SetInvincibilityTime;
             }
         }
@@ -275,10 +280,11 @@ public class Player : Character
             }
             // Track Player's Health
             ratio = playerHealth.RatioHealth;
-            healthBar.UpdateHealthBar(ratio);
+            _playerHealth.UpdateHealthBar(ratio);
 
             // lock player in camera, reset velocity when hit camera bound
-            if (transform.position.x < minX + playerWidth / 2 + 5f|| transform.position.x > maxX - playerWidth / 2 - 5f){
+            if (transform.position.x < minX + playerWidth / 2 + 5f || transform.position.x > maxX - playerWidth / 2 - 5f)
+            {
                 body.velocity = Vector3.zero;
             }
             Vector3 clampedPosition = transform.position;

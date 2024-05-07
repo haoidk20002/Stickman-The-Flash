@@ -21,7 +21,7 @@ public class MeleeBullet : MonoBehaviour
     {
         //Debug.Log("Knockback");
         Rigidbody2D otherRigidbody = other.GetComponent<Rigidbody2D>();
-        if (other.isImmune == true) return;
+        if (other.CheckImmunity == true) return;
         otherRigidbody.AddForce(new Vector2(direction * knockbackForce,0), ForceMode2D.Impulse);
     }
     public Action<Character, int> OnHit;
@@ -31,9 +31,10 @@ public class MeleeBullet : MonoBehaviour
         //Debug.Log("Character1: " + character);
         if (character != null)
         { 
-            int direction = (transform.position.x > character.transform.position.x)? -1:1;
+            int direction = (transform.position.x > character.transform.position.x)? -1:1; 
+            // opposite knockback direction happens when the character's pos relative to melee pos is opposite for the attacker's facing direction
             if (character.CompareTag("Enemy") || character.CompareTag("Player")){
-                //ApplyKnockback(direction,character);
+                ApplyKnockback(direction,character);
             }
             OnHit(character, damage); // OnHit invoked b4 checking => player's immunity is already set as true
         }

@@ -1,19 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     private static GameManager instance; // Singleton instance
     private int score = 0, highScore = 0;
-    private int enemiesCount, enemiesSpawnNumber = 0, waveNumber = 4;
+    private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 4;
     private bool spawningWave = false;
 
     private float minX, maxX;
 
-    public GameObject ScoreText;
-    public GameObject HighScoreText;
+    public TextMeshProUGUI ScoreText;
+    public TextMeshProUGUI HighScoreText;
+
 
     public Character MainPlayer
     {
@@ -40,45 +42,24 @@ public class GameManager : MonoBehaviour
 
     public GameObject[] enemyPrefab;  // Prefab of the enemy to spawn
     // Getter for the singleton instance
-    public static GameManager Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = FindObjectOfType<GameManager>();
+    public static GameManager Instance { get; private set; }
 
-                if (instance == null)
-                {
-                    GameObject singleton = new GameObject("GameManager");
-                    instance = singleton.AddComponent<GameManager>();
-                }
-            }
-
-            return instance;
-        }
+    public void EnemiesCountDecrease(){
+        enemiesCount--;
     }
+
     private void Awake()
     {
-
-        // Ensure there is only one instance of the GameManager
-        if (instance != null && instance != this)
-        {
-            Destroy(gameObject);
-        }
-        else
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
+        Instance = this;
     }
 
-    public GameObject[] HealthBars; // Health Bars
+    [field: SerializeField] public HealthBar[] HealthBars {get; private set;} // Health Bars
+
 
     private void Start()
     {
-        ScoreText.GetComponent<TextMeshProUGUI>().text = "Score: "  + score.ToString();
-        HighScoreText.GetComponent<TextMeshProUGUI>().text = "High Score: " + highScore.ToString();
+        ScoreText.text = "Score: " + score.ToString();
+        HighScoreText.text = "High Score: " + highScore.ToString();
     }
 
     private void Update()
@@ -88,29 +69,30 @@ public class GameManager : MonoBehaviour
         // Toggle on when it appears.
         if (MainPlayer == null)
         {
-            HealthBars[0].SetActive(false);
+            HealthBars[0].gameObject.SetActive(false);
         }
-        else HealthBars[0].SetActive(true);
+        else HealthBars[0].gameObject.SetActive(true);
         if (Boss == null)
         {
-            HealthBars[1].SetActive(false);
+            HealthBars[1].gameObject.SetActive(false);
         }
-        else { HealthBars[1].SetActive(true); }
-        // get enemy count
-        enemiesCount = FindObjectsOfType<Enemy>().Length;
-        //Debug.Log(enemiesCount);
-        //if enemy count < 0 then spawn next wave
-        if (enemiesCount == 0 && !spawningWave)
+        else { HealthBars[1].gameObject.SetActive(true); }
+
+        if (!PauseAndContinue.gameIsPaused)
         {
-            waveNumber++;
-            enemiesSpawnNumber++;
-            StartCoroutine(SpawnEnemiesWave());
+            // get enemy count
+            //if enemy count < 0 then spawn next wave
+            if (enemiesCount == 0 && !spawningWave)
+            {
+                waveNumber++;
+                enemiesSpawnNumber++;
+                StartCoroutine(SpawnEnemiesWave());
+            }
         }
-        //StartCoroutine(SpawnEnemiesWave());
 
         // show score and high score
-        ScoreText.GetComponent<TextMeshProUGUI>().text = "Score: "  + score.ToString();
-        HighScoreText.GetComponent<TextMeshProUGUI>().text = "High Score: " + highScore.ToString();
+        ScoreText.text = "Score: " + score.ToString();
+        HighScoreText.text = "High Score: " + highScore.ToString();
         // Check for high score update
         if (score > highScore)
         {
@@ -140,13 +122,16 @@ public class GameManager : MonoBehaviour
         {
             if (waveNumber % 5 == 0)
             {
+                //boss.AddBossHealth(HealthBars[1]);
                 Instantiate(enemyPrefab[1], GetRandomSpawnPosition(), Quaternion.identity);
+                enemiesCount++;
                 enemiesSpawnNumber = 0;
                 break;
             } //boss every 5 wave
             else
             {
                 Instantiate(enemyPrefab[0], GetRandomSpawnPosition(), Quaternion.identity);
+                enemiesCount++;
                 yield return new WaitForSeconds(0.5f);
             }
             // Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);

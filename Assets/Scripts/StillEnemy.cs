@@ -16,7 +16,7 @@ public class StillEnemy : Character
     private float lastAttackedAt = 0;
     private Character player;
     private Vector2 playerLocation, oldPos, newPos;
-    Rigidbody2D body;
+
 
 
 
