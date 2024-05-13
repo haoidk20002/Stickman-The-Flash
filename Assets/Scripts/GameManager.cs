@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI ScoreText;
     public TextMeshProUGUI HighScoreText;
 
+    public Canvas GameOverScreen;
+
 
     public Character MainPlayer
     {
@@ -44,16 +46,23 @@ public class GameManager : MonoBehaviour
     // Getter for the singleton instance
     public static GameManager Instance { get; private set; }
 
-    public void EnemiesCountDecrease(){
+    public void EnemiesCountDecrease()
+    {
         enemiesCount--;
     }
 
     private void Awake()
     {
-        Instance = this;
+        
+        if (Instance == null)
+        {
+            Instance = this;
+            //DontDestroyOnLoad(Instance);
+            //DontDestroyOnLoad(HealthBars.gameObject);
+        }
     }
 
-    [field: SerializeField] public HealthBar[] HealthBars {get; private set;} // Health Bars
+    [field: SerializeField] public HealthBar[] HealthBars { get; private set; } // Health Bars
 
 
     private void Start()
@@ -70,8 +79,12 @@ public class GameManager : MonoBehaviour
         if (MainPlayer == null)
         {
             HealthBars[0].gameObject.SetActive(false);
+            GameOverScreen.gameObject.SetActive(true);
         }
-        else HealthBars[0].gameObject.SetActive(true);
+        else
+        {
+            HealthBars[0].gameObject.SetActive(true);
+        }
         if (Boss == null)
         {
             HealthBars[1].gameObject.SetActive(false);

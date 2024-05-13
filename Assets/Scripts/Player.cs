@@ -35,7 +35,8 @@ public class Player : Character
     public GameObject bullet;
     private Vector3 bulletStartPos;
 
-    public void AddPlayerHealth(HealthBar playerHealth){
+    public void AddPlayerHealth(HealthBar playerHealth)
+    {
         _playerHealth = playerHealth;
     }
     protected override void start2()
@@ -234,6 +235,10 @@ public class Player : Character
 
     protected override void update2()
     {
+        // Track Player's Health
+        ratio = characterHealth.RatioHealth;
+        _playerHealth.UpdateHealthBar(ratio);
+        
         if (isImmune)
         {
             invincibilityTime -= Time.deltaTime;
@@ -248,7 +253,7 @@ public class Player : Character
         GetPlayerStat();
         GetShootPosAndDirection();
         dashAttack.TakeTime(Time.deltaTime);
-        if (playerHealth.IsDead == false)
+        if (characterHealth.IsDead == false)
         {
             if (isMoving == true)
             {
@@ -278,9 +283,6 @@ public class Player : Character
             {
                 SwipeOrTeleport();
             }
-            // Track Player's Health
-            ratio = playerHealth.RatioHealth;
-            _playerHealth.UpdateHealthBar(ratio);
 
             // lock player in camera, reset velocity when hit camera bound
             if (transform.position.x < minX + playerWidth / 2 + 5f || transform.position.x > maxX - playerWidth / 2 - 5f)

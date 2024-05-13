@@ -91,7 +91,7 @@ public class StillEnemy : Character
         onGround = CheckLanding();
         if (player != null)
         {
-            if (playerHealth.IsDead == false && playerInSight == false)
+            if (characterHealth.IsDead == false && playerInSight == false)
             {
                 // check if player is in attack range
                 playerInSight = inRange();
@@ -111,7 +111,7 @@ public class StillEnemy : Character
                 }
             }
             // Attack
-            else if (playerHealth.IsDead == false && playerInSight == true)
+            else if (characterHealth.IsDead == false && playerInSight == true)
             {
                 if (Time.time > lastAttackedAt + 0.5f)
                 {

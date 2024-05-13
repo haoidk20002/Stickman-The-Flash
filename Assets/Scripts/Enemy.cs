@@ -10,7 +10,7 @@ public class Enemy : Character
     protected float direction;
     protected float delay = 1f, delayLeft = 0f;
     [SerializeField] protected float detectRange = 4.5f;
-    protected float moveDelay = -1f, recoverTimer = 0.5f;
+    protected float moveDelay = -1f, waitTimer = 0.6f;
     [SerializeField] protected float setMoveDelay;
     protected bool playerInSight = false;
     protected float lastAttackedAt = 0;
@@ -19,6 +19,8 @@ public class Enemy : Character
     protected float playerVerticalLocation;
 
     protected bool attackState = false;
+
+    //public BoxCollider2D meleeHitBox;
     // protected void Awake() // setting stats
     // {
     //     health = 10;
@@ -53,22 +55,39 @@ public class Enemy : Character
 
     protected void TriggerJump()
     {
+        Jump();
         isMoving = false;
         isJumping = true;
         body.velocity = new Vector2(body.velocity.x, jumpForce);
         Debug.Log("Jump force: " + body.velocity.y);
     }
 
-    protected virtual IEnumerator WaitToAttack()
+    protected virtual IEnumerator WaitToAttack(float waitSecs)
     {
+        attackState = true;
+        attackWarning = StartCoroutine(AttackWarning());
         Idle();
-        yield return new WaitForSeconds(0.6f);
+        // meleeHitBoxSpriteColor = basicAttackHitBox.GetComponent<SpriteRenderer>().color; but melleHitBoxSriteColor not updated?
+        //basicAttackHitBox.GetComponent<SpriteRenderer>().color = lightRed;
+        yield return new WaitForSeconds(waitSecs);
         Attack();
         Evt_MeleeAttack?.Invoke(damage); 
-        lastAttackedAt = Time.time;
+        //StopCoroutine(attackWarning);
+        yield return new WaitForSeconds(0.5f);
+        basicAttackHitBox.GetComponent<SpriteRenderer>().color = transparent;
         playerInSight = false;
         attackState = false;
-
+    }
+    protected IEnumerator AttackWarning()
+    {
+        //Debug.Log("Flash");
+        while (attackState)
+        {
+            basicAttackHitBox.GetComponent<SpriteRenderer>().color = lightRed;
+            yield return new WaitForSeconds(0.05f);
+            basicAttackHitBox.GetComponent<SpriteRenderer>().color = transparent;
+            yield return new WaitForSeconds(0.05f);
+        }
     }
     protected override void update2()
     {
@@ -82,26 +101,26 @@ public class Enemy : Character
         }
         if (player != null)
         {
-            if (playerHealth.IsDead == false)
+            if (characterHealth.IsDead == false)
             {
-                if (!isDamaged) // when damaged can't do anything until the damaged anim is inactive
-                {
+                //if (!isDamaged) // when damaged can't do anything until the damaged anim is inactive
+                //{
                     if (!playerInSight && !attackState)
                     {
                         // Run or Jump
                         playerInSight = inRange();  // check if player is in attack range
                         // only move or jump when attack anim (0.5f) finished and isGround == true
-                        if (Time.time > lastAttackedAt + 0.5f && isGrounded == true)
+                        if (isGrounded == true)
                         {
                             if (moveDelay > 0)
                             {
                                 moveDelay -= Time.deltaTime;
-                                //Debug.Log(moveDelay);
                             }
                             else
                             {
+                                // if close to player by 3 x points and the player is above this character more than 8 y points => Jump
                                 if (Mathf.Abs(transform.position.x - playerLocation.x) < 3f && (playerLocation.y - transform.position.y > 8f) && isJumping == false) // change this jump condition
-                                {// TriggerJump called more than once
+                                {
                                     TriggerJump();
                                 }
                                 else
@@ -111,13 +130,15 @@ public class Enemy : Character
                             }
                         }
                     }
-                    else if (!attackState && Time.time > lastAttackedAt + 0.5f)
+                    else if (!attackState)
                     {
-                        StartCoroutine(WaitToAttack());
-                        attackState = true;
+                        characterWaitForAttack = StartCoroutine(WaitToAttack(waitTimer));
+                        //attackState = true;
                     }
+                //}
+            }else if (attackState){
+                StopCoroutine(characterWaitForAttack);
                 }
-            }
         }
         else
         {

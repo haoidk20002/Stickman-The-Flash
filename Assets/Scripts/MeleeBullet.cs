@@ -6,8 +6,8 @@ using UnityEngine.Events;
 
 public class MeleeBullet : MonoBehaviour
 {   
-    private int damage;
-    private float knockbackForce = 150f;
+    private int damage, direction;
+    [SerializeField] private float knockbackForce = 150f;
     public Character character;
     private void HandleDamage(int value)
     {
@@ -27,16 +27,17 @@ public class MeleeBullet : MonoBehaviour
     public Action<Character, int> OnHit;
     private void OnTriggerEnter2D(Collider2D other)
     {
-        var character = other.GetComponent<Character>();
+        var otherCharacter = other.GetComponent<Character>();
         //Debug.Log("Character1: " + character);
-        if (character != null)
+        if (otherCharacter != null && !otherCharacter.characterHealth.IsDead)
         { 
-            int direction = (transform.position.x > character.transform.position.x)? -1:1; 
+            direction = (character.transform.position.x > otherCharacter.transform.position.x)? -1:1; 
+            //direction = Character.directionSign;
             // opposite knockback direction happens when the character's pos relative to melee pos is opposite for the attacker's facing direction
-            if (character.CompareTag("Enemy") || character.CompareTag("Player")){
-                ApplyKnockback(direction,character);
+            if (otherCharacter.CompareTag("Enemy") || otherCharacter.CompareTag("Player")){
+                ApplyKnockback(direction,otherCharacter);
             }
-            OnHit(character, damage); // OnHit invoked b4 checking => player's immunity is already set as true
+            OnHit(otherCharacter, damage); // OnHit invoked b4 checking => player's immunity is already set as true
         }
     }
 

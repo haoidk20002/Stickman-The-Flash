@@ -26,16 +26,18 @@ public abstract class Character : MonoBehaviour
     [SerializeField] SkeletonAnimation skeletonAnimation;
     public Spine.AnimationState spineAnimationState => skeletonAnimation.AnimationState;
     public Spine.Skeleton skeleton => skeletonAnimation.Skeleton;
-    protected HealthLogic playerHealth = new HealthLogic();
+    public HealthLogic characterHealth = new HealthLogic();
     protected Vector2 hitboxOffset;
-    protected Coroutine attackCoroutine;
+    protected Coroutine characterWaitForAttack, attackWarning;
     [SerializeField] protected string playingAnim;
 
-    protected int enemyLayerMask, groundLayerMask, playerLayerMask;
+    protected int enemyLayerMask => 1 << LayerMask.NameToLayer("Enemy");
+    protected int groundLayerMask => 1 << LayerMask.NameToLayer("Ground");
+    protected int playerLayerMask => 1 << LayerMask.NameToLayer("Player");
 
     // Check all state using boolean
     protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false, isFalling = false;
-    protected int directionSign;
+    public int directionSign;
     protected float damagedAnimTime;
     [SerializeField] protected float setdamagedAnimTime = 0.5f;
 
@@ -44,7 +46,7 @@ public abstract class Character : MonoBehaviour
 
     protected float attackAnimTime;
     protected Vector3 groundPos, backgroundPos, groundLocalPos;
-    protected float groundYPos => getGroundPos.transform.position.y;
+    protected float groundYPos;
 
     protected RaycastHit2D getGroundPos;
     protected bool wasGrounded, isGrounded;
@@ -53,6 +55,8 @@ public abstract class Character : MonoBehaviour
 
     public Action<int> Evt_MeleeAttack;
     public Action<Character, int> Evt_ShootingAttack;
+
+    public event Action <bool> Evt_PlayerDead;
     protected Rigidbody2D body;
 
     protected BoxCollider2D characterHurtBox;
@@ -63,6 +67,11 @@ public abstract class Character : MonoBehaviour
     protected Spine.TrackEntry playing;
 
     protected MeshRenderer meshRenderer;
+
+    protected Color lightRed = new Color(212f/255f,79f/255f,79f/255f,1f); //(212f,79f,79f,1f);
+    protected Color transparent = new Color(212f/255f,79f/255f,79f/255f,0f); //(212f,79f,79f,0f);
+
+    protected Color meleeHitBoxSpriteColor; 
 
 
 
@@ -80,6 +89,7 @@ public abstract class Character : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("Do sthing");
         // Assign stats
         health = setHealth;
         damage = setDamage;
@@ -93,19 +103,18 @@ public abstract class Character : MonoBehaviour
         FillPhase(0f);
 
         body = GetComponent<Rigidbody2D>(); // get character's Rigidbody
-        playerHealth.Init(health); // Initialize HP
+        characterHealth.Init(health); // Initialize HP
         basicAttack.Init(); // Initialize Basic Attack Hitbox
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         basicAttackHitBox.OnHit += DealDmg;
-        // Specifying layer masks
-        enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
-        groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
-        playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+        // Setting color
+        meleeHitBoxSpriteColor = basicAttackHitBox.GetComponent<SpriteRenderer>().color;
         // Setting Hurtbox's offset
         characterHurtBox = GetComponent<BoxCollider2D>();
         offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
         // Get ground's y pos
         getGroundPos = Physics2D.Raycast(transform.position, Vector2.down,  1000f, groundLayerMask); 
+        groundYPos = getGroundPos.transform.position.y;
         start2();
     }
     protected virtual void start2() { }
@@ -172,6 +181,9 @@ public abstract class Character : MonoBehaviour
         {
             GameManager.Instance.AddScore(100);
         }
+        if (gameObject.tag == "Player"){
+            Evt_PlayerDead.Invoke(true);
+        }
         PlayAnimation(dieAnimationName, 0f, false);
         Destroy(gameObject, 1f);
     }
@@ -203,13 +215,14 @@ public abstract class Character : MonoBehaviour
         BeingHit2();
         isDamaged = true;
         damagedAnimTime = setdamagedAnimTime;
-        playerHealth.TakeDamage(damage);
+        characterHealth.TakeDamage(damage);
         //show damage pop up
         GameManager.Instance.ShowDamagePopUp(transform.position, damage.ToString());
         // different anim whether character is dead or not
-        if (playerHealth.IsDead)
+        if (characterHealth.IsDead)
         {
             Die();
+            //Debug.Break();
         }
         else
         {
@@ -269,9 +282,9 @@ public abstract class Character : MonoBehaviour
         {
             // view current stats
             currentDamage = damage;
-            currentHealth = playerHealth.Current;
+            currentHealth = characterHealth.Current;
 
-            if (!playerHealth.IsDead)
+            if (!characterHealth.IsDead) // Don't execute if dead
             {
                 try
                 {
@@ -295,8 +308,8 @@ public abstract class Character : MonoBehaviour
                 }
                 // Controlling isDamaged
                 IsDamagedControl(); // 
-                update2();
             }
+                update2();
         }
 
     }
@@ -325,10 +338,10 @@ public abstract class Character : MonoBehaviour
         }
     }
 
-    public void CallMeleeAttack(int damage)
-    {
-        Evt_MeleeAttack?.Invoke(damage);
-    }
+    // public void CallMeleeAttack(int damage)
+    // {
+    //     Evt_MeleeAttack?.Invoke(damage);
+    // }
 }
 
 

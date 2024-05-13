@@ -8,23 +8,14 @@ public class Boss : Enemy
 
     private HealthBar _bossHealth;
 
-    public void AddBossHealth(HealthBar bossHealth){
+    protected new float waitTimer = 1f;
+
+    public void AddBossHealth(HealthBar bossHealth)
+    {
         _bossHealth = bossHealth;
     }
     //new private float detectRange = 8f;
     // Boss immune to knockback and only flash when damaged
-
-    protected override IEnumerator WaitToAttack()
-    {
-        Idle();
-        yield return new WaitForSeconds(1f);
-        Attack();
-        Evt_MeleeAttack?.Invoke(damage);
-        lastAttackedAt = Time.time;
-        playerInSight = false;
-        attackState = false;
-
-    }
     protected override void start2()
     {
         GameManager.Instance.RegisterBoss(this);
@@ -34,6 +25,14 @@ public class Boss : Enemy
     }
     protected override void update2()
     {
+        // tracking boss health
+        ratio = characterHealth.RatioHealth;
+        _bossHealth.UpdateHealthBar(ratio);
+        // Boss is bascially enemy with high hitpoints (HP) and high damages
+        base.update2();
+
+        // old code (don't delete)
+        /*
         // Player's location
         player = findTarget();
         if (player != null)
@@ -45,14 +44,9 @@ public class Boss : Enemy
         {
             moveDelay = setMoveDelay;
         }
-
-        // tracking boss health
-        ratio = playerHealth.RatioHealth;
-        _bossHealth.UpdateHealthBar(ratio);
-
         if (player != null)
         {
-            if (playerHealth.IsDead == false)
+            if (characterHealth.IsDead == false)
             {
                 if (!playerInSight && !attackState)
                 {
@@ -85,10 +79,17 @@ public class Boss : Enemy
                     attackState = true;
                 }
             }
+            else
+            {
+                // this clause should be called when he is dead, but didn't ?
+                StopCoroutine(WaitToAttack());
+                Debug.Log("Stop");
+                Debug.Break();
+            }
         }
         else
         {
             Idle();
-        }
+        }*/
     }
 }

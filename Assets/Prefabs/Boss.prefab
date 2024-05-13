@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 7666451270302497394}
   - component: {fileID: 2705192641903953154}
   - component: {fileID: 5341985714361861096}
+  - component: {fileID: 3734702668754289967}
   m_Layer: 11
   m_Name: MeleeHitbox
   m_TagString: Untagged
@@ -190,10 +191,10 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.56, y: 1.31}
-    newSize: {x: 1.08, y: 0.26}
+    oldSize: {x: 0.32, y: 0.32}
+    newSize: {x: 5.9, y: 10}
     adaptiveTilingThreshold: 0.5
-    drawMode: 0
+    drawMode: 2
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
@@ -211,7 +212,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89f1476fc7b473c4f93a8a7a7a259350, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  knockbackForce: 150
   character: {fileID: 3695017483459714527}
+--- !u!212 &3734702668754289967
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791565537889077905}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: 718074e4e56a5404e824bf8e6571ea7d, type: 3}
+  m_Color: {r: 0.8301887, g: 0.30857953, b: 0.30857953, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 2
+  m_Size: {x: 5.9, y: 10}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &3374012754439274129
 GameObject:
   m_ObjectHideFlags: 0
@@ -368,7 +422,7 @@ MonoBehaviour:
   basicAttack:
     attackAnimationName: 1_/kick low
     attackTime: 0.5
-    enableBulletTime: 0.4
+    enableBulletTime: 0.18
   basicAttackHitBox: {fileID: 5341985714361861096}
   fallAnimationName: 1_/jump C
   landAnimationName: 1_/jump D
@@ -379,11 +433,11 @@ MonoBehaviour:
   jumpAnimationName2: 1_/jump B
   skeletonAnimation: {fileID: 1130804989135027027}
   playingAnim: 
+  directionSign: 0
   setdamagedAnimTime: 0.5
-  setDamage: 20
-  setHealth: 30
+  setDamage: 0
+  setHealth: 10
   currentDamage: 0
   currentHealth: 0
   detectRange: 4.5
   setMoveDelay: 0.5
-  BossHealthBar: {fileID: 0}

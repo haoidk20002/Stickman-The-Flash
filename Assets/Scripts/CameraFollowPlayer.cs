@@ -17,19 +17,29 @@ public class CameraFollowPlayer : MonoBehaviour
     private Camera mainCamera;
     private Vector3 desiredLocation;
 
+    private bool playerDead = false, zoomed = false;
+
+    private Character mainPlayer;
+
 
 
     void Awake()
     {
         desiredLocation = transform.position;
         mainCamera = Camera.main;
+        //mainPlayer.Evt_PlayerDead += playerDead;
     }
-    void Update()
+    private void Update()
     {
-        if (player == null) { return;}
+        //if (player == null) { return;}
+        if (playerDead && !zoomed){
+            //StartCoroutine(ZoomInThenOut());
+            zoomed = true;
+            return;
+        }
         desiredLocation.x = player.position.x;
     }
-    void MoveCamera()
+    private void MoveCamera()
     {
         if (player == null) { return;}
         if (player.position.x < transform.position.x - positionDifference)
@@ -41,11 +51,17 @@ public class CameraFollowPlayer : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, desiredLocation, cameraSpeed * Time.deltaTime);
         }
     }
+    private IEnumerator ZoomInThenOut(){
+        mainCamera.orthographicSize = 5f;
+        yield return new WaitForSeconds(1f);
+        mainCamera.orthographicSize = 20f;
+    }
 
 
     void LateUpdate()
     {
         MoveCamera();
+        // if player is about to die, zoom camera in (achievable using delegates)
     }
 }
 
