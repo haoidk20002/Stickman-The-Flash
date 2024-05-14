@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Spine.Unity;
 using UnityEngine.SocialPlatforms.Impl;
+using Unity.VisualScripting;
 
 
 public class Enemy : Character
@@ -10,15 +11,19 @@ public class Enemy : Character
     protected float direction;
     protected float delay = 1f, delayLeft = 0f;
     [SerializeField] protected float detectRange = 4.5f;
-    protected float moveDelay = -1f, waitTimer = 0.6f;
+    protected float moveDelay = -1f, waitTimer =0.5f;
     [SerializeField] protected float setMoveDelay;
     protected bool playerInSight = false;
     protected float lastAttackedAt = 0;
     protected Character player;
     protected Vector2 playerLocation, oldPos, newPos;
     protected float playerVerticalLocation;
+    protected float lerpValue = 0f;
+    protected bool attackState = false, warningEffect;
 
-    protected bool attackState = false;
+    protected Color flashupColor, flashoutColor;
+
+    //SpriteRenderer spriteRenderer;
 
     //public BoxCollider2D meleeHitBox;
     // protected void Awake() // setting stats
@@ -63,34 +68,51 @@ public class Enemy : Character
     }
 
     protected virtual IEnumerator WaitToAttack(float waitSecs)
-    {
+    {// when he attacks, the warning become transparent
         attackState = true;
-        attackWarning = StartCoroutine(AttackWarning());
         Idle();
-        // meleeHitBoxSpriteColor = basicAttackHitBox.GetComponent<SpriteRenderer>().color; but melleHitBoxSriteColor not updated?
-        //basicAttackHitBox.GetComponent<SpriteRenderer>().color = lightRed;
+        attackWarning = StartCoroutine(AttackWarning());
         yield return new WaitForSeconds(waitSecs);
+        warningEffect = false;
+        meleeHitBoxSprite.color = transparent;
         Attack();
-        Evt_MeleeAttack?.Invoke(damage); 
-        //StopCoroutine(attackWarning);
+        Evt_MeleeAttack?.Invoke(damage);
         yield return new WaitForSeconds(0.5f);
-        basicAttackHitBox.GetComponent<SpriteRenderer>().color = transparent;
-        playerInSight = false;
         attackState = false;
+        playerInSight = false;
     }
     protected IEnumerator AttackWarning()
     {
-        //Debug.Log("Flash");
-        while (attackState)
-        {
-            basicAttackHitBox.GetComponent<SpriteRenderer>().color = lightRed;
-            yield return new WaitForSeconds(0.05f);
-            basicAttackHitBox.GetComponent<SpriteRenderer>().color = transparent;
-            yield return new WaitForSeconds(0.05f);
+        warningEffect = true;
+        flashupColor = lightRed;
+        flashoutColor = transparent;
+        Color temp;
+        // flash in 0.5s
+        //
+        while (warningEffect){
+            lerpValue += Time.deltaTime;
+            // red to nothing originally, then keeps inversing until the state is out. Flash in and out in 0.5s totally
+            meleeHitBoxSprite.color = Color.Lerp(flashupColor,flashoutColor,lerpValue/0.25f);
+            if (lerpValue/0.25f > 1){
+                //Debug.Break();
+                lerpValue = 0f;
+                temp = flashupColor;
+                flashupColor = flashoutColor;
+                flashoutColor = temp;
+                yield return null;
+            }
         }
+        //
+        if (!warningEffect) {lerpValue = 0f;}
     }
     protected override void update2()
     {
+        // if (attackState){
+        //     basicAttackHitBox.GetComponent<SpriteRenderer>().color = lightRed;
+        //     basicAttackHitBox.GetComponent<SpriteRenderer>().color = Color.Lerp(transparent,lightRed,lerpValue); 
+        // } else {
+        //     basicAttackHitBox.GetComponent<SpriteRenderer>().color = transparent;
+        // }
         player = findTarget();
         if (player != null){
             playerLocation = player.gameObject.transform.position;
@@ -133,11 +155,10 @@ public class Enemy : Character
                     else if (!attackState)
                     {
                         characterWaitForAttack = StartCoroutine(WaitToAttack(waitTimer));
-                        //attackState = true;
                     }
                 //}
             }else if (attackState){
-                StopCoroutine(characterWaitForAttack);
+                StopAllCoroutines();
                 }
         }
         else
@@ -145,12 +166,12 @@ public class Enemy : Character
             Idle();
         }
     }
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange, transform.position.y, transform.position.z));
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange, transform.position.y, transform.position.z));
-    }
+    // void OnDrawGizmosSelected()
+    // {
+    //     Gizmos.color = Color.yellow;
+    //     Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange, transform.position.y, transform.position.z));
+    //     Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange, transform.position.y, transform.position.z));
+    // }
     protected void OnDestroy(){
         GameManager.Instance.EnemiesCountDecrease();
     }

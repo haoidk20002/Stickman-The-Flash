@@ -1333,7 +1333,7 @@ GameObject:
   - component: {fileID: 734423014}
   - component: {fileID: 734423013}
   - component: {fileID: 734423012}
-  - component: {fileID: 734423011}
+  - component: {fileID: 734423015}
   m_Layer: 0
   m_Name: Anim
   m_TagString: Untagged
@@ -1341,43 +1341,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &734423011
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 734423010}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d247ba06193faa74d9335f5481b2b56c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  skeletonDataAsset: {fileID: 11400000, guid: dc9369a0c12b3554c9c22957405ea11c, type: 2}
-  initialSkinName: black
-  initialFlipX: 0
-  initialFlipY: 0
-  updateWhenInvisible: 3
-  separatorSlotNames: []
-  zSpacing: 0
-  useClipping: 1
-  immutableTriangles: 0
-  pmaVertexColors: 1
-  clearStateOnDisable: 0
-  tintBlack: 0
-  singleSubmesh: 0
-  fixDrawOrder: 0
-  addNormals: 0
-  calculateTangents: 0
-  maskInteraction: 0
-  maskMaterials:
-    materialsMaskDisabled: []
-    materialsInsideMask: []
-    materialsOutsideMask: []
-  disableRenderingOnOverride: 1
-  _animationName: 
-  loop: 1
-  timeScale: 1
 --- !u!23 &734423012
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1398,7 +1361,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c4a4176f9a01f7647bc2df2d57c1b01e, type: 2}
+  - {fileID: 2100000, guid: a2a1ad0b81c9338458d7e0ac6dca70d5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1443,6 +1406,43 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1529479815}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &734423015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 734423010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d247ba06193faa74d9335f5481b2b56c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skeletonDataAsset: {fileID: 11400000, guid: 6c6fe03b5076a98429e579b0dd966661, type: 2}
+  initialSkinName: 
+  initialFlipX: 0
+  initialFlipY: 0
+  updateWhenInvisible: 3
+  separatorSlotNames: []
+  zSpacing: 0
+  useClipping: 1
+  immutableTriangles: 0
+  pmaVertexColors: 1
+  clearStateOnDisable: 0
+  tintBlack: 0
+  singleSubmesh: 0
+  fixDrawOrder: 0
+  addNormals: 0
+  calculateTangents: 0
+  maskInteraction: 0
+  maskMaterials:
+    materialsMaskDisabled: []
+    materialsInsideMask: []
+    materialsOutsideMask: []
+  disableRenderingOnOverride: 1
+  _animationName: 
+  loop: 0
+  timeScale: 1
 --- !u!1 &767881869
 GameObject:
   m_ObjectHideFlags: 0
@@ -1917,8 +1917,8 @@ MonoBehaviour:
   HighScoreText: {fileID: 118295367}
   GameOverScreen: {fileID: 276388108}
   enemyPrefab:
-  - {fileID: 7559075574629597747, guid: ba24910385665f04a896bc75ce6f0041, type: 3}
-  - {fileID: 9096887511068618370, guid: b6cc2af263b4d0849a95abb5cab5eeba, type: 3}
+  - {fileID: 3866025749971152302, guid: 6ff875c78cbe1004da39da8197da7b82, type: 3}
+  - {fileID: 3632156920120099478, guid: 8ade09ce5ebd82d41bd2f2a975f3165c, type: 3}
   <HealthBars>k__BackingField:
   - {fileID: 1193646492}
   - {fileID: 625438262}
@@ -2725,32 +2725,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 123f97de30696414cbf808b9e38e14e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  idleAnimationName: 1_/idle
+  idleAnimationName: idle
   basicAttack:
-    attackAnimationName: 1_/jab single
+    attackAnimationName: da
     attackTime: 0.4
     enableBulletTime: 0.2
   basicAttackHitBox: {fileID: 2117003002}
-  fallAnimationName: 1_/jump C
-  landAnimationName: 1_/jump D
-  runAnimationName: 1_/run
-  hurtAnimationName: 1_/hurt center
-  dieAnimationName: 1_/die A
-  jumpAnimationName1: 1_/jump A
-  jumpAnimationName2: 1_/jump B
-  skeletonAnimation: {fileID: 734423011}
+  fallAnimationName: dang_roi
+  landAnimationName: dap_dat
+  runAnimationName: hit
+  hurtAnimationName: hit
+  dieAnimationName: die
+  jumpAnimationName1: jump
+  jumpAnimationName2: jump_loop
+  skeletonAnimation: {fileID: 734423015}
   playingAnim: 
   directionSign: 0
   setdamagedAnimTime: 0.5
-  setDamage: 0
-  setHealth: 50
+  health: 10
+  damage: 5
   currentDamage: 0
   currentHealth: 0
   dashAttack:
-    attackAnimationName: 1_/uppercut
+    attackAnimationName: dash_attack
     attackTime: 0.5
     enableBulletTime: 0
-  moveSpeed: 100
+  moveSpeed: 150
+  attackRange: 6
+  minSwipeDistance: 0.15
   timer: 0.5
   SetInvincibilityTime: 1.5
   DetectLayerMask:

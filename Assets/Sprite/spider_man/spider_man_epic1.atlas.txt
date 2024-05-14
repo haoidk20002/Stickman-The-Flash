@@ -1,0 +1,335 @@
+
+spider_man_epic1.png
+size: 1734,253
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fx/bang_roi1
+  rotate: true
+  xy: 1297, 149
+  size: 102, 95
+  orig: 102, 95
+  offset: 0, 0
+  index: -1
+fx/choe
+  rotate: false
+  xy: 1393, 3
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+fx/dat_nut01
+  rotate: false
+  xy: 940, 9
+  size: 185, 46
+  orig: 185, 46
+  offset: 0, 0
+  index: -1
+fx/eff_dash_attack1
+  rotate: false
+  xy: 2, 11
+  size: 239, 240
+  orig: 242, 240
+  offset: 2, 0
+  index: -1
+fx/fx_dash1
+  rotate: true
+  xy: 574, 47
+  size: 204, 166
+  orig: 208, 166
+  offset: 4, 0
+  index: -1
+fx/impact_1
+  rotate: true
+  xy: 243, 2
+  size: 249, 149
+  orig: 266, 160
+  offset: 11, 0
+  index: -1
+fx/luot1
+  rotate: true
+  xy: 1393, 21
+  size: 54, 110
+  orig: 63, 118
+  offset: 6, 7
+  index: -1
+fx/luot2
+  rotate: true
+  xy: 1394, 201
+  size: 50, 113
+  orig: 63, 118
+  offset: 9, 4
+  index: -1
+fx/luot3
+  rotate: true
+  xy: 1394, 150
+  size: 49, 112
+  orig: 63, 118
+  offset: 9, 5
+  index: -1
+fx/luot4
+  rotate: true
+  xy: 1508, 150
+  size: 49, 107
+  orig: 63, 118
+  offset: 9, 9
+  index: -1
+fx/luot5
+  rotate: true
+  xy: 1503, 99
+  size: 49, 112
+  orig: 63, 118
+  offset: 10, 4
+  index: -1
+fx/luot6
+  rotate: true
+  xy: 1509, 203
+  size: 48, 109
+  orig: 63, 118
+  offset: 10, 7
+  index: -1
+fx/luot_dam2
+  rotate: false
+  xy: 590, 9
+  size: 83, 36
+  orig: 152, 59
+  offset: 43, 13
+  index: -1
+fx/luot_dam4
+  rotate: false
+  xy: 675, 10
+  size: 83, 35
+  orig: 152, 59
+  offset: 45, 13
+  index: -1
+fx/luot_dam5
+  rotate: false
+  xy: 760, 13
+  size: 82, 33
+  orig: 152, 59
+  offset: 46, 14
+  index: -1
+fx/smoke_03_00002
+  rotate: false
+  xy: 1385, 132
+  size: 47, 15
+  orig: 81, 46
+  offset: 5, 0
+  index: -1
+fx/smoke_03_00006
+  rotate: false
+  xy: 1334, 116
+  size: 49, 31
+  orig: 81, 46
+  offset: 20, 0
+  index: -1
+fx/smoke_03_00009
+  rotate: true
+  xy: 1297, 103
+  size: 44, 35
+  orig: 81, 46
+  offset: 30, 0
+  index: -1
+fx/smoke_03_00012
+  rotate: true
+  xy: 1619, 17
+  size: 40, 34
+  orig: 81, 45
+  offset: 35, 0
+  index: -1
+fx/smoke_03_00014
+  rotate: true
+  xy: 844, 2
+  size: 14, 33
+  orig: 81, 46
+  offset: 53, 0
+  index: -1
+fx/spider_xoay
+  rotate: true
+  xy: 394, 46
+  size: 205, 178
+  orig: 208, 205
+  offset: 0, 7
+  index: -1
+fx/vet_chem
+  rotate: true
+  xy: 1175, 102
+  size: 149, 120
+  orig: 154, 134
+  offset: 1, 14
+  index: -1
+fx/vong phep
+  rotate: false
+  xy: 742, 158
+  size: 281, 93
+  orig: 287, 124
+  offset: 2, 26
+  index: -1
+lv1/chan_duoi_phai
+  rotate: true
+  xy: 394, 10
+  size: 34, 96
+  orig: 34, 96
+  offset: 0, 0
+  index: -1
+lv1/chan_duoi_phai_shadow
+  rotate: true
+  xy: 1277, 17
+  size: 53, 114
+  orig: 89, 138
+  offset: 18, 12
+  index: -1
+lv1/chan_duoi_trai
+  rotate: true
+  xy: 492, 10
+  size: 34, 96
+  orig: 34, 96
+  offset: 0, 0
+  index: -1
+lv1/chan_duoi_trai_shadow
+  rotate: true
+  xy: 1387, 77
+  size: 53, 114
+  orig: 89, 138
+  offset: 18, 12
+  index: -1
+lv1/chan_tren_phai
+  rotate: true
+  xy: 844, 18
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/chan_tren_phai_shadow
+  rotate: true
+  xy: 1505, 51
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/chan_tren_trai
+  rotate: true
+  xy: 857, 57
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/chan_tren_trai_shadow
+  rotate: true
+  xy: 1505, 3
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/dau
+  rotate: true
+  xy: 742, 48
+  size: 108, 113
+  orig: 108, 113
+  offset: 0, 0
+  index: -1
+lv1/dau_shadow
+  rotate: false
+  xy: 1025, 98
+  size: 148, 153
+  orig: 202, 207
+  offset: 27, 27
+  index: -1
+lv1/mat_phai
+  rotate: false
+  xy: 1337, 83
+  size: 48, 31
+  orig: 48, 31
+  offset: 0, 0
+  index: -1
+lv1/mat_phai_die
+  rotate: false
+  xy: 760, 2
+  size: 32, 9
+  orig: 32, 9
+  offset: 0, 0
+  index: -1
+lv1/mat_trai
+  rotate: false
+  xy: 1655, 27
+  size: 21, 30
+  orig: 21, 30
+  offset: 0, 0
+  index: -1
+lv1/mat_trai_die
+  rotate: false
+  xy: 794, 2
+  size: 19, 9
+  orig: 19, 9
+  offset: 0, 0
+  index: -1
+lv1/minh
+  rotate: true
+  xy: 1127, 15
+  size: 51, 148
+  orig: 51, 148
+  offset: 0, 0
+  index: -1
+lv1/minh_shadow
+  rotate: true
+  xy: 857, 87
+  size: 69, 166
+  orig: 99, 193
+  offset: 15, 14
+  index: -1
+lv1/tay_duoi_phai
+  rotate: true
+  xy: 953, 57
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_duoi_phai_shadow
+  rotate: true
+  xy: 1617, 155
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/tay_duoi_trai
+  rotate: true
+  xy: 1049, 68
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_duoi_trai_shadow
+  rotate: true
+  xy: 1620, 205
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/tay_tren_phai
+  rotate: true
+  xy: 1145, 68
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_tren_phai_shadow
+  rotate: true
+  xy: 1617, 107
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/tay_tren_trai
+  rotate: true
+  xy: 1241, 72
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_tren_trai_shadow
+  rotate: true
+  xy: 1619, 59
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1

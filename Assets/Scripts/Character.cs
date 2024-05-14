@@ -56,7 +56,7 @@ public abstract class Character : MonoBehaviour
     public Action<int> Evt_MeleeAttack;
     public Action<Character, int> Evt_ShootingAttack;
 
-    public event Action <bool> Evt_PlayerDead;
+    public  Action <bool> Evt_PlayerDead;
     protected Rigidbody2D body;
 
     protected BoxCollider2D characterHurtBox;
@@ -71,29 +71,29 @@ public abstract class Character : MonoBehaviour
     protected Color lightRed = new Color(212f/255f,79f/255f,79f/255f,1f); //(212f,79f,79f,1f);
     protected Color transparent = new Color(212f/255f,79f/255f,79f/255f,0f); //(212f,79f,79f,0f);
 
-    protected Color meleeHitBoxSpriteColor; 
+    protected SpriteRenderer meleeHitBoxSprite; 
 
 
 
     [Header("Stats")]
-    // [SerializeField] protected int health;
-    // [SerializeField] protected int damage;
-    [SerializeField] protected int setDamage;
-    [SerializeField] protected int setHealth;
+    [SerializeField] protected int health;
+    [SerializeField] protected int damage;
+    // [SerializeField] protected int setDamage;
+    // [SerializeField] protected int setHealth;
     [SerializeField] protected int currentDamage;
     [SerializeField] protected int currentHealth;
-    protected int health, damage;
+    //protected int health, damage;
 
     //
     private MaterialPropertyBlock mpb;
 
-    private void Awake()
-    {
-        Debug.Log("Do sthing");
-        // Assign stats
-        health = setHealth;
-        damage = setDamage;
-    }
+    // private void Awake()
+    // {
+    //     //Debug.Log("Do sthing");
+    //     // Assign stats
+    //     health = setHealth;
+    //     damage = setDamage;
+    // }
 
     private void Start()
     {
@@ -107,8 +107,8 @@ public abstract class Character : MonoBehaviour
         basicAttack.Init(); // Initialize Basic Attack Hitbox
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         basicAttackHitBox.OnHit += DealDmg;
-        // Setting color
-        meleeHitBoxSpriteColor = basicAttackHitBox.GetComponent<SpriteRenderer>().color;
+        // Get sprite renderer
+        meleeHitBoxSprite = basicAttackHitBox.GetComponent<SpriteRenderer>();
         // Setting Hurtbox's offset
         characterHurtBox = GetComponent<BoxCollider2D>();
         offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
@@ -182,7 +182,7 @@ public abstract class Character : MonoBehaviour
             GameManager.Instance.AddScore(100);
         }
         if (gameObject.tag == "Player"){
-            Evt_PlayerDead.Invoke(true);
+            //Evt_PlayerDead(true);
         }
         PlayAnimation(dieAnimationName, 0f, false);
         Destroy(gameObject, 1f);
@@ -304,9 +304,13 @@ public abstract class Character : MonoBehaviour
                     if (attackAnimTime < 0)
                     {
                         isAttacking = false;
+                        if (isGrounded){
+                            Idle();
+                        }
                     }
                 }
-                // Controlling isDamaged
+                // Controlling isDamaged // Dashing on ground even when teleport
+                // Bug: Player freeze before fall anim
                 IsDamagedControl(); // 
             }
                 update2();
@@ -338,10 +342,10 @@ public abstract class Character : MonoBehaviour
         }
     }
 
-    // public void CallMeleeAttack(int damage)
-    // {
-    //     Evt_MeleeAttack?.Invoke(damage);
-    // }
+    public void CallMeleeAttack(int damage)
+    {
+        Evt_MeleeAttack?.Invoke(damage);
+    }
 }
 
 

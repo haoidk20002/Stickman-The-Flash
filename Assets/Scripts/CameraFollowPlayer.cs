@@ -21,22 +21,27 @@ public class CameraFollowPlayer : MonoBehaviour
 
     private Character mainPlayer;
 
+    private void HandlePlayerDeath(bool value)
+    {
+        playerDead = value;
+    }
+
 
 
     void Awake()
     {
         desiredLocation = transform.position;
         mainCamera = Camera.main;
-        //mainPlayer.Evt_PlayerDead += playerDead;
+        //mainPlayer.Evt_PlayerDead += HandlePlayerDeath;
     }
     private void Update()
     {
-        //if (player == null) { return;}
-        if (playerDead && !zoomed){
-            //StartCoroutine(ZoomInThenOut());
-            zoomed = true;
-            return;
-        }
+        if (player == null) { return;}
+        // if (playerDead && !zoomed){
+        //     //StartCoroutine(ZoomInThenOut());
+        //     zoomed = true;
+        //     return;
+        // }
         desiredLocation.x = player.position.x;
     }
     private void MoveCamera()

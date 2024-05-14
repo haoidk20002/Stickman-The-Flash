@@ -1,0 +1,328 @@
+
+enemy1.png
+size: 760,523
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fx/bang_roi1
+  rotate: false
+  xy: 656, 335
+  size: 102, 95
+  orig: 102, 95
+  offset: 0, 0
+  index: -1
+fx/choe
+  rotate: false
+  xy: 218, 56
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+fx/dat_nut01
+  rotate: true
+  xy: 170, 55
+  size: 185, 46
+  orig: 185, 46
+  offset: 0, 0
+  index: -1
+fx/eff_dash_attack1
+  rotate: false
+  xy: 248, 281
+  size: 239, 240
+  orig: 242, 240
+  offset: 2, 0
+  index: -1
+fx/fx_dash1
+  rotate: true
+  xy: 2, 34
+  size: 204, 166
+  orig: 208, 166
+  offset: 4, 0
+  index: -1
+fx/impact_1
+  rotate: true
+  xy: 97, 272
+  size: 249, 149
+  orig: 266, 160
+  offset: 11, 0
+  index: -1
+fx/luot1
+  rotate: true
+  xy: 489, 287
+  size: 54, 110
+  orig: 63, 118
+  offset: 6, 7
+  index: -1
+fx/luot2
+  rotate: true
+  xy: 289, 74
+  size: 50, 113
+  orig: 63, 118
+  offset: 9, 4
+  index: -1
+fx/luot3
+  rotate: false
+  xy: 554, 354
+  size: 49, 112
+  orig: 63, 118
+  offset: 9, 5
+  index: -1
+fx/luot4
+  rotate: false
+  xy: 605, 359
+  size: 49, 107
+  orig: 63, 118
+  offset: 9, 9
+  index: -1
+fx/luot5
+  rotate: false
+  xy: 555, 16
+  size: 49, 112
+  orig: 63, 118
+  offset: 10, 4
+  index: -1
+fx/luot6
+  rotate: false
+  xy: 700, 143
+  size: 48, 109
+  orig: 63, 118
+  offset: 10, 7
+  index: -1
+fx/luot_dam2
+  rotate: false
+  xy: 439, 127
+  size: 83, 36
+  orig: 152, 59
+  offset: 43, 13
+  index: -1
+fx/luot_dam4
+  rotate: false
+  xy: 671, 486
+  size: 83, 35
+  orig: 152, 59
+  offset: 45, 13
+  index: -1
+fx/luot_dam5
+  rotate: true
+  xy: 489, 439
+  size: 82, 33
+  orig: 152, 59
+  offset: 46, 14
+  index: -1
+fx/smoke_03_00002
+  rotate: false
+  xy: 236, 57
+  size: 47, 15
+  orig: 81, 46
+  offset: 5, 0
+  index: -1
+fx/smoke_03_00006
+  rotate: false
+  xy: 700, 254
+  size: 49, 31
+  orig: 81, 46
+  offset: 20, 0
+  index: -1
+fx/smoke_03_00009
+  rotate: true
+  xy: 367, 28
+  size: 44, 35
+  orig: 81, 46
+  offset: 30, 0
+  index: -1
+fx/smoke_03_00012
+  rotate: true
+  xy: 524, 130
+  size: 40, 34
+  orig: 81, 45
+  offset: 35, 0
+  index: -1
+fx/smoke_03_00014
+  rotate: true
+  xy: 181, 39
+  size: 14, 33
+  orig: 81, 46
+  offset: 53, 0
+  index: -1
+fx/vet_chem
+  rotate: false
+  xy: 404, 4
+  size: 149, 120
+  orig: 154, 134
+  offset: 1, 14
+  index: -1
+fx/vong phep
+  rotate: true
+  xy: 2, 240
+  size: 281, 93
+  orig: 287, 124
+  offset: 2, 26
+  index: -1
+lv1/chan_duoi_phai
+  rotate: true
+  xy: 560, 136
+  size: 34, 96
+  orig: 34, 96
+  offset: 0, 0
+  index: -1
+lv1/chan_duoi_phai_shadow
+  rotate: false
+  xy: 439, 165
+  size: 53, 114
+  orig: 89, 138
+  offset: 18, 12
+  index: -1
+lv1/chan_duoi_trai
+  rotate: true
+  xy: 658, 432
+  size: 34, 96
+  orig: 34, 96
+  offset: 0, 0
+  index: -1
+lv1/chan_duoi_trai_shadow
+  rotate: true
+  xy: 555, 468
+  size: 53, 114
+  orig: 89, 138
+  offset: 18, 12
+  index: -1
+lv1/chan_tren_phai
+  rotate: true
+  xy: 25, 4
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/chan_tren_phai_shadow
+  rotate: true
+  xy: 601, 287
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/chan_tren_trai
+  rotate: true
+  xy: 121, 4
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/chan_tren_trai_shadow
+  rotate: false
+  xy: 604, 173
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/dau
+  rotate: false
+  xy: 494, 172
+  size: 108, 113
+  orig: 108, 113
+  offset: 0, 0
+  index: -1
+lv1/dau_shadow
+  rotate: false
+  xy: 289, 126
+  size: 148, 153
+  orig: 202, 207
+  offset: 27, 27
+  index: -1
+lv1/mat_phai
+  rotate: true
+  xy: 658, 123
+  size: 48, 31
+  orig: 48, 31
+  offset: 0, 0
+  index: -1
+lv1/mat_phai_die
+  rotate: false
+  xy: 285, 63
+  size: 32, 9
+  orig: 32, 9
+  offset: 0, 0
+  index: -1
+lv1/mat_trai
+  rotate: false
+  xy: 2, 2
+  size: 21, 30
+  orig: 21, 30
+  offset: 0, 0
+  index: -1
+lv1/mat_trai_die
+  rotate: true
+  xy: 170, 34
+  size: 19, 9
+  orig: 19, 9
+  offset: 0, 0
+  index: -1
+lv1/minh
+  rotate: true
+  xy: 217, 2
+  size: 51, 148
+  orig: 51, 148
+  offset: 0, 0
+  index: -1
+lv1/minh_shadow
+  rotate: false
+  xy: 218, 74
+  size: 69, 166
+  orig: 99, 193
+  offset: 15, 14
+  index: -1
+lv1/tay_duoi_phai
+  rotate: true
+  xy: 97, 242
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_duoi_phai_shadow
+  rotate: false
+  xy: 652, 173
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/tay_duoi_trai
+  rotate: true
+  xy: 193, 242
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_duoi_trai_shadow
+  rotate: false
+  xy: 606, 22
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/tay_tren_phai
+  rotate: false
+  xy: 524, 427
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_tren_phai_shadow
+  rotate: false
+  xy: 654, 9
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1
+lv1/tay_tren_trai
+  rotate: false
+  xy: 494, 343
+  size: 28, 94
+  orig: 28, 94
+  offset: 0, 0
+  index: -1
+lv1/tay_tren_trai_shadow
+  rotate: false
+  xy: 702, 29
+  size: 46, 112
+  orig: 78, 140
+  offset: 16, 14
+  index: -1

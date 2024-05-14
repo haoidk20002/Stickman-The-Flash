@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager instance; // Singleton instance
     private int score = 0, highScore = 0;
-    private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 4;
+    private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 0;
     private bool spawningWave = false;
 
     private float minX, maxX;
@@ -95,12 +95,12 @@ public class GameManager : MonoBehaviour
         {
             // get enemy count
             //if enemy count < 0 then spawn next wave
-            if (enemiesCount == 0 && !spawningWave)
-            {
-                waveNumber++;
-                enemiesSpawnNumber++;
-                StartCoroutine(SpawnEnemiesWave());
-            }
+            // if (enemiesCount == 0 && !spawningWave)
+            // {
+            //     waveNumber++;
+            //     enemiesSpawnNumber++;
+            //     StartCoroutine(SpawnEnemiesWave());
+            // }
         }
 
         // show score and high score

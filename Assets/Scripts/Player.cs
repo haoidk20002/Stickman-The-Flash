@@ -5,6 +5,7 @@ using UnityEditor.U2D.Animation;
 using System;
 using System.ComponentModel;
 using System.Collections;
+using Unity.VisualScripting;
 
 
 
@@ -15,8 +16,8 @@ public class Player : Character
     [SerializeField] private UnitAttack dashAttack;
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.25f;
     private float moveDistance = 5f;
-    [SerializeField] private float moveSpeed = 50f;
-    private float attackRange = 6f, minSwipeDistance = 8f;
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private float attackRange, minSwipeDistance;
     private float minX, maxX;
     [SerializeField] private float timer;
     private float currentTimer;
@@ -27,13 +28,15 @@ public class Player : Character
 
     // Coordinates
     private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
-    private Vector2 startPos, dashDestination, teleportDestination, swipeDirection;
+    private Vector2 startPos, endPos, dashDestination, teleportDestination, swipeDirection;
 
     // get camera bonuds first, then lock player in bounds
     //private Rigidbody2D body;
     public LayerMask DetectLayerMask;
     public GameObject bullet;
     private Vector3 bulletStartPos;
+    private Vector2 startScreenPos, endScreenPos;
+    private Vector2 verlocity;
 
     public void AddPlayerHealth(HealthBar playerHealth)
     {
@@ -123,7 +126,7 @@ public class Player : Character
     private void Teleport()
     {
         var enemies = findTarget();
-
+        
         // if enemy is found, player teleports close to it then attack, else teleport to the clicked point
         if (enemies != null)
         {
@@ -139,8 +142,10 @@ public class Player : Character
         }
         else
         {
-            Idle();
-            oldPos = transform.position; transform.position = target;
+            Dash(0.2f);
+            //Idle();
+            oldPos = transform.position; 
+            transform.position = endPos;
             direction = transform.position.x - oldPos.x;
             Turn(direction);
         }
@@ -149,24 +154,32 @@ public class Player : Character
     }
     private void Move()
     {
+        verlocity.y = 1f;
         transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
-        Vector2 verlocity = body.velocity; verlocity.y = 0;
-        body.velocity = verlocity;
+        // if (swipeDirection.y > 0){
+        //     body.velocity += verlocity;
+        // } else{
+        //     body.velocity -= verlocity;
+        // }
+        // verlocity = body.velocity; verlocity.y = 0;
+        // body.velocity = verlocity;
+
     }
 
     private void SwipeOrTeleport()
     {
-        Vector2 endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        isFalling = false;
         swipeDirection = endPos - startPos;
         // Determine if the swipe was long enough (you can set a threshold)
-        swipeMagnitude = swipeDirection.magnitude;
+        //swipeMagnitude = swipeDirection.magnitude;
+        swipeMagnitude = (startScreenPos - endScreenPos).magnitude;
+        Debug.Log("Start: " + startPos + "End: " + endPos);
+        //Debug.Log("Swipe direction: " + swipeDirection);
         //Debug.Log(swipeMagnitude*multiplier);
         if (swipeMagnitude > minSwipeDistance)
         {
-            if (Mathf.Abs(swipeDirection.x) > Mathf.Abs(swipeDirection.y)) // Check the direction of the swipe
-            {
-                CalculateMove();
-            }
+            body.velocity = Vector2.zero;
+            CalculateMove();
         }
         else
         {
@@ -178,22 +191,21 @@ public class Player : Character
     private void CalculateMove()
     {   // Distance depend on swipe distance, get to destination in time duration
         currentTimer = timer;
-        dashDestination.y = transform.position.y;
-        int value;
-        if (swipeDirection.x > 0)
-        {
-            value = 1;
-        }
-        else
-        {
-            value = -1;
-        }
+        //dashDestination.y = transform.position.y;
+        // int value;
+        // if (swipeDirection.x > 0)
+        // {
+        //     value = 1;
+        // }
+        // else
+        // {
+        //     value = -1;
+        // }
         Turn(swipeDirection.x);
-        dashDestination.x = transform.position.x + value * swipeMagnitude * multiplier;
+        dashDestination.x = transform.position.x + swipeDirection.x * 10;
+        dashDestination.y = transform.position.y + swipeDirection.y * 5;
         //Debug.Break();
         DashAttack();
-
-        //Debug.Log("Swipe Distance:" + swipeMagnitude + " Move Distance: " + swipeMagnitude);
     }
     private void DashAttack()
     {
@@ -201,9 +213,9 @@ public class Player : Character
         isAttacking = true;
         attackAnimTime = dashAttack.AttackTime;
         PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
+        AddAnimation(idleAnimationName,true,0);
         dashAttack.Trigger();
         Evt_MeleeAttack?.Invoke((int)damage / 2);
-        AddAnimation(idleAnimationName, true, 0f);
     }
     // may be set as protected in Character class
     private void GetShootPosAndDirection()
@@ -231,6 +243,10 @@ public class Player : Character
             FillPhase(0f);
             yield return new WaitForSeconds(0.05f);
         }
+    }
+    private void Dash(float duration){
+        PlayAnimation(dashAttack.AttackAnim, duration, false);
+        AddAnimation(idleAnimationName,true,0f);
     }
 
     protected override void update2()
@@ -261,6 +277,8 @@ public class Player : Character
                 currentTimer -= Time.deltaTime;
                 if (currentTimer <= 0f)
                 {
+                    // verlocity.y = -2f;
+                    // body.velocity = verlocity;
                     isMoving = false;
                     isAttacking = false;
                     basicAttackHitBox.enabled = false;
@@ -276,11 +294,14 @@ public class Player : Character
             {
                 // target: actual destination, click_position:  desired destination
                 target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                startScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
                 // swipe
                 startPos = target; // Detect the start of the swipe
             }
             if (Input.GetMouseButtonUp(0))
             {
+                endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                endScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
                 SwipeOrTeleport();
             }
 
@@ -292,12 +313,6 @@ public class Player : Character
             Vector3 clampedPosition = transform.position;
             clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
             transform.position = clampedPosition;
-
-            // if (Input.GetKeyDown(KeyCode.Space))
-            // {
-            //     Debug.Log("pressed");
-            //     Instantiate(bullet, bulletStartPos, bullet.transform.rotation);
-            // }
         }
     }
 }
