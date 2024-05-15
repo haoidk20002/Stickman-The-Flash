@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 0;
     private bool spawningWave = false;
 
-    private float minX, maxX;
+    private float minX, maxX, minY, maxY;
 
     public TextMeshProUGUI ScoreText;
     public TextMeshProUGUI HighScoreText;
@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX);
+        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
         // if player or boss dies, its respective health bar toggles off
         // Toggle on when it appears.
         if (MainPlayer == null)

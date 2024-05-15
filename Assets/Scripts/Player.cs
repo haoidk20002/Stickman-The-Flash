@@ -18,17 +18,17 @@ public class Player : Character
     private float moveDistance = 5f;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float attackRange, minSwipeDistance;
-    private float minX, maxX;
+    private float minX, maxX, maxY, minY;
     [SerializeField] private float timer;
     private float currentTimer;
     private float multiplier = 10f;
-    private float swipeMagnitude, playerWidth, direction;
+    private float swipeMagnitude, playerWidth, playerHeight, direction;
     [SerializeField] private float SetInvincibilityTime;
     private float invincibilityTime;
 
     // Coordinates
-    private Vector2 oldPos, newPos, target, clickPosition, cameraBounds, cameraPos;
-    private Vector2 startPos, endPos, dashDestination, teleportDestination, swipeDirection;
+    private Vector2 oldPos, newPos, clickPosition, cameraBounds, cameraPos;
+    private Vector2 startPos, endPos, dashDestination, teleportDestination, swipeDirection, swipeDirectionOnScreen;
 
     // get camera bonuds first, then lock player in bounds
     //private Rigidbody2D body;
@@ -54,7 +54,7 @@ public class Player : Character
     }
     private void SettingMainCharacterValue1()
     {
-        target = transform.position;
+
         clickPosition = transform.position;
         gameObject.tag = "Player";
         gameObject.layer = 3;
@@ -103,13 +103,14 @@ public class Player : Character
         // minX = Camera.main.ScreenToWorldPoint(new Vector3(0,0,0)).x;
         // maxX = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,0)).x;
     }
-    private void GetPlayerStat()
+    private void GetPlayerHurtBoxSize()
     {
         playerWidth = transform.GetComponent<BoxCollider2D>().size.x;
+        playerHeight = transform.GetComponent<BoxCollider2D>().size.y;
     }
-    protected override Character findTarget()
+    protected override Character FindTarget()
     {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(target, radius, DetectLayerMask);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(endPos, radius, DetectLayerMask);
         if (hitColliders.Length > 0) { return hitColliders[0].GetComponent<Character>(); } /* Return the first character found*/
         else { return null; }
     }
@@ -125,13 +126,14 @@ public class Player : Character
     }
     private void Teleport()
     {
-        var enemies = findTarget();
-        
+        attackAnimTime = basicAttack.AttackTime;
+        var enemies = FindTarget();
+
         // if enemy is found, player teleports close to it then attack, else teleport to the clicked point
         if (enemies != null)
         {
             var enemy = enemies.gameObject.transform.position;
-            teleportDestination = target;
+            teleportDestination = endPos;
             oldPos = transform.position;
             direction = teleportDestination.x - oldPos.x;
             Turn(direction);
@@ -142,9 +144,9 @@ public class Player : Character
         }
         else
         {
-            Dash(0.2f);
+            Run();
             //Idle();
-            oldPos = transform.position; 
+            oldPos = transform.position;
             transform.position = endPos;
             direction = transform.position.x - oldPos.x;
             Turn(direction);
@@ -156,24 +158,18 @@ public class Player : Character
     {
         verlocity.y = 1f;
         transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
-        // if (swipeDirection.y > 0){
-        //     body.velocity += verlocity;
-        // } else{
-        //     body.velocity -= verlocity;
-        // }
-        // verlocity = body.velocity; verlocity.y = 0;
-        // body.velocity = verlocity;
-
     }
 
     private void SwipeOrTeleport()
     {
         isFalling = false;
         swipeDirection = endPos - startPos;
+        swipeDirectionOnScreen = endScreenPos - startScreenPos;
+        //Debug.Log("Swipe Direction On Screen: " + swipeDirectionOnScreen);
         // Determine if the swipe was long enough (you can set a threshold)
         //swipeMagnitude = swipeDirection.magnitude;
         swipeMagnitude = (startScreenPos - endScreenPos).magnitude;
-        Debug.Log("Start: " + startPos + "End: " + endPos);
+        // Debug.Log("Start: " + startPos + "End: " + endPos);
         //Debug.Log("Swipe direction: " + swipeDirection);
         //Debug.Log(swipeMagnitude*multiplier);
         if (swipeMagnitude > minSwipeDistance)
@@ -184,54 +180,55 @@ public class Player : Character
         else
         {
             isMoving = false;
+            isAttacking = true;
             Teleport();
         }
     }
 
     private void CalculateMove()
     {   // Distance depend on swipe distance, get to destination in time duration
+        // if he is on ground, whether he dashes or not depending on the swipe direction on screen (different coordinate)
+        // if that swipe direction's y is low enough, he won't do that 
+        if (isGrounded && swipeDirectionOnScreen.y < -0.1f) { return; }
+        if (isGrounded && (-0.1f <= swipeDirectionOnScreen.y) && (swipeDirectionOnScreen.y < 0f))
+        {
+            swipeDirection.y = 0f;
+        }
         currentTimer = timer;
-        //dashDestination.y = transform.position.y;
-        // int value;
-        // if (swipeDirection.x > 0)
-        // {
-        //     value = 1;
-        // }
-        // else
-        // {
-        //     value = -1;
-        // }
         Turn(swipeDirection.x);
+        //Debug.Log("Swipe direction y: " + swipeDirection.y + "Dash y destination: " + dashDestination.y);
         dashDestination.x = transform.position.x + swipeDirection.x * 10;
         dashDestination.y = transform.position.y + swipeDirection.y * 5;
         //Debug.Break();
-        DashAttack();
+        DashAttack(); // Dash can be disabled when touching ground from above
     }
     private void DashAttack()
     {
         isMoving = true;
         isAttacking = true;
         attackAnimTime = dashAttack.AttackTime;
-        PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-        AddAnimation(idleAnimationName,true,0);
+        // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
+        // AddAnimation(idleAnimationName,true,0);
+        Dash(dashAttack.AttackTime);
         dashAttack.Trigger();
         Evt_MeleeAttack?.Invoke((int)damage / 2);
     }
+
+    // Unused concept (Shooting)
     // may be set as protected in Character class
-    private void GetShootPosAndDirection()
-    {
-        int bulletDirection;
-        // if(direction > 0){
-        //     bulletDirection = 1;
-        // }else {bulletDirection = -1;}
-        bulletDirection = direction > 0 ? 1 : -1; // forward (direction > 0) => 1 // short typing
-        bulletStartPos.x = transform.position.x + bulletDirection * 5;
-        bulletStartPos.y = transform.position.y;
-    }
+    // private void GetShootPosAndDirection()
+    // {
+    //     int bulletDirection;
+    //     // if(direction > 0){
+    //     //     bulletDirection = 1;
+    //     // }else {bulletDirection = -1;}
+    //     bulletDirection = direction > 0 ? 1 : -1; // forward (direction > 0) => 1 // short typing
+    //     bulletStartPos.x = transform.position.x + bulletDirection * 5;
+    //     bulletStartPos.y = transform.position.y;
+    // }
 
     protected override void BeingHit2()
     {
-        Debug.Log("isImmune: " + isImmune);
         isImmune = true;
     }
     protected override IEnumerator Flickering()
@@ -244,17 +241,34 @@ public class Player : Character
             yield return new WaitForSeconds(0.05f);
         }
     }
-    private void Dash(float duration){
+    private void Dash(float duration)
+    {
         PlayAnimation(dashAttack.AttackAnim, duration, false);
-        AddAnimation(idleAnimationName,true,0f);
+        AddAnimation(idleAnimationName, true, 0f);
+        //Debug.Break();
+    }
+    private void DisableDash()
+    {
+        isMoving = false;
+        isAttacking = false;
+        // fall distance after disabled is > 14.5f => set isFalling = true to show full animation (Land then Idle)
+        if (swipeDirectionOnScreen.y < 0f ) // condition not suit
+        {
+            isFalling = true;
+        }
+        else { isFalling = false; }
+        if (isGrounded) { Land(); }
+        dashAttack.isDisabled = true;
+        currentTimer = timer;
     }
 
     protected override void update2()
     {
+        //Debug.Log("isGrounded: " + isGrounded + "wasGrounded: " + wasGrounded);
         // Track Player's Health
         ratio = characterHealth.RatioHealth;
         _playerHealth.UpdateHealthBar(ratio);
-        
+        // immunity
         if (isImmune)
         {
             invincibilityTime -= Time.deltaTime;
@@ -264,10 +278,10 @@ public class Player : Character
                 invincibilityTime = SetInvincibilityTime;
             }
         }
-        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX);
+        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out maxY, out minY);
         //CalculateBoundsLocation();
-        GetPlayerStat();
-        GetShootPosAndDirection();
+        GetPlayerHurtBoxSize();
+        //GetShootPosAndDirection();
         dashAttack.TakeTime(Time.deltaTime);
         if (characterHealth.IsDead == false)
         {
@@ -275,28 +289,24 @@ public class Player : Character
             {
                 Move();
                 currentTimer -= Time.deltaTime;
+                //Debug.Log(currentTimer);
+
                 if (currentTimer <= 0f)
                 {
-                    // verlocity.y = -2f;
-                    // body.velocity = verlocity;
-                    isMoving = false;
-                    isAttacking = false;
-                    basicAttackHitBox.enabled = false;
+                    DisableDash();
                 }
             }
-            else
-            {
-                currentTimer = timer;
-            }
+            // else
+            // {
+            //     currentTimer = timer;
+            // }
             // Teleport: Click to desired destination and the player teleports after releasing click
             // Move: Click, swipe, then release to move according to the swipe direction
             if (Input.GetMouseButtonDown(0))
             {
                 // target: actual destination, click_position:  desired destination
-                target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 startScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-                // swipe
-                startPos = target; // Detect the start of the swipe
             }
             if (Input.GetMouseButtonUp(0))
             {
@@ -305,13 +315,23 @@ public class Player : Character
                 SwipeOrTeleport();
             }
 
-            // lock player in camera, reset velocity when hit camera bound
-            if (transform.position.x < minX + playerWidth / 2 + 5f || transform.position.x > maxX - playerWidth / 2 - 5f)
+            // lock player in camera, reset velocity when hit camera bound 
+            // to do that, get half player hurtbox's size  and limiting pos relative to the bound (sideway only) (5f)
+            if (transform.position.x < minX + playerWidth / 2 + 5f || transform.position.x > maxX - playerWidth / 2 - 5f
+            || transform.position.y > maxY - playerHeight / 2 || transform.position.y < minY + playerHeight / 2 + 1f)
             {
+                Debug.Log("Blocked");
                 body.velocity = Vector3.zero;
+                if (isMoving)
+                {
+                    DisableDash();
+                }
+
             }
             Vector3 clampedPosition = transform.position;
             clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX + playerWidth / 2, maxX - playerWidth / 2);
+            clampedPosition.y = Mathf.Clamp(clampedPosition.y, minY + playerHeight / 2 + 1f, maxY - playerHeight / 2);
+            //Debug.Log(clampedPosition.y); // maxY = 26.5f => to block him, clampedPosition.y < 26.5f
             transform.position = clampedPosition;
         }
     }

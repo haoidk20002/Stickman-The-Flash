@@ -37,7 +37,7 @@ public class Enemy : Character
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
     }
-    protected override Character findTarget() // following player's pos
+    protected override Character FindTarget() // following player's pos
     {
         var main_player = GameManager.Instance.MainPlayer;
         return main_player;
@@ -107,13 +107,7 @@ public class Enemy : Character
     }
     protected override void update2()
     {
-        // if (attackState){
-        //     basicAttackHitBox.GetComponent<SpriteRenderer>().color = lightRed;
-        //     basicAttackHitBox.GetComponent<SpriteRenderer>().color = Color.Lerp(transparent,lightRed,lerpValue); 
-        // } else {
-        //     basicAttackHitBox.GetComponent<SpriteRenderer>().color = transparent;
-        // }
-        player = findTarget();
+        player = FindTarget();
         if (player != null){
             playerLocation = player.gameObject.transform.position;
         }
@@ -130,7 +124,7 @@ public class Enemy : Character
                     if (!playerInSight && !attackState)
                     {
                         // Run or Jump
-                        playerInSight = inRange();  // check if player is in attack range
+                        playerInSight = inRange();  // check if player is in attack range (for boss attack range is random depend on the attack)
                         // only move or jump when attack anim (0.5f) finished and isGround == true
                         if (isGrounded == true)
                         {
@@ -159,7 +153,7 @@ public class Enemy : Character
                 //}
             }else if (attackState){
                 StopAllCoroutines();
-                }
+            }
         }
         else
         {

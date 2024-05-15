@@ -34,7 +34,7 @@ public class StillEnemy : Character
         Idle();
     }
 
-    protected override Character findTarget()
+    protected override Character FindTarget()
     {
         var main_player = GameManager.Instance.MainPlayer;
         return main_player;
@@ -84,7 +84,7 @@ public class StillEnemy : Character
     protected override void update2()
     {
 
-        player = findTarget();
+        player = FindTarget();
         playerLocation = player.gameObject.transform.position;
 
 

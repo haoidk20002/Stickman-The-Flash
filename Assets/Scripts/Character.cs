@@ -11,7 +11,7 @@ public abstract class Character : MonoBehaviour
     // Animation
     [SpineAnimation][SerializeField] protected string idleAnimationName;
     [Header("Basic Attack")]
-    [SerializeField] private UnitAttack basicAttack;
+    [SerializeField] protected UnitAttack basicAttack;
     [SerializeField] protected MeleeBullet basicAttackHitBox;
 
     [Header("Other Anim")]
@@ -146,7 +146,7 @@ public abstract class Character : MonoBehaviour
 
         //playingAnim = anim_name;
     }
-    protected abstract Character findTarget();
+    protected abstract Character FindTarget();
     protected void Attack()
     {
         isAttacking = true;
@@ -162,7 +162,10 @@ public abstract class Character : MonoBehaviour
     }
     protected void Run()
     {
-        if (isGrounded == true)
+        if (gameObject.tag == "Player"){
+            PlayAnimation(runAnimationName, 0f, true);
+        }
+        else if (isGrounded == true && gameObject.tag == "Boss" || gameObject.tag == "Enemy")
         {
             PlayAnimation(runAnimationName, 0f, true);
         }
@@ -241,6 +244,7 @@ public abstract class Character : MonoBehaviour
     }
     protected void Fall()
     {
+        //if (){ return;}
         if (!isAttacking && Mathf.Abs(transform.position.y - groundYPos) > 14.5f)
         {
             PlayAnimation(fallAnimationName, 0f, false);
@@ -249,10 +253,14 @@ public abstract class Character : MonoBehaviour
     }
 
     protected void Land()
-    {
-        if (!isFalling) return;
+    {   
+        if (!isFalling) {
+            PlayAnimation(idleAnimationName, 0f, true);
+            return;
+        }
         if (isAttacking == false && isDamaged == false)
         {
+            Debug.Log("Land");
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
             isFalling = false;
@@ -301,9 +309,11 @@ public abstract class Character : MonoBehaviour
                 if (isAttacking == true)
                 {
                     attackAnimTime -= Time.deltaTime;
+                    
                     if (attackAnimTime < 0)
                     {
                         isAttacking = false;
+                        //
                         if (isGrounded){
                             Idle();
                         }
@@ -362,7 +372,9 @@ public class UnitAttack
 
     public event Action<bool> Evt_EnableBullet;
     private float _currentTime;
-    private bool _isEnableBullet;
+    private bool _isEnableBullet = false;
+
+    public bool isDisabled = false;
 
     public void Init()
     {
@@ -373,8 +385,9 @@ public class UnitAttack
     public void Trigger()
     {
         //Debug.Log("Trigger");
+        isDisabled = false;
         _currentTime = 0;
-        _isEnableBullet = false;
+        //_isEnableBullet = false;
     }
 
     public void TakeTime(float time)
@@ -389,7 +402,10 @@ public class UnitAttack
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }
-            if (_currentTime >= attackTime) Evt_EnableBullet?.Invoke(false);
+            if (_currentTime >= attackTime || isDisabled) {
+                _isEnableBullet = false;
+                Evt_EnableBullet?.Invoke(false);
+            }
         }
     }
 }

@@ -10,6 +10,21 @@ public class Boss : Enemy
 
     protected new float waitTimer = 1f;
 
+    private void Attack2()
+    {
+        isAttacking = true;
+        attackAnimTime = basicAttack.AttackTime;
+        PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
+        basicAttack.Trigger();
+        AddAnimation(idleAnimationName, true, 0f);
+    }
+
+    // protected virtual IEnumerator WaitToAttack(float waitSecs){
+
+    // }
+
+
+
     public void AddBossHealth(HealthBar bossHealth)
     {
         _bossHealth = bossHealth;
@@ -23,6 +38,7 @@ public class Boss : Enemy
         base.start2(); // extends from start2 of enemy class (base class)
         gameObject.tag = "Boss";
     }
+    // Boss will have 3 attack (kicking and spinning attack and dashing attack)
     protected override void update2()
     {
         // tracking boss health
