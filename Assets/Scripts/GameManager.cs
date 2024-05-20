@@ -95,12 +95,12 @@ public class GameManager : MonoBehaviour
         {
             // get enemy count
             //if enemy count < 0 then spawn next wave
-            // if (enemiesCount == 0 && !spawningWave)
-            // {
-            //     waveNumber++;
-            //     enemiesSpawnNumber++;
-            //     StartCoroutine(SpawnEnemiesWave());
-            // }
+            if (enemiesCount == 0 && !spawningWave)
+            {
+                waveNumber++;
+                enemiesSpawnNumber++;
+                StartCoroutine(SpawnEnemiesWave());
+            }
         }
 
         // show score and high score

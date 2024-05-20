@@ -392,7 +392,14 @@ MonoBehaviour:
     attackAnimationName: attack_dam
     attackTime: 0.4
     enableBulletTime: 0.38
+    isDisabled: 0
   basicAttackHitBox: {fileID: 3570482660402923820}
+  dashAttack:
+    attackAnimationName: attack_dap2
+    attackTime: 0
+    enableBulletTime: 0
+    isDisabled: 0
+  dashAttackHitbox: {fileID: 3570482660402923820}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
   runAnimationName: run

@@ -2730,6 +2730,7 @@ MonoBehaviour:
     attackAnimationName: da
     attackTime: 0.4
     enableBulletTime: 0.2
+    isDisabled: 0
   basicAttackHitBox: {fileID: 2117003002}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
@@ -2750,6 +2751,8 @@ MonoBehaviour:
     attackAnimationName: dash_attack
     attackTime: 0.5
     enableBulletTime: 0
+    isDisabled: 0
+  dashAttackHitbox: {fileID: 2117003002}
   moveSpeed: 200
   attackRange: 6
   minSwipeDistance: 0.05

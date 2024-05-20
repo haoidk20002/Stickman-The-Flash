@@ -12,8 +12,9 @@ using Unity.VisualScripting;
 public class Player : Character
 {
     private HealthBar _playerHealth;
-    [Header("Dash Attack")]
-    [SerializeField] private UnitAttack dashAttack;
+    // [Header("Dash Attack")]
+    // [SerializeField] private UnitAttack dashAttack;
+    // [SerializeField] protected MeleeBullet dashAttackHitbox; //
     private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.25f;
     private float moveDistance = 5f;
     [SerializeField] private float moveSpeed;
@@ -67,10 +68,10 @@ public class Player : Character
         dashDestination = new Vector2(0, 0);
         dashDestination = transform.position;
         dashAttack.Init();
-        dashAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
+        dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
         currentTimer = timer;
-        //playerLayerMask = 1 << LayerMask.NameToLayer("Enemy");
     }
+
 
     private void GetCameraBounds() //camera's bounds depending on aspect ratio
     {
@@ -179,7 +180,7 @@ public class Player : Character
         }
         else
         {
-            isMoving = false;
+            isDashing = false;
             isAttacking = true;
             Teleport();
         }
@@ -202,17 +203,21 @@ public class Player : Character
         //Debug.Break();
         DashAttack(); // Dash can be disabled when touching ground from above
     }
-    private void DashAttack()
-    {
-        isMoving = true;
-        isAttacking = true;
-        attackAnimTime = dashAttack.AttackTime;
-        // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-        // AddAnimation(idleAnimationName,true,0);
-        Dash(dashAttack.AttackTime);
-        dashAttack.Trigger();
-        Evt_MeleeAttack?.Invoke((int)damage / 2);
-    }
+    // private void DashAttack()
+    // {
+    //     // old hitbox size (5.9,10) offset (0,0)
+    //     // new hitbox size (10,13) offset(-3,0)
+    //     dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(9f,13f);
+    //     dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(-2f,0f);
+    //     isMoving = true;
+    //     isAttacking = true;
+    //     attackAnimTime = dashAttack.AttackTime;
+    //     // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
+    //     // AddAnimation(idleAnimationName,true,0);
+    //     Dash(dashAttack.AttackTime);
+    //     dashAttack.Trigger();
+    //     Evt_MeleeAttack?.Invoke((int)damage / 2);
+    // }
 
     // Unused concept (Shooting)
     // may be set as protected in Character class
@@ -241,15 +246,17 @@ public class Player : Character
             yield return new WaitForSeconds(0.05f);
         }
     }
-    private void Dash(float duration)
-    {
-        PlayAnimation(dashAttack.AttackAnim, duration, false);
-        AddAnimation(idleAnimationName, true, 0f);
-        //Debug.Break();
-    }
+    // private void Dash(float duration)
+    // {
+    //     PlayAnimation(dashAttack.AttackAnim, duration, false);
+    //     AddAnimation(idleAnimationName, true, 0f);
+    //     //Debug.Break();
+    // }
     private void DisableDash()
     {
-        isMoving = false;
+        dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(5.9f,10f);
+        dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(0f,0f);
+        isDashing = false;
         isAttacking = false;
         // fall distance after disabled is > 14.5f => set isFalling = true to show full animation (Land then Idle)
         if (swipeDirectionOnScreen.y < 0f ) // condition not suit
@@ -285,7 +292,7 @@ public class Player : Character
         dashAttack.TakeTime(Time.deltaTime);
         if (characterHealth.IsDead == false)
         {
-            if (isMoving == true)
+            if (isDashing == true)
             {
                 Move();
                 currentTimer -= Time.deltaTime;
@@ -320,9 +327,9 @@ public class Player : Character
             if (transform.position.x < minX + playerWidth / 2 + 5f || transform.position.x > maxX - playerWidth / 2 - 5f
             || transform.position.y > maxY - playerHeight / 2 || transform.position.y < minY + playerHeight / 2 + 1f)
             {
-                Debug.Log("Blocked");
+                // Debug.Log("Blocked");
                 body.velocity = Vector3.zero;
-                if (isMoving)
+                if (isDashing)
                 {
                     DisableDash();
                 }

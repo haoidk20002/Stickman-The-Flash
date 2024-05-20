@@ -13,6 +13,9 @@ public abstract class Character : MonoBehaviour
     [Header("Basic Attack")]
     [SerializeField] protected UnitAttack basicAttack;
     [SerializeField] protected MeleeBullet basicAttackHitBox;
+    [Header ("Special Attack")]
+    [SerializeField] protected UnitAttack dashAttack;
+    [SerializeField] protected MeleeBullet dashAttackHitbox;
 
     [Header("Other Anim")]
     [SpineAnimation][SerializeField] private string fallAnimationName;
@@ -36,7 +39,7 @@ public abstract class Character : MonoBehaviour
     protected int playerLayerMask => 1 << LayerMask.NameToLayer("Player");
 
     // Check all state using boolean
-    protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false, isFalling = false;
+    protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false, isFalling = false, isDashing = false;
     public int directionSign;
     protected float damagedAnimTime;
     [SerializeField] protected float setdamagedAnimTime = 0.5f;
@@ -56,7 +59,7 @@ public abstract class Character : MonoBehaviour
     public Action<int> Evt_MeleeAttack;
     public Action<Character, int> Evt_ShootingAttack;
 
-    public  Action <bool> Evt_PlayerDead;
+    public Action<bool> Evt_PlayerDead;
     protected Rigidbody2D body;
 
     protected BoxCollider2D characterHurtBox;
@@ -68,10 +71,10 @@ public abstract class Character : MonoBehaviour
 
     protected MeshRenderer meshRenderer;
 
-    protected Color lightRed = new Color(212f/255f,79f/255f,79f/255f,1f); //(212f,79f,79f,1f);
-    protected Color transparent = new Color(212f/255f,79f/255f,79f/255f,0f); //(212f,79f,79f,0f);
+    protected Color lightRed = new Color(212f / 255f, 79f / 255f, 79f / 255f, 1f); //(212f,79f,79f,1f);
+    protected Color transparent = new Color(212f / 255f, 79f / 255f, 79f / 255f, 0f); //(212f,79f,79f,0f);
 
-    protected SpriteRenderer meleeHitBoxSprite; 
+    protected SpriteRenderer meleeHitBoxSprite;
 
 
 
@@ -113,7 +116,7 @@ public abstract class Character : MonoBehaviour
         characterHurtBox = GetComponent<BoxCollider2D>();
         offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
         // Get ground's y pos
-        getGroundPos = Physics2D.Raycast(transform.position, Vector2.down,  1000f, groundLayerMask); 
+        getGroundPos = Physics2D.Raycast(transform.position, Vector2.down, 1000f, groundLayerMask);
         groundYPos = getGroundPos.transform.position.y;
         start2();
     }
@@ -153,7 +156,24 @@ public abstract class Character : MonoBehaviour
         attackAnimTime = basicAttack.AttackTime;
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
         basicAttack.Trigger();
+        Evt_MeleeAttack?.Invoke(damage);
         AddAnimation(idleAnimationName, true, 0f);
+    }
+    protected void DashAttack()
+    {
+        // old hitbox size (5.9,10) offset (0,0)
+        // new hitbox size (10,13) offset(-3,0)
+        dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(9f, 13f);
+        dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(-2f, 0f);
+        isDashing = true;
+        isAttacking = true;
+        attackAnimTime = dashAttack.AttackTime;
+        // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
+        // AddAnimation(idleAnimationName,true,0);
+        Dash(dashAttack.AttackTime);
+        dashAttack.Trigger();
+        if (gameObject.tag == "Player"){Evt_MeleeAttack?.Invoke((int)damage / 2);}
+        if (gameObject.tag == "Boss"){Evt_MeleeAttack?.Invoke(damage*2);}
     }
     protected void Turn(float direction)
     {
@@ -162,7 +182,8 @@ public abstract class Character : MonoBehaviour
     }
     protected void Run()
     {
-        if (gameObject.tag == "Player"){
+        if (gameObject.tag == "Player")
+        {
             PlayAnimation(runAnimationName, 0f, true);
         }
         else if (isGrounded == true && gameObject.tag == "Boss" || gameObject.tag == "Enemy")
@@ -170,6 +191,14 @@ public abstract class Character : MonoBehaviour
             PlayAnimation(runAnimationName, 0f, true);
         }
     }
+    protected void Dash(float duration)
+    {
+        PlayAnimation(dashAttack.AttackAnim, duration, false);
+        AddAnimation(idleAnimationName, true, 0f);
+        //Debug.Break();
+    }
+
+    
     protected void Idle()
     {
         PlayAnimation(idleAnimationName, 0f, true);
@@ -184,7 +213,8 @@ public abstract class Character : MonoBehaviour
         {
             GameManager.Instance.AddScore(100);
         }
-        if (gameObject.tag == "Player"){
+        if (gameObject.tag == "Player")
+        {
             //Evt_PlayerDead(true);
         }
         PlayAnimation(dieAnimationName, 0f, false);
@@ -253,14 +283,14 @@ public abstract class Character : MonoBehaviour
     }
 
     protected void Land()
-    {   
-        if (!isFalling) {
+    {
+        if (!isFalling)
+        {
             PlayAnimation(idleAnimationName, 0f, true);
             return;
         }
         if (isAttacking == false && isDamaged == false)
         {
-            Debug.Log("Land");
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
             isFalling = false;
@@ -309,12 +339,13 @@ public abstract class Character : MonoBehaviour
                 if (isAttacking == true)
                 {
                     attackAnimTime -= Time.deltaTime;
-                    
+
                     if (attackAnimTime < 0)
                     {
                         isAttacking = false;
                         //
-                        if (isGrounded){
+                        if (isGrounded)
+                        {
                             Idle();
                         }
                     }
@@ -323,32 +354,35 @@ public abstract class Character : MonoBehaviour
                 // Bug: Player freeze before fall anim
                 IsDamagedControl(); // 
             }
-                update2();
+            update2();
         }
 
     }
     void FixedUpdate()
     {
-        // The old frame data (old isGounded value) is stored in wasGrounded
-        wasGrounded = isGrounded;
-        // The new frame data is collected using raycast and put in isGrounded
-        RaycastHit2D hit = Physics2D.Raycast(transform.position + offset3D, Vector2.down, characterHurtBox.size.y / 2 + 0.1f, groundLayerMask);
-        Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset3D.x, transform.position.y + offset3D.y - characterHurtBox.size.y / 2), Color.green);
-        if (hit.collider != null)
+        if (!characterHealth.IsDead)
         {
-            isGrounded = true;
-            isJumping = false;
-        }
-        else isGrounded = false;
-        // Land not called during attack and damaged
-        if (isGrounded == true && wasGrounded == false)
-        {
-            Land();
-            //Debug.Log("Land");
-        }
-        if (body.velocity.y < 0 && !isGrounded)
-        {
-            Fall();
+            // The old frame data (old isGounded value) is stored in wasGrounded
+            wasGrounded = isGrounded;
+            // The new frame data is collected using raycast and put in isGrounded
+            RaycastHit2D hit = Physics2D.Raycast(transform.position + offset3D, Vector2.down, characterHurtBox.size.y / 2 + 0.1f, groundLayerMask);
+            Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset3D.x, transform.position.y + offset3D.y - characterHurtBox.size.y / 2), Color.green);
+            if (hit.collider != null)
+            {
+                isGrounded = true;
+                isJumping = false;
+            }
+            else isGrounded = false;
+            // Land not called during attack and damaged
+            if (isGrounded == true && wasGrounded == false)
+            {
+                Land();
+                //Debug.Log("Land");
+            }
+            if (body.velocity.y < 0 && !isGrounded)
+            {
+                Fall();
+            }
         }
     }
 
@@ -402,7 +436,8 @@ public class UnitAttack
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }
-            if (_currentTime >= attackTime || isDisabled) {
+            if (_currentTime >= attackTime || isDisabled)
+            {
                 _isEnableBullet = false;
                 Evt_EnableBullet?.Invoke(false);
             }

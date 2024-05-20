@@ -42,7 +42,7 @@ public class Enemy : Character
         var main_player = GameManager.Instance.MainPlayer;
         return main_player;
     }
-    protected bool inRange() // check if the player is in enemy's range
+    protected bool InRange() // check if the player is in enemy's range
     {
         RaycastHit2D hitColliders = Physics2D.Raycast(transform.position, directionSign * Vector2.right, detectRange, playerLayerMask);
         return hitColliders;
@@ -64,7 +64,7 @@ public class Enemy : Character
         isMoving = false;
         isJumping = true;
         body.velocity = new Vector2(body.velocity.x, jumpForce);
-        Debug.Log("Jump force: " + body.velocity.y);
+        //Debug.Log("Jump force: " + body.velocity.y);
     }
 
     protected virtual IEnumerator WaitToAttack(float waitSecs)
@@ -76,7 +76,7 @@ public class Enemy : Character
         warningEffect = false;
         meleeHitBoxSprite.color = transparent;
         Attack();
-        Evt_MeleeAttack?.Invoke(damage);
+        //Evt_MeleeAttack?.Invoke(damage);
         yield return new WaitForSeconds(0.5f);
         attackState = false;
         playerInSight = false;
@@ -124,7 +124,7 @@ public class Enemy : Character
                     if (!playerInSight && !attackState)
                     {
                         // Run or Jump
-                        playerInSight = inRange();  // check if player is in attack range (for boss attack range is random depend on the attack)
+                        playerInSight = InRange();  // check if player is in attack range (for boss attack range is random depend on the attack)
                         // only move or jump when attack anim (0.5f) finished and isGround == true
                         if (isGrounded == true)
                         {
@@ -153,6 +153,7 @@ public class Enemy : Character
                 //}
             }else if (attackState){
                 StopAllCoroutines();
+                meleeHitBoxSprite.color = transparent;
             }
         }
         else
