@@ -127,14 +127,17 @@ MonoBehaviour:
     attackAnimationName: boss_attack1
     attackTime: 0.5
     enableBulletTime: 0.18
-    isDisabled: 0
   basicAttackHitBox: {fileID: 465043062760075260}
   dashAttack:
     attackAnimationName: boss_attack4
-    attackTime: 0.5
+    attackTime: 1
     enableBulletTime: 0
-    isDisabled: 0
   dashAttackHitbox: {fileID: 465043062760075260}
+  spinningAttack:
+    attackAnimationName: 
+    attackTime: 0
+    enableBulletTime: 0
+  spinningAttackHitbox: {fileID: 3415264072826262398}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
   runAnimationName: run
@@ -142,16 +145,21 @@ MonoBehaviour:
   dieAnimationName: die
   jumpAnimationName1: jump
   jumpAnimationName2: jump_loop
+  prepareAnimationName1: boss_prepare
+  prepareAnimationName2: boss_prepare_loop
   skeletonAnimation: {fileID: 3151836118212036755}
   playingAnim: 
   directionSign: 0
   setdamagedAnimTime: 0.5
   health: 50
-  damage: 0
+  damage: 3
   currentDamage: 0
   currentHealth: 0
-  detectRange: 4.5
+  normalMoveSpeed: 35
+  jumpForce: 50
+  normalDetectRange: 4.5
   setMoveDelay: 0.5
+  dashSpeed: 75
 --- !u!1 &4284004539678159404
 GameObject:
   m_ObjectHideFlags: 0

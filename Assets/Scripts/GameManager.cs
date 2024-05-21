@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager instance; // Singleton instance
     private int score = 0, highScore = 0;
-    private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 0;
+    private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 4;
     private bool spawningWave = false;
 
     private float minX, maxX, minY, maxY;

@@ -27,7 +27,7 @@ public class HealthLogic
     public void TakeDamage(int dam){
 
         currenthealth -= dam;
-        UnityEngine.Debug.Log(currenthealth);
+        //UnityEngine.Debug.Log(currenthealth);
     }
 
     public bool IsDead => Current <= 0;

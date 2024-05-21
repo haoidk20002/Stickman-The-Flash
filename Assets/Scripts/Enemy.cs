@@ -7,10 +7,12 @@ using Unity.VisualScripting;
 
 public class Enemy : Character
 {
-    protected float moveSpeed = 20f, jumpForce = 50f;
+    [SerializeField] protected float normalMoveSpeed, jumpForce; // movespeed= 20, jumpforce = 50
+    protected float moveSpeed;
     protected float direction;
     protected float delay = 1f, delayLeft = 0f;
-    [SerializeField] protected float detectRange = 4.5f;
+    [SerializeField] protected float normalDetectRange;
+    protected float detectRange;
     protected float moveDelay = -1f, waitTimer =0.5f;
     [SerializeField] protected float setMoveDelay;
     protected bool playerInSight = false;
@@ -33,6 +35,8 @@ public class Enemy : Character
     // }
     protected override void start2()
     {
+        detectRange = normalDetectRange;
+        moveSpeed = normalMoveSpeed;
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
@@ -81,7 +85,7 @@ public class Enemy : Character
         attackState = false;
         playerInSight = false;
     }
-    protected IEnumerator AttackWarning()
+    protected virtual IEnumerator AttackWarning()
     {
         warningEffect = true;
         flashupColor = lightRed;
@@ -135,11 +139,11 @@ public class Enemy : Character
                             else
                             {
                                 // if close to player by 3 x points and the player is above this character more than 8 y points => Jump
-                                if (Mathf.Abs(transform.position.x - playerLocation.x) < 3f && (playerLocation.y - transform.position.y > 8f) && isJumping == false) // change this jump condition
-                                {
-                                    TriggerJump();
-                                }
-                                else
+                                // if (Mathf.Abs(transform.position.x - playerLocation.x) < 3f && (playerLocation.y - transform.position.y > 8f) && isJumping == false) // change this jump condition
+                                // {
+                                //     TriggerJump();
+                                // }
+                                // else
                                 {
                                     Move();
                                 }

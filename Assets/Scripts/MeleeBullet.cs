@@ -42,7 +42,7 @@ public class MeleeBullet : MonoBehaviour
                 if (otherCharacter.CompareTag("Enemy") || otherCharacter.CompareTag("Player"))
                 {
                     ApplyKnockback(Xdirection,Ydirection, otherCharacter);
-                    Debug.Log(Xdirection + ", "+ Ydirection);
+                    //Debug.Log(Xdirection + ", "+ Ydirection);
                     //Debug.Break();
                 }
             OnHit(otherCharacter, damage); // OnHit invoked b4 checking => player's immunity is already set as true

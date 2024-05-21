@@ -13,11 +13,13 @@ public abstract class Character : MonoBehaviour
     [Header("Basic Attack")]
     [SerializeField] protected UnitAttack basicAttack;
     [SerializeField] protected MeleeBullet basicAttackHitBox;
-    [Header ("Special Attack")]
+    [Header ("Special Attacks")]
     [SerializeField] protected UnitAttack dashAttack;
     [SerializeField] protected MeleeBullet dashAttackHitbox;
+    [SerializeField] protected UnitAttack spinningAttack;
+    [SerializeField] protected MeleeBullet spinningAttackHitbox;
 
-    [Header("Other Anim")]
+    [Header("Other Animations")]
     [SpineAnimation][SerializeField] private string fallAnimationName;
     [SpineAnimation][SerializeField] private string landAnimationName;
     [SpineAnimation][SerializeField] private string runAnimationName;
@@ -25,6 +27,8 @@ public abstract class Character : MonoBehaviour
     [SpineAnimation][SerializeField] private string dieAnimationName;
     [SpineAnimation][SerializeField] private string jumpAnimationName1;
     [SpineAnimation][SerializeField] private string jumpAnimationName2;
+    [SpineAnimation][SerializeField] private string prepareAnimationName1;
+    [SpineAnimation][SerializeField] private string prepareAnimationName2;
     // access skeleton animation from outside
     [SerializeField] SkeletonAnimation skeletonAnimation;
     public Spine.AnimationState spineAnimationState => skeletonAnimation.AnimationState;
@@ -65,6 +69,7 @@ public abstract class Character : MonoBehaviour
     protected BoxCollider2D characterHurtBox;
     protected Vector2 offset;
     protected Vector3 offset3D;
+    protected Vector2 verlocity;
 
     protected Material material;
     protected Spine.TrackEntry playing;
@@ -107,11 +112,17 @@ public abstract class Character : MonoBehaviour
 
         body = GetComponent<Rigidbody2D>(); // get character's Rigidbody
         characterHealth.Init(health); // Initialize HP
+        // Basic Attack Initialize
         basicAttack.Init(); // Initialize Basic Attack Hitbox
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
         basicAttackHitBox.OnHit += DealDmg;
+        // Dash Attack Initialize
+        dashAttack.Init();
+        dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
+        dashAttackHitbox.OnHit += DealDmg;
         // Get sprite renderer
         meleeHitBoxSprite = basicAttackHitBox.GetComponent<SpriteRenderer>();
+        
         // Setting Hurtbox's offset
         characterHurtBox = GetComponent<BoxCollider2D>();
         offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
@@ -132,6 +143,7 @@ public abstract class Character : MonoBehaviour
         if (durationInSeconds > 0)
         {
             skeletonAnimation.timeScale = spineAnimation.Duration / durationInSeconds;
+            Debug.Log(skeletonAnimation.timeScale);
         }
         else
         {
@@ -170,7 +182,7 @@ public abstract class Character : MonoBehaviour
         attackAnimTime = dashAttack.AttackTime;
         // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
         // AddAnimation(idleAnimationName,true,0);
-        Dash(dashAttack.AttackTime);
+        Dash(0);
         dashAttack.Trigger();
         if (gameObject.tag == "Player"){Evt_MeleeAttack?.Invoke((int)damage / 2);}
         if (gameObject.tag == "Boss"){Evt_MeleeAttack?.Invoke(damage*2);}
@@ -193,9 +205,16 @@ public abstract class Character : MonoBehaviour
     }
     protected void Dash(float duration)
     {
-        PlayAnimation(dashAttack.AttackAnim, duration, false);
-        AddAnimation(idleAnimationName, true, 0f);
+        Debug.Log(duration);
+        PlayAnimation(dashAttack.AttackAnim, duration, true);
         //Debug.Break();
+        //AddAnimation(idleAnimationName, true, 0f);
+        
+    }
+
+    protected void Prepare(){
+        PlayAnimation(prepareAnimationName1, 0f, false);
+        AddAnimation(prepareAnimationName2, true, 0);
     }
 
     
@@ -286,7 +305,7 @@ public abstract class Character : MonoBehaviour
     {
         if (!isFalling)
         {
-            PlayAnimation(idleAnimationName, 0f, true);
+            PlayAnimation(idleAnimationName, 0f, true); //?
             return;
         }
         if (isAttacking == false && isDamaged == false)
@@ -329,12 +348,11 @@ public abstract class Character : MonoBehaviour
                     playing = spineAnimationState.GetCurrent(0);
                     playingAnim = playing.ToString();
                 }
-                catch (Exception e) { }
+                catch (Exception e) {Debug.Log(e);}
                 //playingAnim = playing.ToString();
-                // calculating ground y's pos
-
 
                 basicAttack.TakeTime(Time.deltaTime);
+                dashAttack.TakeTime(Time.deltaTime);
                 // controlling isAttacking
                 if (isAttacking == true)
                 {
@@ -405,21 +423,18 @@ public class UnitAttack
     [SerializeField] private float enableBulletTime;
 
     public event Action<bool> Evt_EnableBullet;
+    public Action OnEnd;
     private float _currentTime;
     private bool _isEnableBullet = false;
-
-    public bool isDisabled = false;
+    public bool IsPerforming => _currentTime >= 0 && _currentTime < attackTime;
 
     public void Init()
     {
-        //Debug.Log("Init");
         Evt_EnableBullet?.Invoke(false);
         _currentTime = -1;
     }
     public void Trigger()
     {
-        //Debug.Log("Trigger");
-        isDisabled = false;
         _currentTime = 0;
         //_isEnableBullet = false;
     }
@@ -436,11 +451,15 @@ public class UnitAttack
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }
-            if (_currentTime >= attackTime || isDisabled)
+            if (_currentTime >= attackTime)
             {
                 _isEnableBullet = false;
                 Evt_EnableBullet?.Invoke(false);
+                OnEnd?.Invoke();
             }
         }
+    }
+    public void CancelAttack(){
+        _currentTime = AttackTime;
     }
 }

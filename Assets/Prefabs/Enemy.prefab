@@ -400,6 +400,12 @@ MonoBehaviour:
     enableBulletTime: 0
     isDisabled: 0
   dashAttackHitbox: {fileID: 3570482660402923820}
+  spinningAttack:
+    attackAnimationName: 
+    attackTime: 0
+    enableBulletTime: 0
+    isDisabled: 0
+  spinningAttackHitbox: {fileID: 0}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
   runAnimationName: run
@@ -415,7 +421,9 @@ MonoBehaviour:
   damage: 5
   currentDamage: 0
   currentHealth: 0
-  detectRange: 4.5
+  normalMoveSpeed: 20
+  jumpForce: 50
+  normalDetectRange: 4.5
   setMoveDelay: 0.5
 --- !u!1 &4639318507779981781
 GameObject:

@@ -2732,6 +2732,18 @@ MonoBehaviour:
     enableBulletTime: 0.2
     isDisabled: 0
   basicAttackHitBox: {fileID: 2117003002}
+  dashAttack:
+    attackAnimationName: dash_attack
+    attackTime: 0.5
+    enableBulletTime: 0
+    isDisabled: 0
+  dashAttackHitbox: {fileID: 2117003002}
+  spinningAttack:
+    attackAnimationName: 
+    attackTime: 0
+    enableBulletTime: 0
+    isDisabled: 0
+  spinningAttackHitbox: {fileID: 0}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
   runAnimationName: dash
@@ -2739,6 +2751,8 @@ MonoBehaviour:
   dieAnimationName: die
   jumpAnimationName1: jump
   jumpAnimationName2: jump_loop
+  prepareAnimationName1: boss_prepare
+  prepareAnimationName2: boss_prepare_loop
   skeletonAnimation: {fileID: 734423015}
   playingAnim: 
   directionSign: 0
@@ -2747,12 +2761,6 @@ MonoBehaviour:
   damage: 5
   currentDamage: 0
   currentHealth: 0
-  dashAttack:
-    attackAnimationName: dash_attack
-    attackTime: 0.5
-    enableBulletTime: 0
-    isDisabled: 0
-  dashAttackHitbox: {fileID: 2117003002}
   moveSpeed: 200
   attackRange: 6
   minSwipeDistance: 0.05

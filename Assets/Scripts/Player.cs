@@ -20,8 +20,8 @@ public class Player : Character
     [SerializeField] private float moveSpeed;
     [SerializeField] private float attackRange, minSwipeDistance;
     private float minX, maxX, maxY, minY;
-    [SerializeField] private float timer;
-    private float currentTimer;
+    // [SerializeField] private float timer;
+    // private float currentTimer;
     private float multiplier = 10f;
     private float swipeMagnitude, playerWidth, playerHeight, direction;
     [SerializeField] private float SetInvincibilityTime;
@@ -37,7 +37,6 @@ public class Player : Character
     public GameObject bullet;
     private Vector3 bulletStartPos;
     private Vector2 startScreenPos, endScreenPos;
-    private Vector2 verlocity;
 
     public void AddPlayerHealth(HealthBar playerHealth)
     {
@@ -67,9 +66,13 @@ public class Player : Character
     {
         dashDestination = new Vector2(0, 0);
         dashDestination = transform.position;
-        dashAttack.Init();
-        dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
-        currentTimer = timer;
+        // dashAttack.Init();
+        // dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
+        //currentTimer = timer;
+        dashAttack.OnEnd = () =>
+        {
+            DisableDash();
+        };
     }
 
 
@@ -195,7 +198,7 @@ public class Player : Character
         {
             swipeDirection.y = 0f;
         }
-        currentTimer = timer;
+        //currentTimer = timer;
         Turn(swipeDirection.x);
         //Debug.Log("Swipe direction y: " + swipeDirection.y + "Dash y destination: " + dashDestination.y);
         dashDestination.x = transform.position.x + swipeDirection.x * 10;
@@ -254,19 +257,17 @@ public class Player : Character
     // }
     private void DisableDash()
     {
-        dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(5.9f,10f);
-        dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(0f,0f);
-        isDashing = false;
+        dashAttack.CancelAttack();
+        dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(5.9f, 10f);
+        dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(0f, 0f);
         isAttacking = false;
         // fall distance after disabled is > 14.5f => set isFalling = true to show full animation (Land then Idle)
-        if (swipeDirectionOnScreen.y < 0f ) // condition not suit
+        if (swipeDirectionOnScreen.y < 0f) // condition not suit
         {
             isFalling = true;
         }
         else { isFalling = false; }
         if (isGrounded) { Land(); }
-        dashAttack.isDisabled = true;
-        currentTimer = timer;
     }
 
     protected override void update2()
@@ -289,24 +290,13 @@ public class Player : Character
         //CalculateBoundsLocation();
         GetPlayerHurtBoxSize();
         //GetShootPosAndDirection();
-        dashAttack.TakeTime(Time.deltaTime);
+        // dashAttack.TakeTime(Time.deltaTime);
         if (characterHealth.IsDead == false)
         {
-            if (isDashing == true)
+            if (dashAttack.IsPerforming)
             {
                 Move();
-                currentTimer -= Time.deltaTime;
-                //Debug.Log(currentTimer);
-
-                if (currentTimer <= 0f)
-                {
-                    DisableDash();
-                }
             }
-            // else
-            // {
-            //     currentTimer = timer;
-            // }
             // Teleport: Click to desired destination and the player teleports after releasing click
             // Move: Click, swipe, then release to move according to the swipe direction
             if (Input.GetMouseButtonDown(0))
@@ -329,7 +319,7 @@ public class Player : Character
             {
                 // Debug.Log("Blocked");
                 body.velocity = Vector3.zero;
-                if (isDashing)
+                if (dashAttack.IsPerforming)
                 {
                     DisableDash();
                 }
