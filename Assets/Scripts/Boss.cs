@@ -7,15 +7,21 @@ using Unity.VisualScripting;
 public class Boss : Enemy
 { // boss immune to knockback and his attack can't be disabled
     private int attackCount = 0;
-
+    [SerializeField] private int SpecialAttackCondition;
     private Vector2 dashDestination;
     [SerializeField] private float dashSpeed;
-    private float currentTimer;
     private HealthBar _bossHealth;
 
-    protected new float waitTimer = 1f;
-
+    //protected new float waitTimer = 1f;
     private bool specialAttack = false;
+    private int specialAttackNumber;
+
+    private bool isJumpingParabolic = false;
+    private Vector2 jumpTargetPosition;
+    [Header ("Parabol Jump")]
+    [SerializeField] private float jumpHeight;
+    [SerializeField] private float jumpDuration;
+
 
     protected override IEnumerator WaitToAttack(float waitSecs)
     { // after 3 normal attack, special attack is triggered
@@ -28,12 +34,12 @@ public class Boss : Enemy
         attackWarning = StartCoroutine(AttackWarning());
         // calculate destination
         dashDestination.x = transform.position.x + directionSign * 200f;
-        //
+        // get player's x pos (attack special 2)
         yield return new WaitForSeconds(waitSecs);
         warningEffect = false;
         meleeHitBoxSprite.color = transparent;
         dashDestination.y = transform.position.y;
-        if (attackCount < 3)
+        if (!specialAttack)
         {
             Attack();
             attackCount++;
@@ -44,21 +50,38 @@ public class Boss : Enemy
         }
         else
         {
-            specialAttack = true;
-            DashAttack();
+            Debug.Log(specialAttackNumber);
+            switch (specialAttackNumber)
+            {
+                case 1:
+                    DashAttack();
+                    attackCount = 0;
+                    break;
+                case 2:
+                    //Debug.Break();
+                    TriggerParabolicJump(playerLocation);
+                    SpinningAttack();
+                    attackCount = 0;
+                    break;
+            }
         }
     }
 
 
     protected override IEnumerator AttackWarning()
     {
-        // if (attackCount == 3) // change warning
-        // {
-        //     dashAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(90f, 13f);
-        //     //dashAttackHitbox.GetComponent<SpriteRenderer>().offset = new Vector2(90f, 13f);
-        //     dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(90f, 13f);
-        //     dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(37f, 0f);
-        // }
+        if (specialAttack && specialAttackNumber == 1) // change warning
+        {
+            dashAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(90f, 10f);
+        }
+        else if (specialAttack && specialAttackNumber == 2)
+        {
+            //spinningAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(90f, 10f);
+        }
+        else
+        {
+            basicAttackHitBox.GetComponent<SpriteRenderer>().size = new Vector2(5.9f, 10f);
+        }
         warningEffect = true;
         flashupColor = lightRed;
         flashoutColor = transparent;
@@ -85,7 +108,6 @@ public class Boss : Enemy
     }
     private void DisableDash()
     {
-        dashAttack.CancelAttack();
         dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(5.9f, 10f);
         dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(0f, 0f);
         isDashing = false;
@@ -94,9 +116,7 @@ public class Boss : Enemy
         attackState = false;
         playerInSight = false;
     }
-    // private void CalculateDestionation(){
 
-    // }
     private void Move2()
     {
         transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
@@ -108,17 +128,54 @@ public class Boss : Enemy
 
     private void UpdateBossAttackState()
     {
-        if (attackCount == 3)
+        if (attackCount == SpecialAttackCondition)
         {
-            detectRange = 20f;
-            moveSpeed = dashSpeed;
-            waitTimer = 3f;
+            specialAttackNumber = UnityEngine.Random.Range(1, 3);
+            specialAttack = true;
+            if (specialAttackNumber == 1)
+            {
+                detectRange = 20f;
+                moveSpeed = dashSpeed;
+                waitTimer = 3f;
+            }
+            else
+            {
+                detectRange = 20f;
+                waitTimer = 3f;
+            }
+
         }
         else
         {
             detectRange = normalDetectRange;
             moveSpeed = normalMoveSpeed;
             waitTimer = 1f;
+        }
+    }
+
+    private void TriggerParabolicJump(Vector2 targetPosition)
+    {
+        isJumpingParabolic = true;
+        jumpTargetPosition = targetPosition;
+        Turn(jumpTargetPosition.x - transform.position.x);
+        Vector2 jumpVelocity = CalculateJumpVelocity(transform.position, jumpTargetPosition, jumpHeight, jumpDuration);
+        body.velocity = jumpVelocity;
+    }
+
+    private Vector2 CalculateJumpVelocity(Vector2 startPoint, Vector2 endPoint, float height, float time)
+    {
+        float gravity = Physics2D.gravity.y;
+        float verticalVelocity = 2 * height / time - 0.5f * gravity * time;
+        float horizontalVelocity = (endPoint.x - startPoint.x) / time;
+        return new Vector2(horizontalVelocity, verticalVelocity);
+    }
+
+    private void HandleParabolicJump()
+    {
+        if (isJumpingParabolic && body.velocity.y <= 0 && Mathf.Abs(transform.position.y - jumpTargetPosition.y) < 0.1f)
+        {
+            isJumpingParabolic = false;
+            body.velocity = Vector2.zero;
         }
     }
 
@@ -161,11 +218,11 @@ public class Boss : Enemy
             if (dashAttack.IsPerforming)
             {
                 Move2();
-                //currentTimer -= Time.deltaTime;
-                //Debug.Log(currentTimer);
             }
         }
     }
+
+
     // Boss immune to knockback and only flash when damaged
     protected override void start2()
     {
@@ -175,10 +232,19 @@ public class Boss : Enemy
         gameObject.tag = "Boss";
         dashAttack.OnEnd = () =>
         {
+            attackState = false;
+            playerInSight = false;
             DisableDash();
-            attackCount = 0;
             specialAttack = false;
         };
+        // This clause is  not called 
+        spinningAttack.OnEnd = () =>
+        {
+            attackState = false;
+            playerInSight = false;
+            specialAttack = false;
+        };
+        //
     }
     // Boss will have 3 attack (kicking and spinning attack and dashing attack)
 
@@ -204,6 +270,7 @@ public class Boss : Enemy
             if (characterHealth.IsDead == false)
             {
                 HandleCharacterInteraction();
+                HandleParabolicJump();
             }
             else if (attackState) // handle death
             {

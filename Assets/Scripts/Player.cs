@@ -69,10 +69,10 @@ public class Player : Character
         // dashAttack.Init();
         // dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
         //currentTimer = timer;
-        dashAttack.OnEnd = () =>
-        {
-            DisableDash();
-        };
+        // dashAttack.OnEnd = () =>
+        // {
+        //     DisableDash();
+        // };
     }
 
 

@@ -13,7 +13,7 @@ public abstract class Character : MonoBehaviour
     [Header("Basic Attack")]
     [SerializeField] protected UnitAttack basicAttack;
     [SerializeField] protected MeleeBullet basicAttackHitBox;
-    [Header ("Special Attacks")]
+    [Header("Special Attacks")]
     [SerializeField] protected UnitAttack dashAttack;
     [SerializeField] protected MeleeBullet dashAttackHitbox;
     [SerializeField] protected UnitAttack spinningAttack;
@@ -29,6 +29,8 @@ public abstract class Character : MonoBehaviour
     [SpineAnimation][SerializeField] private string jumpAnimationName2;
     [SpineAnimation][SerializeField] private string prepareAnimationName1;
     [SpineAnimation][SerializeField] private string prepareAnimationName2;
+    [SpineAnimation][SerializeField] private string spinningAnimationName;
+    [SpineAnimation][SerializeField] private string endSpinningAnimationName;
     // access skeleton animation from outside
     [SerializeField] SkeletonAnimation skeletonAnimation;
     public Spine.AnimationState spineAnimationState => skeletonAnimation.AnimationState;
@@ -81,7 +83,7 @@ public abstract class Character : MonoBehaviour
 
     protected SpriteRenderer meleeHitBoxSprite;
 
-
+    private RaycastHit2D hit;
 
     [Header("Stats")]
     [SerializeField] protected int health;
@@ -90,19 +92,7 @@ public abstract class Character : MonoBehaviour
     // [SerializeField] protected int setHealth;
     [SerializeField] protected int currentDamage;
     [SerializeField] protected int currentHealth;
-    //protected int health, damage;
-
-    //
     private MaterialPropertyBlock mpb;
-
-    // private void Awake()
-    // {
-    //     //Debug.Log("Do sthing");
-    //     // Assign stats
-    //     health = setHealth;
-    //     damage = setDamage;
-    // }
-
     private void Start()
     {
         damagedAnimTime = setdamagedAnimTime;
@@ -120,12 +110,17 @@ public abstract class Character : MonoBehaviour
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
         dashAttackHitbox.OnHit += DealDmg;
+        // Spinning Attack Initialize
+        spinningAttack.Init();
+        spinningAttack.Evt_EnableBullet += value => spinningAttackHitbox.GetComponent<CircleCollider2D>().enabled = value;
+        spinningAttackHitbox.OnHit += DealDmg;
         // Get sprite renderer
         meleeHitBoxSprite = basicAttackHitBox.GetComponent<SpriteRenderer>();
-        
+
         // Setting Hurtbox's offset
         characterHurtBox = GetComponent<BoxCollider2D>();
-        offset = characterHurtBox.offset; offset3D = offset; offset3D.x = 0;
+        offset = characterHurtBox.offset;
+        offset.x = 0f;
         // Get ground's y pos
         getGroundPos = Physics2D.Raycast(transform.position, Vector2.down, 1000f, groundLayerMask);
         groundYPos = getGroundPos.transform.position.y;
@@ -143,7 +138,7 @@ public abstract class Character : MonoBehaviour
         if (durationInSeconds > 0)
         {
             skeletonAnimation.timeScale = spineAnimation.Duration / durationInSeconds;
-            Debug.Log(skeletonAnimation.timeScale);
+            //Debug.Log(skeletonAnimation.timeScale);
         }
         else
         {
@@ -173,10 +168,22 @@ public abstract class Character : MonoBehaviour
     }
     protected void DashAttack()
     {
+        // player
         // old hitbox size (5.9,10) offset (0,0)
-        // new hitbox size (10,13) offset(-3,0)
-        dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(9f, 13f);
-        dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(-2f, 0f);
+        // new hitbox size (9,13) offset(-2,0)
+        if (gameObject.tag == "Player")
+        {
+            dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(9f, 13f);
+            dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(-2f, 0f);
+        }
+        // boss
+        // old hitbox size (5.9,10) offset (0,0)
+        // new hitbox size (9,13) offset(-2,0) // change here
+        if (gameObject.tag == "Boss"){
+            dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(15f, 13f);
+            dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(1f, 0f);
+        }
+
         isDashing = true;
         isAttacking = true;
         attackAnimTime = dashAttack.AttackTime;
@@ -184,13 +191,30 @@ public abstract class Character : MonoBehaviour
         // AddAnimation(idleAnimationName,true,0);
         Dash(0);
         dashAttack.Trigger();
-        if (gameObject.tag == "Player"){Evt_MeleeAttack?.Invoke((int)damage / 2);}
-        if (gameObject.tag == "Boss"){Evt_MeleeAttack?.Invoke(damage*2);}
+        if (gameObject.tag == "Player") { Evt_MeleeAttack?.Invoke((int)damage / 2); }
+        if (gameObject.tag == "Boss") { Evt_MeleeAttack?.Invoke(damage * 2); }
+    }
+    protected void SpinningAttack()
+    {
+        isAttacking = true;
+        attackAnimTime = spinningAttack.AttackTime;
+        Spin();
+        spinningAttack.Trigger();
+        Debug.Log("Activated");
+        Evt_MeleeAttack?.Invoke(damage * 3);
     }
     protected void Turn(float direction)
     {
         directionSign = direction < 0 ? -1 : 1;
         transform.rotation = Quaternion.Euler(0, direction < 0 ? -180 : 0, 0);
+    }
+    protected void Spin()
+    {
+        PlayAnimation(spinningAnimationName, 0f, true);
+    }
+    protected void EndSpin()
+    {
+        PlayAnimation(endSpinningAnimationName, 0f, false);
     }
     protected void Run()
     {
@@ -205,19 +229,20 @@ public abstract class Character : MonoBehaviour
     }
     protected void Dash(float duration)
     {
-        Debug.Log(duration);
+        //Debug.Log(duration);
         PlayAnimation(dashAttack.AttackAnim, duration, true);
         //Debug.Break();
         //AddAnimation(idleAnimationName, true, 0f);
-        
+
     }
 
-    protected void Prepare(){
+    protected void Prepare()
+    {
         PlayAnimation(prepareAnimationName1, 0f, false);
         AddAnimation(prepareAnimationName2, true, 0);
     }
 
-    
+
     protected void Idle()
     {
         PlayAnimation(idleAnimationName, 0f, true);
@@ -293,7 +318,7 @@ public abstract class Character : MonoBehaviour
     }
     protected void Fall()
     {
-        //if (){ return;}
+        if (spinningAttack.IsPerforming) { return; }
         if (!isAttacking && Mathf.Abs(transform.position.y - groundYPos) > 14.5f)
         {
             PlayAnimation(fallAnimationName, 0f, false);
@@ -303,9 +328,16 @@ public abstract class Character : MonoBehaviour
 
     protected void Land()
     {
+        if (spinningAttack.IsPerforming)
+        {
+            spinningAttack.CancelAttack();
+            isAttacking = false;
+            EndSpin();
+            return;
+        }
         if (!isFalling)
         {
-            PlayAnimation(idleAnimationName, 0f, true); //?
+            Idle();
             return;
         }
         if (isAttacking == false && isDamaged == false)
@@ -348,11 +380,12 @@ public abstract class Character : MonoBehaviour
                     playing = spineAnimationState.GetCurrent(0);
                     playingAnim = playing.ToString();
                 }
-                catch (Exception e) {Debug.Log(e);}
+                catch (Exception e) { Debug.Log(e); }
                 //playingAnim = playing.ToString();
 
                 basicAttack.TakeTime(Time.deltaTime);
                 dashAttack.TakeTime(Time.deltaTime);
+                spinningAttack.TakeTime(Time.deltaTime);
                 // controlling isAttacking
                 if (isAttacking == true)
                 {
@@ -369,7 +402,10 @@ public abstract class Character : MonoBehaviour
                     }
                 }
                 // Controlling isDamaged // Dashing on ground even when teleport
-                // Bug: Player freeze before fall anim
+                /*
+
+                */
+
                 IsDamagedControl(); // 
             }
             update2();
@@ -383,8 +419,9 @@ public abstract class Character : MonoBehaviour
             // The old frame data (old isGounded value) is stored in wasGrounded
             wasGrounded = isGrounded;
             // The new frame data is collected using raycast and put in isGrounded
-            RaycastHit2D hit = Physics2D.Raycast(transform.position + offset3D, Vector2.down, characterHurtBox.size.y / 2 + 0.1f, groundLayerMask);
-            Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset3D.x, transform.position.y + offset3D.y - characterHurtBox.size.y / 2), Color.green);
+            hit = Physics2D.Raycast(new Vector2(transform.position.x + offset.x, transform.position.y + offset.y), Vector2.down, characterHurtBox.size.y / 2 + 1f, groundLayerMask);
+            Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset.x, transform.position.y + offset.y - characterHurtBox.size.y / 2 - 1f), Color.green);
+            //Debug.DrawLine(transform.position, new Vector2(transform.position.x + offset.x, transform.position.y + offset.y - characterHurtBox.size.y / 2), Color.green);
             if (hit.collider != null)
             {
                 isGrounded = true;
@@ -392,14 +429,14 @@ public abstract class Character : MonoBehaviour
             }
             else isGrounded = false;
             // Land not called during attack and damaged
-            if (isGrounded == true && wasGrounded == false)
-            {
-                Land();
-                //Debug.Log("Land");
-            }
             if (body.velocity.y < 0 && !isGrounded)
             {
                 Fall();
+            }
+            if (isGrounded == true && wasGrounded == false)
+            {
+                Debug.Log("Land");
+                Land();
             }
         }
     }
@@ -453,13 +490,19 @@ public class UnitAttack
             }
             if (_currentTime >= attackTime)
             {
+                //Debug.Break();
                 _isEnableBullet = false;
                 Evt_EnableBullet?.Invoke(false);
                 OnEnd?.Invoke();
             }
         }
     }
-    public void CancelAttack(){
+    public void CancelAttack()
+    {
+        //Debug.Break();
         _currentTime = AttackTime;
+        _isEnableBullet = false;
+        Evt_EnableBullet?.Invoke(false);
+        OnEnd?.Invoke();
     }
 }

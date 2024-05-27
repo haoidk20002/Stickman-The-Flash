@@ -13,7 +13,7 @@ public class Enemy : Character
     protected float delay = 1f, delayLeft = 0f;
     [SerializeField] protected float normalDetectRange;
     protected float detectRange;
-    protected float moveDelay = -1f, waitTimer =0.5f;
+    protected float moveDelay = -1f, waitTimer =1f;
     [SerializeField] protected float setMoveDelay;
     protected bool playerInSight = false;
     protected float lastAttackedAt = 0;
