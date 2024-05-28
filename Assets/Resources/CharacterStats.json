@@ -1,0 +1,20 @@
+{
+  "player": {
+    "health": 50,
+    "damage": 10,
+    "moveSpeed": 200,
+    "detectRange": 1.5
+  },
+  "boss": {
+    "health": 75,
+    "damage": 10,
+    "moveSpeed": 35,
+    "detectRange": 7.5
+  },
+  "enemy": {
+    "health": 1,
+    "damage": 5,
+    "moveSpeed": 20,
+    "detectRange": 6.5
+  }
+}

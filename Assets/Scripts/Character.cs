@@ -7,7 +7,6 @@ using Unity.VisualScripting;
 
 public abstract class Character : MonoBehaviour
 {
-    //public GameObject ground;
     // Animation
     [SpineAnimation][SerializeField] protected string idleAnimationName;
     [Header("Basic Attack")]
@@ -85,14 +84,19 @@ public abstract class Character : MonoBehaviour
 
     private RaycastHit2D hit;
 
-    [Header("Stats")]
-    [SerializeField] protected int health;
-    [SerializeField] protected int damage;
-    // [SerializeField] protected int setDamage;
-    // [SerializeField] protected int setHealth;
-    [SerializeField] protected int currentDamage;
-    [SerializeField] protected int currentHealth;
+    // [Header("Stats")]
+    // [SerializeField] protected int health;
+    // [SerializeField] protected int damage;
+    // [SerializeField] protected float moveSpeed;
+    // [SerializeField] protected float detectRange;
+
+    // other stuff
     private MaterialPropertyBlock mpb;
+    public CharacterStats stats;
+    public virtual void LoadStats(CharacterStats characterStats)
+    {
+        stats = characterStats;
+    }
     private void Start()
     {
         damagedAnimTime = setdamagedAnimTime;
@@ -101,7 +105,7 @@ public abstract class Character : MonoBehaviour
         FillPhase(0f);
 
         body = GetComponent<Rigidbody2D>(); // get character's Rigidbody
-        characterHealth.Init(health); // Initialize HP
+        characterHealth.Init(stats.health); // Initialize HP
         // Basic Attack Initialize
         basicAttack.Init(); // Initialize Basic Attack Hitbox
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
@@ -153,8 +157,6 @@ public abstract class Character : MonoBehaviour
     {
         spineAnimationState.AddAnimation(0, anim_name, is_loop, delay);
         // only set value playingAnim after the added anim started playing
-
-        //playingAnim = anim_name;
     }
     protected abstract Character FindTarget();
     protected void Attack()
@@ -163,7 +165,7 @@ public abstract class Character : MonoBehaviour
         attackAnimTime = basicAttack.AttackTime;
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
         basicAttack.Trigger();
-        Evt_MeleeAttack?.Invoke(damage);
+        Evt_MeleeAttack?.Invoke(stats.damage);
         AddAnimation(idleAnimationName, true, 0f);
     }
     protected void DashAttack()
@@ -179,7 +181,8 @@ public abstract class Character : MonoBehaviour
         // boss
         // old hitbox size (5.9,10) offset (0,0)
         // new hitbox size (9,13) offset(-2,0) // change here
-        if (gameObject.tag == "Boss"){
+        if (gameObject.tag == "Boss")
+        {
             dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(15f, 13f);
             dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(1f, 0f);
         }
@@ -191,8 +194,8 @@ public abstract class Character : MonoBehaviour
         // AddAnimation(idleAnimationName,true,0);
         Dash(0);
         dashAttack.Trigger();
-        if (gameObject.tag == "Player") { Evt_MeleeAttack?.Invoke((int)damage / 2); }
-        if (gameObject.tag == "Boss") { Evt_MeleeAttack?.Invoke(damage * 2); }
+        if (gameObject.tag == "Player") { Evt_MeleeAttack?.Invoke((int)stats.damage / 2); }
+        if (gameObject.tag == "Boss") { Evt_MeleeAttack?.Invoke(stats.damage * 2); }
     }
     protected void SpinningAttack()
     {
@@ -200,8 +203,7 @@ public abstract class Character : MonoBehaviour
         attackAnimTime = spinningAttack.AttackTime;
         Spin();
         spinningAttack.Trigger();
-        Debug.Log("Activated");
-        Evt_MeleeAttack?.Invoke(damage * 3);
+        Evt_MeleeAttack?.Invoke(stats.damage * 3);
     }
     protected void Turn(float direction)
     {
@@ -229,11 +231,7 @@ public abstract class Character : MonoBehaviour
     }
     protected void Dash(float duration)
     {
-        //Debug.Log(duration);
         PlayAnimation(dashAttack.AttackAnim, duration, true);
-        //Debug.Break();
-        //AddAnimation(idleAnimationName, true, 0f);
-
     }
 
     protected void Prepare()
@@ -241,8 +239,6 @@ public abstract class Character : MonoBehaviour
         PlayAnimation(prepareAnimationName1, 0f, false);
         AddAnimation(prepareAnimationName2, true, 0);
     }
-
-
     protected void Idle()
     {
         PlayAnimation(idleAnimationName, 0f, true);
@@ -369,10 +365,6 @@ public abstract class Character : MonoBehaviour
     {
         if (!PauseAndContinue.gameIsPaused)
         {
-            // view current stats
-            currentDamage = damage;
-            currentHealth = characterHealth.Current;
-
             if (!characterHealth.IsDead) // Don't execute if dead
             {
                 try
@@ -435,7 +427,6 @@ public abstract class Character : MonoBehaviour
             }
             if (isGrounded == true && wasGrounded == false)
             {
-                Debug.Log("Land");
                 Land();
             }
         }
@@ -505,4 +496,13 @@ public class UnitAttack
         Evt_EnableBullet?.Invoke(false);
         OnEnd?.Invoke();
     }
+}
+
+[Serializable]
+public class CharacterStats
+{
+    public int health;
+    public int damage;
+    public float moveSpeed;
+    public float detectRange;
 }

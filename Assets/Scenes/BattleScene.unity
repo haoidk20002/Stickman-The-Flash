@@ -1913,6 +1913,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dac44efd07a629848acb0481d8204577, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 1529479816}
+  enemy: {fileID: 4484274465713772110, guid: 6ff875c78cbe1004da39da8197da7b82, type: 3}
+  boss: {fileID: 9156371462379778507, guid: 8ade09ce5ebd82d41bd2f2a975f3165c, type: 3}
   ScoreText: {fileID: 796888815}
   HighScoreText: {fileID: 118295367}
   GameOverScreen: {fileID: 276388108}
@@ -2750,15 +2753,17 @@ MonoBehaviour:
   jumpAnimationName2: jump_loop
   prepareAnimationName1: boss_prepare
   prepareAnimationName2: boss_prepare_loop
+  spinningAnimationName: 
+  endSpinningAnimationName: 
   skeletonAnimation: {fileID: 734423015}
   playingAnim: 
   directionSign: 0
   setdamagedAnimTime: 0.5
-  health: 10
-  damage: 5
-  currentDamage: 0
-  currentHealth: 0
-  moveSpeed: 200
+  stats:
+    health: 0
+    damage: 0
+    moveSpeed: 0
+    detectRange: 0
   attackRange: 6
   minSwipeDistance: 0.05
   SetInvincibilityTime: 1.5

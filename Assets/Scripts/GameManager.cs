@@ -4,8 +4,23 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
+
+[System.Serializable]
+public class CharacterStatsContainer
+{
+    public CharacterStats player;
+    public CharacterStats enemy;
+    public CharacterStats boss;
+}
 public class GameManager : MonoBehaviour
 {
+    // Character Instances
+    public Player player;
+    public Enemy enemy;
+    public Boss boss;
+
+    //
     private static GameManager instance; // Singleton instance
     private int score = 0, highScore = 0;
     private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 4;
@@ -53,16 +68,34 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        
+
         if (Instance == null)
         {
             Instance = this;
+            LoadCharacterStats();
             //DontDestroyOnLoad(Instance);
             //DontDestroyOnLoad(HealthBars.gameObject);
         }
     }
 
     [field: SerializeField] public HealthBar[] HealthBars { get; private set; } // Health Bars
+
+    private void LoadCharacterStats()
+    {
+        TextAsset jsonText = Resources.Load<TextAsset>("CharacterStats");
+
+        if (jsonText != null)
+        {
+            CharacterStatsContainer statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText.text);
+            player.LoadStats(statsContainer.player);
+            enemy.LoadStats(statsContainer.enemy);
+            boss.LoadStats(statsContainer.boss);
+        }
+        else
+        {
+            Debug.LogError("Character stats JSON file not found!");
+        }
+    }
 
 
     private void Start()

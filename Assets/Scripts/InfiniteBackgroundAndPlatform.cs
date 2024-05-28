@@ -42,11 +42,5 @@ public class InfiniteBackgroundAndPlatform : MonoBehaviour
         CalculateBoundsLocation();
         // if camera's bound is near the background boundaries, the part of the background being far from camera is move the location the connects
         // to the one being near the camera
-        // if (transform.position.x < 25){
-
-        // }
-        // if(){
-
-        // }
     }
 }

@@ -3,7 +3,8 @@ using UnityEngine;
 using Spine.Unity;
 using System.Collections;
 using Unity.VisualScripting;
-
+// detectRange = 4.5 (normal) 20 (special)
+// speed = 35 (normal) 85 (dash)
 public class Boss : Enemy
 { // boss immune to knockback and his attack can't be disabled
     private int attackCount = 0;
@@ -11,6 +12,7 @@ public class Boss : Enemy
     private Vector2 dashDestination;
     [SerializeField] private float dashSpeed;
     private HealthBar _bossHealth;
+    private float normalMoveSpeed;
 
     //protected new float waitTimer = 1f;
     private bool specialAttack = false;
@@ -18,7 +20,7 @@ public class Boss : Enemy
 
     private bool isJumpingParabolic = false;
     private Vector2 jumpTargetPosition;
-    [Header ("Parabol Jump")]
+    [Header("Parabol Jump")]
     [SerializeField] private float jumpHeight;
     [SerializeField] private float jumpDuration;
 
@@ -55,15 +57,14 @@ public class Boss : Enemy
             {
                 case 1:
                     DashAttack();
-                    attackCount = 0;
                     break;
                 case 2:
                     //Debug.Break();
                     TriggerParabolicJump(playerLocation);
                     SpinningAttack();
-                    attackCount = 0;
                     break;
             }
+            attackCount = 0;
         }
     }
 
@@ -74,11 +75,7 @@ public class Boss : Enemy
         {
             dashAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(90f, 10f);
         }
-        else if (specialAttack && specialAttackNumber == 2)
-        {
-            //spinningAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(90f, 10f);
-        }
-        else
+        else if (!specialAttack)
         {
             basicAttackHitBox.GetComponent<SpriteRenderer>().size = new Vector2(5.9f, 10f);
         }
@@ -88,19 +85,22 @@ public class Boss : Enemy
         Color temp;
         // flash in 0.5s
         //
-        while (warningEffect)
+        if (!specialAttack || (specialAttack && specialAttackNumber == 1))
         {
-            lerpValue += Time.fixedDeltaTime;
-            // red to nothing originally, then keeps inversing until the state is out. Flash in and out in 1s totally
-            meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue / 1f);
-            if (lerpValue / 1f > 1)
+            while (warningEffect)
             {
-                //Debug.Break();
-                lerpValue = 0f;
-                temp = flashupColor;
-                flashupColor = flashoutColor;
-                flashoutColor = temp;
-                yield return null;
+                lerpValue += Time.fixedDeltaTime;
+                // red to nothing originally, then keeps inversing until the state is out. Flash in and out in 1s totally
+                meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue / 1f);
+                if (lerpValue / 1f > 1)
+                {
+                    //Debug.Break();
+                    lerpValue = 0f;
+                    temp = flashupColor;
+                    flashupColor = flashoutColor;
+                    flashoutColor = temp;
+                    yield return null;
+                }
             }
         }
         //
@@ -119,7 +119,7 @@ public class Boss : Enemy
 
     private void Move2()
     {
-        transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, dashDestination, stats.moveSpeed * Time.deltaTime);
     }
     public void AddBossHealth(HealthBar bossHealth)
     {
@@ -128,27 +128,28 @@ public class Boss : Enemy
 
     private void UpdateBossAttackState()
     {
-        if (attackCount == SpecialAttackCondition)
+        if (attackCount == SpecialAttackCondition && !specialAttack)
         {
             specialAttackNumber = UnityEngine.Random.Range(1, 3);
-            specialAttack = true;
+            Debug.Log("Special Number: " + specialAttackNumber);
             if (specialAttackNumber == 1)
             {
-                detectRange = 20f;
-                moveSpeed = dashSpeed;
+                stats.detectRange = 20f;
+                stats.moveSpeed = dashSpeed;
                 waitTimer = 3f;
             }
             else
             {
-                detectRange = 20f;
+                stats.detectRange = 20f;
                 waitTimer = 3f;
             }
+            specialAttack = true;
 
         }
-        else
+        else if (!specialAttack)
         {
-            detectRange = normalDetectRange;
-            moveSpeed = normalMoveSpeed;
+            stats.detectRange = 5f;
+            stats.moveSpeed = normalMoveSpeed;
             waitTimer = 1f;
         }
     }
@@ -228,6 +229,7 @@ public class Boss : Enemy
     {
         GameManager.Instance.RegisterBoss(this);
         AddBossHealth(GameManager.Instance.HealthBars[1]);
+        normalMoveSpeed = stats.moveSpeed;
         base.start2(); // extends from start2 of enemy class (base class)
         gameObject.tag = "Boss";
         dashAttack.OnEnd = () =>

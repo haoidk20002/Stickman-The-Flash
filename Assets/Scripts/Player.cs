@@ -8,25 +8,18 @@ using System.Collections;
 using Unity.VisualScripting;
 
 
-
+// detectRange 1.25f
 public class Player : Character
 {
     private HealthBar _playerHealth;
-    // [Header("Dash Attack")]
-    // [SerializeField] private UnitAttack dashAttack;
-    // [SerializeField] protected MeleeBullet dashAttackHitbox; //
-    private float cooldown = 0.5f, lastAttackedAt = 0f, radius = 1.25f;
-    private float moveDistance = 5f;
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float attackRange, minSwipeDistance;
+    private float cooldown = 0.5f, lastAttackedAt = 0f;
+    //[SerializeField] private float moveSpeed;
+    [SerializeField] private float attackRange; 
+    [SerializeField] private float minSwipeDistance;
     private float minX, maxX, maxY, minY;
-    // [SerializeField] private float timer;
-    // private float currentTimer;
-    private float multiplier = 10f;
     private float swipeMagnitude, playerWidth, playerHeight, direction;
     [SerializeField] private float SetInvincibilityTime;
     private float invincibilityTime;
-
     // Coordinates
     private Vector2 oldPos, newPos, clickPosition, cameraBounds, cameraPos;
     private Vector2 startPos, endPos, dashDestination, teleportDestination, swipeDirection, swipeDirectionOnScreen;
@@ -35,7 +28,7 @@ public class Player : Character
     //private Rigidbody2D body;
     public LayerMask DetectLayerMask;
     public GameObject bullet;
-    private Vector3 bulletStartPos;
+    //private Vector3 bulletStartPos;
     private Vector2 startScreenPos, endScreenPos;
 
     public void AddPlayerHealth(HealthBar playerHealth)
@@ -47,14 +40,12 @@ public class Player : Character
         AddPlayerHealth(GameManager.Instance.HealthBars[0]);
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
-        bulletStartPos = transform.position;
-        //isImmune = true;
+        //bulletStartPos = transform.position;
         invincibilityTime = SetInvincibilityTime;
 
     }
     private void SettingMainCharacterValue1()
     {
-
         clickPosition = transform.position;
         gameObject.tag = "Player";
         gameObject.layer = 3;
@@ -66,13 +57,6 @@ public class Player : Character
     {
         dashDestination = new Vector2(0, 0);
         dashDestination = transform.position;
-        // dashAttack.Init();
-        // dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
-        //currentTimer = timer;
-        // dashAttack.OnEnd = () =>
-        // {
-        //     DisableDash();
-        // };
     }
 
 
@@ -114,7 +98,7 @@ public class Player : Character
     }
     protected override Character FindTarget()
     {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(endPos, radius, DetectLayerMask);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(endPos, stats.detectRange, DetectLayerMask);
         if (hitColliders.Length > 0) { return hitColliders[0].GetComponent<Character>(); } /* Return the first character found*/
         else { return null; }
     }
@@ -122,17 +106,15 @@ public class Player : Character
     {
         if (Time.time > lastAttackedAt + cooldown)
         {
-            //Debug.Log("Hit");
             lastAttackedAt = Time.time;
             Attack();
-            Evt_MeleeAttack?.Invoke(damage);
+            Evt_MeleeAttack?.Invoke(stats.damage);
         }
     }
     private void Teleport()
     {
         attackAnimTime = basicAttack.AttackTime;
         var enemies = FindTarget();
-
         // if enemy is found, player teleports close to it then attack, else teleport to the clicked point
         if (enemies != null)
         {
@@ -161,7 +143,7 @@ public class Player : Character
     private void Move()
     {
         verlocity.y = 1f;
-        transform.position = Vector2.MoveTowards(transform.position, dashDestination, moveSpeed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, dashDestination, stats.moveSpeed * Time.deltaTime);
     }
 
     private void SwipeOrTeleport()
@@ -206,22 +188,6 @@ public class Player : Character
         //Debug.Break();
         DashAttack(); // Dash can be disabled when touching ground from above
     }
-    // private void DashAttack()
-    // {
-    //     // old hitbox size (5.9,10) offset (0,0)
-    //     // new hitbox size (10,13) offset(-3,0)
-    //     dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(9f,13f);
-    //     dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(-2f,0f);
-    //     isMoving = true;
-    //     isAttacking = true;
-    //     attackAnimTime = dashAttack.AttackTime;
-    //     // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-    //     // AddAnimation(idleAnimationName,true,0);
-    //     Dash(dashAttack.AttackTime);
-    //     dashAttack.Trigger();
-    //     Evt_MeleeAttack?.Invoke((int)damage / 2);
-    // }
-
     // Unused concept (Shooting)
     // may be set as protected in Character class
     // private void GetShootPosAndDirection()
@@ -249,12 +215,6 @@ public class Player : Character
             yield return new WaitForSeconds(0.05f);
         }
     }
-    // private void Dash(float duration)
-    // {
-    //     PlayAnimation(dashAttack.AttackAnim, duration, false);
-    //     AddAnimation(idleAnimationName, true, 0f);
-    //     //Debug.Break();
-    // }
     private void DisableDash()
     {
         dashAttack.CancelAttack();
@@ -272,7 +232,6 @@ public class Player : Character
 
     protected override void update2()
     {
-        //Debug.Log("isGrounded: " + isGrounded + "wasGrounded: " + wasGrounded);
         // Track Player's Health
         ratio = characterHealth.RatioHealth;
         _playerHealth.UpdateHealthBar(ratio);

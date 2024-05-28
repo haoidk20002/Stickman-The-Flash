@@ -69,7 +69,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0, y: 0.5}
     oldSize: {x: 0.32, y: 0.32}
     newSize: {x: 5.9, y: 10}
     adaptiveTilingThreshold: 0.5
@@ -392,20 +392,17 @@ MonoBehaviour:
     attackAnimationName: attack_dam
     attackTime: 0.4
     enableBulletTime: 0.38
-    isDisabled: 0
   basicAttackHitBox: {fileID: 3570482660402923820}
   dashAttack:
     attackAnimationName: attack_dap2
     attackTime: 0
     enableBulletTime: 0
-    isDisabled: 0
   dashAttackHitbox: {fileID: 3570482660402923820}
   spinningAttack:
-    attackAnimationName: 
+    attackAnimationName: dash_attack
     attackTime: 0
     enableBulletTime: 0
-    isDisabled: 0
-  spinningAttackHitbox: {fileID: 0}
+  spinningAttackHitbox: {fileID: 3570482660402923820}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
   runAnimationName: run
@@ -413,6 +410,10 @@ MonoBehaviour:
   dieAnimationName: die
   jumpAnimationName1: dash_attack
   jumpAnimationName2: dash_attack
+  prepareAnimationName1: dash2
+  prepareAnimationName2: dap_dat
+  spinningAnimationName: da2
+  endSpinningAnimationName: dat_nut
   skeletonAnimation: {fileID: 7109921360944703626}
   playingAnim: 
   directionSign: 0

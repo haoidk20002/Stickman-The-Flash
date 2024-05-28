@@ -7,12 +7,11 @@ using Unity.VisualScripting;
 
 public class Enemy : Character
 {
-    [SerializeField] protected float normalMoveSpeed, jumpForce; // movespeed= 20, jumpforce = 50
-    protected float moveSpeed;
+    [SerializeField] protected float jumpForce; //jumpforce = 50
+    //protected float moveSpeed;
     protected float direction;
     protected float delay = 1f, delayLeft = 0f;
-    [SerializeField] protected float normalDetectRange;
-    protected float detectRange;
+    [SerializeField] protected float specialDetectRange;
     protected float moveDelay = -1f, waitTimer =1f;
     [SerializeField] protected float setMoveDelay;
     protected bool playerInSight = false;
@@ -25,18 +24,8 @@ public class Enemy : Character
 
     protected Color flashupColor, flashoutColor;
 
-    //SpriteRenderer spriteRenderer;
-
-    //public BoxCollider2D meleeHitBox;
-    // protected void Awake() // setting stats
-    // {
-    //     health = 10;
-    //     damage = 1;
-    // }
     protected override void start2()
     {
-        detectRange = normalDetectRange;
-        moveSpeed = normalMoveSpeed;
         delayLeft = delay;
         gameObject.tag = "Enemy";
         gameObject.layer = 6;
@@ -48,7 +37,7 @@ public class Enemy : Character
     }
     protected bool InRange() // check if the player is in enemy's range
     {
-        RaycastHit2D hitColliders = Physics2D.Raycast(transform.position, directionSign * Vector2.right, detectRange, playerLayerMask);
+        RaycastHit2D hitColliders = Physics2D.Raycast(transform.position, directionSign * Vector2.right, stats.detectRange, playerLayerMask);
         return hitColliders;
     }
     protected void Move()
@@ -56,7 +45,7 @@ public class Enemy : Character
         Run();
         isMoving = true;
         oldPos = transform.position;
-        transform.position = Vector2.MoveTowards(transform.position, new Vector2(playerLocation.x, transform.position.y), moveSpeed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, new Vector2(playerLocation.x, transform.position.y), stats.moveSpeed * Time.deltaTime);
         newPos = transform.position;
         direction = newPos.x - oldPos.x;
         Turn(direction);
@@ -68,7 +57,6 @@ public class Enemy : Character
         isMoving = false;
         isJumping = true;
         body.velocity = new Vector2(body.velocity.x, jumpForce);
-        //Debug.Log("Jump force: " + body.velocity.y);
     }
 
     protected virtual IEnumerator WaitToAttack(float waitSecs)
@@ -138,12 +126,6 @@ public class Enemy : Character
                             }
                             else
                             {
-                                // if close to player by 3 x points and the player is above this character more than 8 y points => Jump
-                                // if (Mathf.Abs(transform.position.x - playerLocation.x) < 3f && (playerLocation.y - transform.position.y > 8f) && isJumping == false) // change this jump condition
-                                // {
-                                //     TriggerJump();
-                                // }
-                                // else
                                 {
                                     Move();
                                 }
@@ -154,7 +136,6 @@ public class Enemy : Character
                     {
                         characterWaitForAttack = StartCoroutine(WaitToAttack(waitTimer));
                     }
-                //}
             }else if (attackState){
                 StopAllCoroutines();
                 meleeHitBoxSprite.color = transparent;
@@ -165,12 +146,7 @@ public class Enemy : Character
             Idle();
         }
     }
-    // void OnDrawGizmosSelected()
-    // {
-    //     Gizmos.color = Color.yellow;
-    //     Gizmos.DrawLine(transform.position, new Vector3(transform.position.x + detectRange, transform.position.y, transform.position.z));
-    //     Gizmos.DrawLine(transform.position, new Vector3(transform.position.x - detectRange, transform.position.y, transform.position.z));
-    // }
+
     protected void OnDestroy(){
         GameManager.Instance.EnemiesCountDecrease();
     }

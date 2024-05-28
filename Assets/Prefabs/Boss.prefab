@@ -161,8 +161,8 @@ MonoBehaviour:
   jumpForce: 50
   normalDetectRange: 4.5
   setMoveDelay: 0.5
-  SpecialAttackCondition: 1
-  dashSpeed: 80
+  SpecialAttackCondition: 3
+  dashSpeed: 85
   jumpHeight: 50
   jumpDuration: 3
 --- !u!1 &4284004539678159404
