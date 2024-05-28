@@ -13,6 +13,10 @@ public class CharacterStatsContainer
     public CharacterStats enemy;
     public CharacterStats boss;
 }
+[System.Serializable]
+public class PlayerProfile{
+    public int HighScore;
+}
 public class GameManager : MonoBehaviour
 {
     // Character Instances
@@ -22,7 +26,8 @@ public class GameManager : MonoBehaviour
 
     //
     private static GameManager instance; // Singleton instance
-    private int score = 0, highScore = 0;
+    private int score = 0;
+    private int highScore = 0;
     private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 4;
     private bool spawningWave = false;
 
@@ -30,9 +35,11 @@ public class GameManager : MonoBehaviour
 
     public TextMeshProUGUI ScoreText;
     public TextMeshProUGUI HighScoreText;
-
+    private PlayerProfile playerProfile;
     public Canvas GameOverScreen;
 
+    private string statsPath = Path.Combine(Application.streamingAssetsPath, "CharacterStats.json");
+    private string profilePath;
 
     public Character MainPlayer
     {
@@ -71,6 +78,7 @@ public class GameManager : MonoBehaviour
 
         if (Instance == null)
         {
+            profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json");
             Instance = this;
             LoadCharacterStats();
             //DontDestroyOnLoad(Instance);
@@ -82,11 +90,10 @@ public class GameManager : MonoBehaviour
 
     private void LoadCharacterStats()
     {
-        TextAsset jsonText = Resources.Load<TextAsset>("CharacterStats");
-
-        if (jsonText != null)
+        if (File.Exists(statsPath))
         {
-            CharacterStatsContainer statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText.text);
+            string jsonText = File.ReadAllText(statsPath);
+            CharacterStatsContainer statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText);
             player.LoadStats(statsContainer.player);
             enemy.LoadStats(statsContainer.enemy);
             boss.LoadStats(statsContainer.boss);
@@ -100,6 +107,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        //ReadProfile();
         ScoreText.text = "Score: " + score.ToString();
         HighScoreText.text = "High Score: " + highScore.ToString();
     }
@@ -113,6 +121,7 @@ public class GameManager : MonoBehaviour
         {
             HealthBars[0].gameObject.SetActive(false);
             GameOverScreen.gameObject.SetActive(true);
+            SaveProfile();
         }
         else
         {
@@ -209,28 +218,26 @@ public class GameManager : MonoBehaviour
     {
         score += amount;
     }
-
-    // Method to reset score
-    public void ResetScore()
-    {
-        score = 0;
-    }
-
     // Method to update high score
-    public void UpdateHighScore()
+    private void SaveProfile()
     {
-        if (score > highScore)
+        playerProfile.HighScore = highScore;
+        string highScoreJSON = JsonUtility.ToJson(playerProfile.HighScore);
+        File.WriteAllText(profilePath, highScoreJSON);
+    }
+    private void ReadProfile()
+    {
+        if (File.Exists(profilePath))
         {
-            highScore = score;
+            string json = File.ReadAllText(profilePath);
+            playerProfile = JsonUtility.FromJson<PlayerProfile>(json);
+            highScore = playerProfile.HighScore;
+        }
+        else
+        {
+            SaveProfile();
         }
     }
-
-    // Method to reset high score
-    public void ResetHighScore()
-    {
-        highScore = 0;
-    }
-
 }
 
 

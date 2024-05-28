@@ -56,11 +56,11 @@ public class CameraFollowPlayer : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, desiredLocation, cameraSpeed * Time.deltaTime);
         }
     }
-    private IEnumerator ZoomInThenOut(){
-        mainCamera.orthographicSize = 5f;
-        yield return new WaitForSeconds(1f);
-        mainCamera.orthographicSize = 20f;
-    }
+    // private IEnumerator ZoomInThenOut(){
+    //     mainCamera.orthographicSize = 5f;
+    //     yield return new WaitForSeconds(1f);
+    //     mainCamera.orthographicSize = 20f;
+    // }
 
 
     void LateUpdate()
