@@ -391,7 +391,7 @@ MonoBehaviour:
   basicAttack:
     attackAnimationName: attack_dam
     attackTime: 0.4
-    enableBulletTime: 0.38
+    enableBulletTime: 0.15
   basicAttackHitBox: {fileID: 3570482660402923820}
   dashAttack:
     attackAnimationName: attack_dap2
@@ -418,13 +418,13 @@ MonoBehaviour:
   playingAnim: 
   directionSign: 0
   setdamagedAnimTime: 0.5
-  health: 2
-  damage: 5
-  currentDamage: 0
-  currentHealth: 0
-  normalMoveSpeed: 20
+  stats:
+    health: 0
+    damage: 0
+    moveSpeed: 0
+    detectRange: 0
   jumpForce: 50
-  normalDetectRange: 4.5
+  specialDetectRange: 0
   setMoveDelay: 0.5
 --- !u!1 &4639318507779981781
 GameObject:

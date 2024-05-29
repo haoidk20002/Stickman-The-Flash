@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour
 
     public TextMeshProUGUI ScoreText;
     public TextMeshProUGUI HighScoreText;
-    private PlayerProfile playerProfile;
+    private PlayerProfile playerProfile = new PlayerProfile();
     public Canvas GameOverScreen;
 
     private string statsPath = Path.Combine(Application.streamingAssetsPath, "CharacterStats.json");
@@ -78,7 +78,9 @@ public class GameManager : MonoBehaviour
 
         if (Instance == null)
         {
-            profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json");
+            //profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json"); // for build version
+            profilePath = Path.Combine(Application.dataPath, "PlayerProfile.json"); // for testing
+            Debug.Log(profilePath);
             Instance = this;
             LoadCharacterStats();
             //DontDestroyOnLoad(Instance);
@@ -107,7 +109,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //ReadProfile();
+        ReadProfile();
         ScoreText.text = "Score: " + score.ToString();
         HighScoreText.text = "High Score: " + highScore.ToString();
     }
@@ -222,11 +224,12 @@ public class GameManager : MonoBehaviour
     private void SaveProfile()
     {
         playerProfile.HighScore = highScore;
-        string highScoreJSON = JsonUtility.ToJson(playerProfile.HighScore);
+        string highScoreJSON = JsonUtility.ToJson(playerProfile);
         File.WriteAllText(profilePath, highScoreJSON);
     }
     private void ReadProfile()
     {
+        // didn't find the profile path
         if (File.Exists(profilePath))
         {
             string json = File.ReadAllText(profilePath);
