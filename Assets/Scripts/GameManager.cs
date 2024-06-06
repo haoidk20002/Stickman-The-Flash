@@ -9,14 +9,39 @@ using System.IO;
 [System.Serializable]
 public class CharacterStatsContainer
 {
-    public CharacterStats player;
-    public CharacterStats enemy;
-    public CharacterStats boss;
+    public CharacterStats player_stats;
+    public CharacterStats enemy_stats;
+    public CharacterStats boss_stats;
+    public void BuffEnemiesHealthAndDamage(int multiplier)
+    {
+        enemy_stats.health = enemy_stats.health * multiplier;
+        enemy_stats.damage = enemy_stats.damage * multiplier;
+        boss_stats.health = boss_stats.health * multiplier;
+        boss_stats.damage = boss_stats.damage * multiplier;
+    }
 }
 [System.Serializable]
-public class PlayerProfile{
+public class PlayerProfile
+{
     public int HighScore;
 }
+[System.Serializable]
+public class WaveData
+{
+    public Wave[] Waves;
+}
+
+[System.Serializable]
+public class Wave
+{
+    public string WaveName;
+    public int StatsMultiplier;
+    public int NumberOfEnemiesSpawn;
+    public int MaxEnemiesCount;
+    public float SpawnSpeed;
+    //public Enemy[] Enemies;
+}
+
 public class GameManager : MonoBehaviour
 {
     // Character Instances
@@ -28,19 +53,32 @@ public class GameManager : MonoBehaviour
     private static GameManager instance; // Singleton instance
     private int score = 0;
     private int highScore = 0;
-    private int enemiesCount = 0, enemiesSpawnNumber = 0, waveNumber = 4;
-    private bool spawningWave = false;
-
+    // wave info
+    private int statsMultiplier;
+    private int numberOfEnemiesSpawn;
+    private int maxEnemiesCount;
+    private float spawnSpeed;
+    //private Enemy[] enemies;
+    private bool allEnemiesSpawned = true;
+    private int enemiesCount = 0;
+    private bool bossSpawned = false;
+    private int waveNumber = 0;
+    private bool isSpawning = false;
+    private int enemiesTypesCount;
+    // camera boundaries
     private float minX, maxX, minY, maxY;
 
     public TextMeshProUGUI ScoreText;
     public TextMeshProUGUI HighScoreText;
+    // JSON file handling objects and variables
     private PlayerProfile playerProfile = new PlayerProfile();
-    public Canvas GameOverScreen;
-
+    private WaveData wavedata = new WaveData();
+    private CharacterStatsContainer statsContainer = new CharacterStatsContainer();
     private string statsPath = Path.Combine(Application.streamingAssetsPath, "CharacterStats.json");
+    private string wavePath = Path.Combine(Application.streamingAssetsPath, "WaveData.json");
     private string profilePath;
 
+    public Canvas GameOverScreen;
     public Character MainPlayer
     {
         get;
@@ -64,7 +102,7 @@ public class GameManager : MonoBehaviour
         get { return highScore; }
     }
 
-    public GameObject[] enemyPrefab;  // Prefab of the enemy to spawn
+    public Enemy[] enemyPrefab;  // Prefab of the enemy to spawn
     // Getter for the singleton instance
     public static GameManager Instance { get; private set; }
 
@@ -81,24 +119,50 @@ public class GameManager : MonoBehaviour
             //profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json"); // for build version
             profilePath = Path.Combine(Application.dataPath, "PlayerProfile.json"); // for testing
             Debug.Log(profilePath);
+
             Instance = this;
             LoadCharacterStats();
-            //DontDestroyOnLoad(Instance);
-            //DontDestroyOnLoad(HealthBars.gameObject);
+            LoadWaveData();
         }
     }
 
     [field: SerializeField] public HealthBar[] HealthBars { get; private set; } // Health Bars
+    private void LoadWaveData()
+    {
+        if (File.Exists(wavePath))
+        {
+            string jsonText = File.ReadAllText(wavePath);
+            wavedata = JsonUtility.FromJson<WaveData>(jsonText);
+        }
+        else
+        {
+            Debug.LogError("JSON file not found!");
+        }
+    }
+    private void LoadNewWave(int number)
+    {
+        statsMultiplier = wavedata.Waves[number].StatsMultiplier;
+        Debug.Log("Stats Multiplier: " + statsMultiplier);
+        // buff enemies stats
+        statsContainer.BuffEnemiesHealthAndDamage(statsMultiplier);
+        enemy.LoadStats(statsContainer.enemy_stats);
+        boss.LoadStats(statsContainer.boss_stats);
+        numberOfEnemiesSpawn = wavedata.Waves[number].NumberOfEnemiesSpawn;
+        maxEnemiesCount = wavedata.Waves[number].MaxEnemiesCount;
+        spawnSpeed = wavedata.Waves[number].SpawnSpeed;
+        // sth here
+
+    }
 
     private void LoadCharacterStats()
     {
         if (File.Exists(statsPath))
         {
             string jsonText = File.ReadAllText(statsPath);
-            CharacterStatsContainer statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText);
-            player.LoadStats(statsContainer.player);
-            enemy.LoadStats(statsContainer.enemy);
-            boss.LoadStats(statsContainer.boss);
+            statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText);
+            player.LoadStats(statsContainer.player_stats);
+            enemy.LoadStats(statsContainer.enemy_stats);
+            boss.LoadStats(statsContainer.boss_stats);
         }
         else
         {
@@ -117,12 +181,19 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
+        // managing allEnemiesSpawned variable
+        if (numberOfEnemiesSpawn == 0)
+        {
+            allEnemiesSpawned = true;
+        }
+        else allEnemiesSpawned = false;
         // if player or boss dies, its respective health bar toggles off
         // Toggle on when it appears.
         if (MainPlayer == null)
         {
             HealthBars[0].gameObject.SetActive(false);
             GameOverScreen.gameObject.SetActive(true);
+            PauseAndContinue.gameIsPaused = true;
             SaveProfile();
         }
         else
@@ -135,15 +206,22 @@ public class GameManager : MonoBehaviour
         }
         else { HealthBars[1].gameObject.SetActive(true); }
 
-        if (!PauseAndContinue.gameIsPaused)
+        if (!PauseAndContinue.gameIsPaused || !PauseAndContinue.gameIsStopped)
         {
-            // get enemy count
-            //if enemy count < 0 then spawn next wave
-            if (enemiesCount == 0 && !spawningWave)
+            //spawn next wave
+            if (enemiesCount == 0 && allEnemiesSpawned)
             {
                 waveNumber++;
-                enemiesSpawnNumber++;
-                StartCoroutine(SpawnEnemiesWave());
+                if (waveNumber <= 12){
+                    LoadNewWave(waveNumber - 1);
+                } else { LoadNewWave(11);}
+            }
+            //
+            if (enemiesCount < maxEnemiesCount && !allEnemiesSpawned && !isSpawning)
+            {
+                isSpawning = true;
+
+                StartCoroutine(SpawnEnemies(spawnSpeed));
             }
         }
 
@@ -167,38 +245,19 @@ public class GameManager : MonoBehaviour
     }
 
     // Method to spawn an enemy
-    IEnumerator SpawnEnemiesWave()
+    private IEnumerator SpawnEnemies(float spawnSpeed)
     {
-        spawningWave = true;
-        //Debug.Log("Wait for 5s");
-        //Debug.Log("Enemies Spawn Number: " + enemiesSpawnNumber);
-
-        yield return new WaitForSeconds(5f);
-        // Spawn an enemy
-        while (enemiesCount < enemiesSpawnNumber)
-        {
-            if (waveNumber % 5 == 0)
-            {
-                //boss.AddBossHealth(HealthBars[1]);
-                Instantiate(enemyPrefab[1], GetRandomSpawnPosition(), Quaternion.identity);
-                enemiesCount++;
-                enemiesSpawnNumber = 0;
-                break;
-            } //boss every 5 wave
-            else
-            {
-                Instantiate(enemyPrefab[0], GetRandomSpawnPosition(), Quaternion.identity);
-                enemiesCount++;
-                yield return new WaitForSeconds(0.5f);
-            }
-            // Instantiate(enemyPrefab, GetRandomSpawnPosition(), Quaternion.identity);
-            // yield return new WaitForSeconds(1f);
+        int enemyIndex = Random.Range(0,2);
+        if (bossSpawned){
+            enemyIndex = 1;
         }
-        spawningWave = false;
-        // Wait for a certain amount of time before spawning the next enemy
-        //yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(spawnSpeed);
+        Instantiate(enemyPrefab[0], GetRandomSpawnPosition(), Quaternion.identity);
+        if (enemyIndex == 1){ bossSpawned = true;}
+        enemiesCount++;
+        isSpawning = false;
     }
-    Vector2 GetRandomSpawnPosition()
+    private Vector2 GetRandomSpawnPosition()
     {
         // Return a random position within some bounds (adjust to your needs)
         return new Vector2(Random.Range(minX, maxX), Random.Range(0f, 30f));
@@ -229,7 +288,6 @@ public class GameManager : MonoBehaviour
     }
     private void ReadProfile()
     {
-        // didn't find the profile path
         if (File.Exists(profilePath))
         {
             string json = File.ReadAllText(profilePath);

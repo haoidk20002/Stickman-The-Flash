@@ -1920,8 +1920,8 @@ MonoBehaviour:
   HighScoreText: {fileID: 118295367}
   GameOverScreen: {fileID: 276388108}
   enemyPrefab:
-  - {fileID: 3866025749971152302, guid: 6ff875c78cbe1004da39da8197da7b82, type: 3}
-  - {fileID: 3632156920120099478, guid: 8ade09ce5ebd82d41bd2f2a975f3165c, type: 3}
+  - {fileID: 4484274465713772110, guid: 6ff875c78cbe1004da39da8197da7b82, type: 3}
+  - {fileID: 9156371462379778507, guid: 8ade09ce5ebd82d41bd2f2a975f3165c, type: 3}
   <HealthBars>k__BackingField:
   - {fileID: 1193646492}
   - {fileID: 625438262}
