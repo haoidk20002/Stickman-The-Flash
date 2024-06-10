@@ -3,6 +3,7 @@ using UnityEngine;
 using Spine.Unity;
 using UnityEngine.SocialPlatforms.Impl;
 using Unity.VisualScripting;
+using System;
 
 
 public class Enemy : Character
@@ -12,7 +13,7 @@ public class Enemy : Character
     protected float direction;
     protected float delay = 1f, delayLeft = 0f;
     [SerializeField] protected float specialDetectRange;
-    protected float moveDelay = -1f, waitTimer =1f;
+    protected float moveDelay = -1f, waitTimer = 1f;
     [SerializeField] protected float setMoveDelay;
     protected bool playerInSight = false;
     protected float lastAttackedAt = 0;
@@ -81,11 +82,13 @@ public class Enemy : Character
         Color temp;
         // flash in 0.5s
         //
-        while (warningEffect){
+        while (warningEffect)
+        {
             lerpValue += Time.deltaTime;
             // red to nothing originally, then keeps inversing until the state is out. Flash in and out in 0.5s totally
-            meleeHitBoxSprite.color = Color.Lerp(flashupColor,flashoutColor,lerpValue/0.25f);
-            if (lerpValue/0.25f > 1){
+            meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue / 0.25f);
+            if (lerpValue / 0.25f > 1)
+            {
                 //Debug.Break();
                 lerpValue = 0f;
                 temp = flashupColor;
@@ -95,17 +98,18 @@ public class Enemy : Character
             }
         }
         //
-        if (!warningEffect) {lerpValue = 0f;}
+        if (!warningEffect) { lerpValue = 0f; }
     }
     protected override void update2()
     {
         player = FindTarget();
-        if (player != null){
+        if (player != null)
+        {
             playerLocation = player.gameObject.transform.position;
         }
         if (body.velocity.y < 0)
         {
-            moveDelay = setMoveDelay;
+            landingAnimTime = 0.5f;
         }
         if (player != null)
         {
@@ -113,30 +117,33 @@ public class Enemy : Character
             {
                 //if (!isDamaged) // when damaged can't do anything until the damaged anim is inactive
                 //{
-                    if (!playerInSight && !attackState)
+                if (!playerInSight && !attackState)
+                {
+                    // Run or Jump
+                    playerInSight = InRange();  // check if player is in attack range (for boss attack range is random depend on the attack)
+                                                // only move or jump when attack anim (0.5f) finished and isGround == true
+                    if (isGrounded == true)
                     {
-                        // Run or Jump
-                        playerInSight = InRange();  // check if player is in attack range (for boss attack range is random depend on the attack)
-                        // only move or jump when attack anim (0.5f) finished and isGround == true
-                        if (isGrounded == true)
+                        if (!isLanding)
                         {
-                            if (moveDelay > 0)
+                            if (Math.Abs(transform.position.x - playerLocation.x) > 2)
                             {
-                                moveDelay -= Time.deltaTime;
+                                Move();
                             }
                             else
                             {
-                                {
-                                    Move();
-                                }
+                                Idle();
                             }
                         }
                     }
-                    else if (!attackState)
-                    {
-                        characterWaitForAttack = StartCoroutine(WaitToAttack(waitTimer));
-                    }
-            }else if (attackState){
+                }
+                else if (!attackState)
+                {
+                    characterWaitForAttack = StartCoroutine(WaitToAttack(waitTimer));
+                }
+            }
+            else if (attackState)
+            {
                 StopAllCoroutines();
                 meleeHitBoxSprite.color = transparent;
             }
@@ -147,7 +154,8 @@ public class Enemy : Character
         }
     }
 
-    protected void OnDestroy(){
+    protected void OnDestroy()
+    {
         GameManager.Instance.EnemiesCountDecrease();
     }
 }

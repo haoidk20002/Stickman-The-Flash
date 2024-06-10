@@ -44,9 +44,10 @@ public abstract class Character : MonoBehaviour
     protected int playerLayerMask => 1 << LayerMask.NameToLayer("Player");
 
     // Check all state using boolean
-    protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false, isFalling = false, isDashing = false;
+    protected bool isMoving = false, isAttacking = false, isJumping = false, isDamaged = false, isFalling = false, isDashing = false, isLanding = false;
     public int directionSign;
     protected float damagedAnimTime;
+    protected float landingAnimTime = 0.5f;
     [SerializeField] protected float setdamagedAnimTime = 0.5f;
 
     protected float ratio;
@@ -295,7 +296,6 @@ public abstract class Character : MonoBehaviour
         if (characterHealth.IsDead)
         {
             Die();
-            //Debug.Break();
         }
         else
         {
@@ -315,9 +315,9 @@ public abstract class Character : MonoBehaviour
     protected void Fall()
     {
         if (spinningAttack.IsPerforming) { return; }
-        if (!isAttacking && Mathf.Abs(transform.position.y - groundYPos) > 14.5f)
+        if (!isDashing && !isDamaged && !isAttacking && Mathf.Abs(transform.position.y - groundYPos) > 14.5f)
         {
-            PlayAnimation(fallAnimationName, 0f, false);
+            PlayAnimation(fallAnimationName, 0f, true);
             isFalling = true;
         }
     }
@@ -331,15 +331,12 @@ public abstract class Character : MonoBehaviour
             EndSpin();
             return;
         }
-        if (!isFalling)
+        else if (!isLanding && isFalling && !isAttacking && !isDamaged)
         {
-            Idle();
-            return;
-        }
-        if (isAttacking == false && isDamaged == false)
-        {
+            Debug.Log("...");
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
+            isLanding = true;
             isFalling = false;
         }
     }
@@ -352,6 +349,31 @@ public abstract class Character : MonoBehaviour
             {
                 damagedAnimTime = setdamagedAnimTime;
                 isDamaged = false;
+            }
+        }
+    }
+    protected void IsAttackingControl()
+    {
+        if (isAttacking == true)
+        {
+            attackAnimTime -= Time.deltaTime;
+
+            if (attackAnimTime < 0)
+            {
+                isAttacking = false;
+            }
+        }
+    }
+    protected void IsLandingControl()
+    {
+        if (isLanding == true)
+        {
+            landingAnimTime -= Time.deltaTime;
+
+            if (landingAnimTime < 0)
+            {
+                isLanding = false;
+                landingAnimTime = 0.5f;
             }
         }
     }
@@ -373,36 +395,23 @@ public abstract class Character : MonoBehaviour
                     playingAnim = playing.ToString();
                 }
                 catch (Exception e) { Debug.Log(e); }
-                //playingAnim = playing.ToString();
+                //
+                if (!isLanding &&!isAttacking && !isMoving && !isJumping && !isDamaged && !isFalling && !isDashing)
+                {
+                    Idle();
+                }
+
 
                 basicAttack.TakeTime(Time.deltaTime);
                 dashAttack.TakeTime(Time.deltaTime);
                 spinningAttack.TakeTime(Time.deltaTime);
-                // controlling isAttacking
-                if (isAttacking == true)
-                {
-                    attackAnimTime -= Time.deltaTime;
 
-                    if (attackAnimTime < 0)
-                    {
-                        isAttacking = false;
-                        //
-                        if (isGrounded)
-                        {
-                            Idle();
-                        }
-                    }
-                }
-                // Controlling isDamaged // Dashing on ground even when teleport
-                /*
-
-                */
-
-                IsDamagedControl(); // 
+                IsAttackingControl();
+                IsDamagedControl();
+                IsLandingControl();
             }
             update2();
         }
-
     }
     void FixedUpdate()
     {

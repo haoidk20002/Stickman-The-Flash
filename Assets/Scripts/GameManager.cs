@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
     private int score = 0;
     private int highScore = 0;
     // wave info
-    private int statsMultiplier;
+    private int statsMultiplier = 1;
     private int numberOfEnemiesSpawn;
     private int maxEnemiesCount;
     private float spawnSpeed;
@@ -99,6 +99,7 @@ public class GameManager : MonoBehaviour
     private string profilePath;
 
     public Canvas GameOverScreen;
+    private int enemyIndex;
     public Character MainPlayer
     {
         get;
@@ -134,6 +135,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("Awaken");
         if (Instance == null)
         {
             //Purpose: Files placed in the Resources folder are included in the build and can be loaded at runtime using Resources.Load.
@@ -152,6 +154,7 @@ public class GameManager : MonoBehaviour
             Instance = this;
             LoadCharacterStats();
             LoadWaveData();
+            //DontDestroyOnLoad(Instance);
         }
     }
 
@@ -159,7 +162,8 @@ public class GameManager : MonoBehaviour
 
     private void LoadEnemyPrefabs(int number)
     {
-        if (loadedEnemyPrefabs.Count > 0){
+        if (loadedEnemyPrefabs.Count > 0)
+        {
             loadedEnemyPrefabs.Clear();
         }
         if (File.Exists(enemyListPath))
@@ -202,6 +206,8 @@ public class GameManager : MonoBehaviour
     private void LoadNewWave(int number)
     {
         LoadEnemyPrefabs(number);
+        // getting original stats
+        LoadCharacterStats();
         statsMultiplier = wavedata.Waves[number].StatsMultiplier;
         Debug.Log("Stats Multiplier: " + statsMultiplier);
         // buff enemies stats
@@ -220,8 +226,6 @@ public class GameManager : MonoBehaviour
             string jsonText = File.ReadAllText(statsPath);
             statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText);
             player.LoadStats(statsContainer.player_stats);
-            // enemy.LoadStats(statsContainer.enemy_stats);
-            // boss.LoadStats(statsContainer.boss_stats);
         }
         else
         {
@@ -239,34 +243,32 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
-        // managing allEnemiesSpawned variable
-        if (numberOfEnemiesSpawn == 0)
+        if (!PauseAndContinue.gameIsPaused)
         {
-            allEnemiesSpawned = true;
-        }
-        else allEnemiesSpawned = false;
-        // if player or boss dies, its respective health bar toggles off
-        // Toggle on when it appears.
-        if (MainPlayer == null)
-        {
-            HealthBars[0].gameObject.SetActive(false);
-            GameOverScreen.gameObject.SetActive(true);
-            PauseAndContinue.gameIsPaused = true;
-            SaveProfile();
-        }
-        else
-        {
-            HealthBars[0].gameObject.SetActive(true);
-        }
-        if (Boss == null)
-        {
-            HealthBars[1].gameObject.SetActive(false);
-        }
-        else { HealthBars[1].gameObject.SetActive(true); }
-
-        if (!PauseAndContinue.gameIsPaused || !PauseAndContinue.gameIsStopped)
-        {
+            CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
+            // managing allEnemiesSpawned variable
+            if (numberOfEnemiesSpawn == 0)
+            {
+                allEnemiesSpawned = true;
+            }
+            else allEnemiesSpawned = false;
+            // if player or boss dies, its respective health bar toggles off
+            // Toggle on when it appears.
+            if (MainPlayer == null)
+            {
+                HealthBars[0].gameObject.SetActive(false);
+                GameOverScreen.gameObject.SetActive(true);
+                SaveProfile();
+            }
+            else
+            {
+                HealthBars[0].gameObject.SetActive(true);
+            }
+            if (Boss == null)
+            {
+                HealthBars[1].gameObject.SetActive(false);
+            }
+            else { HealthBars[1].gameObject.SetActive(true); }
             //spawn next wave
             if (enemiesCount == 0 && allEnemiesSpawned)
             {
@@ -282,18 +284,17 @@ public class GameManager : MonoBehaviour
             if (enemiesCount < maxEnemiesCount && !allEnemiesSpawned && !isSpawning)
             {
                 isSpawning = true;
-
+                Debug.Log("spawn enemies");
                 StartCoroutine(SpawnEnemies(spawnSpeed));
             }
-        }
-
-        // show score and high score
-        ScoreText.text = "Score: " + score.ToString();
-        HighScoreText.text = "High Score: " + highScore.ToString();
-        // Check for high score update
-        if (score > highScore)
-        {
-            highScore = score;
+            // show score and high score
+            ScoreText.text = "Score: " + score.ToString();
+            HighScoreText.text = "High Score: " + highScore.ToString();
+            // Check for high score update
+            if (score > highScore)
+            {
+                highScore = score;
+            }
         }
     }
 
@@ -309,43 +310,53 @@ public class GameManager : MonoBehaviour
     // Method to spawn an enemy
     private IEnumerator SpawnEnemies(float spawnSpeed)
     {
-        int enemyIndex;
+        Debug.Log(Time.time);
+        yield return new WaitForSeconds(spawnSpeed);
         if (!bossSpawned)
         {
-            enemyIndex = UnityEngine.Random.Range(0, loadedEnemyPrefabs.Count);
+            SpawnWithBoss();
         }
         else
         {
-            //enemyIndex = 0;
-            // Filter out boss enemies from the selection
-            List<Enemy> nonBossEnemies = new List<Enemy>();
-            foreach (var enemyPrefab in loadedEnemyPrefabs)
+            SpawnWithoutBoss();
+        }
+        enemiesCount++;
+        numberOfEnemiesSpawn--;
+        isSpawning = false;
+        yield return null;
+    }
+
+    private void SpawnWithoutBoss()
+    {
+        // Filter out boss enemies from the selection
+        List<Enemy> nonBossEnemies = new List<Enemy>();
+        foreach (var enemyPrefab in loadedEnemyPrefabs)
+        {
+            if (!enemyPrefab.CompareTag("Boss")) // Assuming bosses have a "Boss" tag
             {
-                if (!enemyPrefab.CompareTag("Boss")) // Assuming bosses have a "Boss" tag
-                {
-                    nonBossEnemies.Add(enemyPrefab);
-                }
-            }
-            if (nonBossEnemies.Count > 0)
-            {
-                enemyIndex = UnityEngine.Random.Range(0, nonBossEnemies.Count);
-                var newenemy = Instantiate(nonBossEnemies[enemyIndex], GetRandomSpawnPosition(), Quaternion.identity);
-                newenemy.LoadStats(statsContainer.enemy_stats);
-            }
-            else
-            {
-                Debug.LogWarning("No non-boss enemies available to spawn.");
-                yield break; // Exit coroutine if no non-boss enemies are available
+                nonBossEnemies.Add(enemyPrefab);
             }
         }
-        yield return new WaitForSeconds(spawnSpeed);
-        var newcharacter = Instantiate(loadedEnemyPrefabs[enemyIndex], GetRandomSpawnPosition(), Quaternion.identity);
-        if (newcharacter.gameObject.CompareTag("Enemy")){
+        if (nonBossEnemies.Count > 0)
+        {
+            enemyIndex = UnityEngine.Random.Range(0, nonBossEnemies.Count);
+            var newcharacter = Instantiate(nonBossEnemies[enemyIndex], GetRandomSpawnPosition(), Quaternion.identity);
             newcharacter.LoadStats(statsContainer.enemy_stats);
-        } else{ newcharacter.LoadStats(statsContainer.boss_stats);}
-        if (loadedEnemyPrefabs[enemyIndex].gameObject.CompareTag("Boss")) { bossSpawned = true; }
-        enemiesCount++;
-        isSpawning = false;
+        }
+    }
+    private void SpawnWithBoss()
+    {
+        enemyIndex = UnityEngine.Random.Range(0, loadedEnemyPrefabs.Count);
+        var newcharacter = Instantiate(loadedEnemyPrefabs[enemyIndex], GetRandomSpawnPosition(), Quaternion.identity);
+        if (newcharacter.gameObject.CompareTag("Enemy"))
+        {
+            newcharacter.LoadStats(statsContainer.enemy_stats);
+        }
+        else
+        {
+            bossSpawned = true;
+            newcharacter.LoadStats(statsContainer.boss_stats);
+        }
     }
     private Vector2 GetRandomSpawnPosition()
     {

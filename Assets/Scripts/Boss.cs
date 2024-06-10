@@ -59,7 +59,6 @@ public class Boss : Enemy
                     DashAttack();
                     break;
                 case 2:
-                    //Debug.Break();
                     TriggerParabolicJump(playerLocation);
                     SpinningAttack();
                     break;
@@ -84,7 +83,6 @@ public class Boss : Enemy
         flashoutColor = transparent;
         Color temp;
         // flash in 0.5s
-        //
         if (!specialAttack || (specialAttack && specialAttackNumber == 1))
         {
             while (warningEffect)
@@ -150,7 +148,7 @@ public class Boss : Enemy
         {
             stats.detectRange = 5f;
             stats.moveSpeed = normalMoveSpeed;
-            waitTimer = 1f;
+            waitTimer = 0.5f;
         }
     }
 

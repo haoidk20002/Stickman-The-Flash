@@ -151,13 +151,8 @@ public class Player : Character
         isFalling = false;
         swipeDirection = endPos - startPos;
         swipeDirectionOnScreen = endScreenPos - startScreenPos;
-        //Debug.Log("Swipe Direction On Screen: " + swipeDirectionOnScreen);
         // Determine if the swipe was long enough (you can set a threshold)
-        //swipeMagnitude = swipeDirection.magnitude;
         swipeMagnitude = (startScreenPos - endScreenPos).magnitude;
-        // Debug.Log("Start: " + startPos + "End: " + endPos);
-        //Debug.Log("Swipe direction: " + swipeDirection);
-        //Debug.Log(swipeMagnitude*multiplier);
         if (swipeMagnitude > minSwipeDistance)
         {
             body.velocity = Vector2.zero;
@@ -203,6 +198,7 @@ public class Player : Character
 
     protected override void BeingHit2()
     {
+        DisableDash();
         isImmune = true;
     }
     protected override IEnumerator Flickering()
@@ -221,9 +217,10 @@ public class Player : Character
         dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(5.9f, 10f);
         dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(0f, 0f);
         isAttacking = false;
-        // fall distance after disabled is > 14.5f => set isFalling = true to show full animation (Land then Idle)
-        if (swipeDirectionOnScreen.y < 0f) // condition not suit
+        isDashing = false;
+        if (swipeDirectionOnScreen.y < -0.2f) 
         {
+            Debug.Log(swipeDirectionOnScreen.y);
             isFalling = true;
         }
         else { isFalling = false; }

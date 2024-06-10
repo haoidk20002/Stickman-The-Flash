@@ -6,7 +6,7 @@ public class PauseAndContinue : MonoBehaviour
 {
     public GameObject pauseMenu;
     public static bool gameIsPaused = false; 
-    public static bool gameIsStopped = false;// 
+    //public static bool gameIsStopped = false;// 
 
     private void Awake(){
 
