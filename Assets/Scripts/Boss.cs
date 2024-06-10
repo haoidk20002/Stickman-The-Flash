@@ -72,7 +72,7 @@ public class Boss : Enemy
     {
         if (specialAttack && specialAttackNumber == 1) // change warning
         {
-            dashAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(90f, 10f);
+            dashAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(10f, 10f);
         }
         else if (!specialAttack)
         {

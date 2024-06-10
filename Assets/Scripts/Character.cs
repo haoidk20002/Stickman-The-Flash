@@ -181,7 +181,7 @@ public abstract class Character : MonoBehaviour
         }
         // boss
         // old hitbox size (5.9,10) offset (0,0)
-        // new hitbox size (9,13) offset(-2,0) // change here
+        // new hitbox size (12,13) offset(-5,0) 
         if (gameObject.tag == "Boss")
         {
             dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(12f, 13f);
@@ -191,8 +191,6 @@ public abstract class Character : MonoBehaviour
         isDashing = true;
         isAttacking = true;
         attackAnimTime = dashAttack.AttackTime;
-        // PlayAnimation(dashAttack.AttackAnim, dashAttack.AttackTime, false);
-        // AddAnimation(idleAnimationName,true,0);
         Dash(0);
         dashAttack.Trigger();
         if (gameObject.tag == "Player") { Evt_MeleeAttack?.Invoke((int)stats.damage / 2); }
@@ -290,9 +288,9 @@ public abstract class Character : MonoBehaviour
         isDamaged = true;
         damagedAnimTime = setdamagedAnimTime;
         characterHealth.TakeDamage(damage);
-        //show damage pop up
+        // Show damage pop up
         GameManager.Instance.ShowDamagePopUp(transform.position, damage.ToString());
-        // different anim whether character is dead or not
+        // Different anim whether character is dead or not
         if (characterHealth.IsDead)
         {
             Die();
@@ -331,9 +329,9 @@ public abstract class Character : MonoBehaviour
             EndSpin();
             return;
         }
-        else if (!isLanding && isFalling && !isAttacking && !isDamaged)
+        else if (!isLanding && isFalling && !isAttacking)
         {
-            
+
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
             isLanding = true;
@@ -396,7 +394,7 @@ public abstract class Character : MonoBehaviour
                 }
                 catch (Exception e) { Debug.Log(e); }
                 //
-                if (!isLanding &&!isAttacking && !isMoving && !isJumping && !isDamaged && !isFalling && !isDashing)
+                if (!isLanding && !isAttacking && !isMoving && !isJumping && !isDamaged && !isFalling && !isDashing)
                 {
                     Idle();
                 }
@@ -456,10 +454,11 @@ public class UnitAttack
     public string AttackAnim => attackAnimationName;
     [SerializeField] private float attackTime;
     public float AttackTime => attackTime;
-
     [SerializeField] private float enableBulletTime;
-
+    [SerializeField] private float disableBulletTime;
     public event Action<bool> Evt_EnableBullet;
+
+
     public Action OnEnd;
     private float _currentTime;
     private bool _isEnableBullet = false;
@@ -488,9 +487,15 @@ public class UnitAttack
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }
-            if (_currentTime >= attackTime)
+            // if (_currentTime >= attackTime)
+            // {
+            //     //Debug.Break();
+            //     _isEnableBullet = false;
+            //     Evt_EnableBullet?.Invoke(false);
+            //     OnEnd?.Invoke();
+            // }
+            if (_currentTime >= disableBulletTime)
             {
-                //Debug.Break();
                 _isEnableBullet = false;
                 Evt_EnableBullet?.Invoke(false);
                 OnEnd?.Invoke();
@@ -500,7 +505,8 @@ public class UnitAttack
     public void CancelAttack()
     {
         //Debug.Break();
-        _currentTime = AttackTime;
+        //_currentTime = AttackTime;
+        _currentTime = disableBulletTime;
         _isEnableBullet = false;
         Evt_EnableBullet?.Invoke(false);
         OnEnd?.Invoke();

@@ -13,7 +13,6 @@ public class Player : Character
 {
     private HealthBar _playerHealth;
     private float cooldown = 0.5f, lastAttackedAt = 0f;
-    //[SerializeField] private float moveSpeed;
     [SerializeField] private float attackRange; 
     [SerializeField] private float minSwipeDistance;
     private float minX, maxX, maxY, minY;
@@ -25,10 +24,8 @@ public class Player : Character
     private Vector2 startPos, endPos, dashDestination, teleportDestination, swipeDirection, swipeDirectionOnScreen;
 
     // get camera bonuds first, then lock player in bounds
-    //private Rigidbody2D body;
     public LayerMask DetectLayerMask;
     public GameObject bullet;
-    //private Vector3 bulletStartPos;
     private Vector2 startScreenPos, endScreenPos;
 
     public void AddPlayerHealth(HealthBar playerHealth)
@@ -40,7 +37,6 @@ public class Player : Character
         AddPlayerHealth(GameManager.Instance.HealthBars[0]);
         SettingMainCharacterValue1();
         SettingMainCharacterValue2();
-        //bulletStartPos = transform.position;
         invincibilityTime = SetInvincibilityTime;
 
     }
@@ -179,9 +175,8 @@ public class Player : Character
         Turn(swipeDirection.x);
         //Debug.Log("Swipe direction y: " + swipeDirection.y + "Dash y destination: " + dashDestination.y);
         dashDestination.x = transform.position.x + swipeDirection.x * 10;
-        dashDestination.y = transform.position.y + swipeDirection.y * 5;
-        //Debug.Break();
-        DashAttack(); // Dash can be disabled when touching ground from above
+        dashDestination.y = transform.position.y + swipeDirection.y * 10;
+        DashAttack(); // Dash can be disabled when touching ground from above, hit camera bounds
     }
     // Unused concept (Shooting)
     // may be set as protected in Character class

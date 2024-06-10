@@ -127,16 +127,19 @@ MonoBehaviour:
     attackAnimationName: boss_attack1
     attackTime: 0.5
     enableBulletTime: 0.135
+    disableBulletTime: 0.2
   basicAttackHitBox: {fileID: 465043062760075260}
   dashAttack:
     attackAnimationName: boss_attack4
     attackTime: 1
     enableBulletTime: 0
+    disableBulletTime: 1
   dashAttackHitbox: {fileID: 465043062760075260}
   spinningAttack:
     attackAnimationName: boss_attack3_loop
     attackTime: 30
     enableBulletTime: 0
+    disableBulletTime: 30
   spinningAttackHitbox: {fileID: 3415264072826262398}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
@@ -355,7 +358,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0.5}
+    pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.32, y: 0.32}
     newSize: {x: 5.9, y: 10}
     adaptiveTilingThreshold: 0.5

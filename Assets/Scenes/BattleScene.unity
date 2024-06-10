@@ -3084,16 +3084,19 @@ MonoBehaviour:
     attackAnimationName: da
     attackTime: 0.4
     enableBulletTime: 0.2
+    disableBulletTime: 0.3
   basicAttackHitBox: {fileID: 2117003002}
   dashAttack:
     attackAnimationName: dash_attack
     attackTime: 0.5
     enableBulletTime: 0
+    disableBulletTime: 0.5
   dashAttackHitbox: {fileID: 2117003002}
   spinningAttack:
     attackAnimationName: die
     attackTime: 0
     enableBulletTime: 0
+    disableBulletTime: 0
   spinningAttackHitbox: {fileID: 2117003002}
   fallAnimationName: dang_roi
   landAnimationName: dap_dat
