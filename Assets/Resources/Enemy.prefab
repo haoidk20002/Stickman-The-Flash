@@ -391,7 +391,7 @@ MonoBehaviour:
   basicAttack:
     attackAnimationName: attack_dam
     attackTime: 0.4
-    enableBulletTime: 0.15
+    enableBulletTime: 0.115
   basicAttackHitBox: {fileID: 3570482660402923820}
   dashAttack:
     attackAnimationName: attack_dap2

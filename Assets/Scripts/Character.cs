@@ -184,8 +184,8 @@ public abstract class Character : MonoBehaviour
         // new hitbox size (9,13) offset(-2,0) // change here
         if (gameObject.tag == "Boss")
         {
-            dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(15f, 13f);
-            dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(1f, 0f);
+            dashAttackHitbox.GetComponent<BoxCollider2D>().size = new Vector2(12f, 13f);
+            dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(5f, 0f);
         }
 
         isDashing = true;
@@ -333,7 +333,7 @@ public abstract class Character : MonoBehaviour
         }
         else if (!isLanding && isFalling && !isAttacking && !isDamaged)
         {
-            Debug.Log("...");
+            
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
             isLanding = true;

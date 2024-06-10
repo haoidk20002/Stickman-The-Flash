@@ -135,7 +135,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("Awaken");
+        
         if (Instance == null)
         {
             //Purpose: Files placed in the Resources folder are included in the build and can be loaded at runtime using Resources.Load.
