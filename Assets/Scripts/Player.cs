@@ -215,7 +215,7 @@ public class Player : Character
         isDashing = false;
         if (swipeDirectionOnScreen.y < -0.2f) 
         {
-            Debug.Log(swipeDirectionOnScreen.y);
+            //Debug.Log(swipeDirectionOnScreen.y);
             isFalling = true;
         }
         else { isFalling = false; }

@@ -85,15 +85,11 @@ public abstract class Character : MonoBehaviour
 
     private RaycastHit2D hit;
 
-    // [Header("Stats")]
-    // [SerializeField] protected int health;
-    // [SerializeField] protected int damage;
-    // [SerializeField] protected float moveSpeed;
-    // [SerializeField] protected float detectRange;
-
     // other stuff
     private MaterialPropertyBlock mpb;
     public CharacterStats stats;
+
+
     public virtual void LoadStats(CharacterStats characterStats)
     {
         stats = characterStats;
@@ -278,7 +274,7 @@ public abstract class Character : MonoBehaviour
     {
         if (enemy != this)
         {
-            if (enemy.isImmune) return;
+            if (enemy.isImmune) return; // if other is immune, no damage => BeingHit not called
             enemy.BeingHit(value);
         }
     }
@@ -286,6 +282,7 @@ public abstract class Character : MonoBehaviour
     {
         BeingHit2();
         isDamaged = true;
+        SoundManager.Instance.PlaySoundEffect(0,transform,1f);
         damagedAnimTime = setdamagedAnimTime;
         characterHealth.TakeDamage(damage);
         // Show damage pop up
@@ -331,7 +328,7 @@ public abstract class Character : MonoBehaviour
         }
         else if (!isLanding && isFalling && !isAttacking)
         {
-
+            SoundManager.Instance.PlaySoundEffect(1,transform,1f);
             PlayAnimation(landAnimationName, 0f, false);
             AddAnimation(idleAnimationName, true, 0);
             isLanding = true;

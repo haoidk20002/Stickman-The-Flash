@@ -1,0 +1,3 @@
+Tap to teleport. Swipe to dash.
+Tap to an enemy to get near it and kick it.
+Dash move deal half of the kick damage.

@@ -64,41 +64,36 @@ public class Enemy : Character
     {// when he attacks, the warning become transparent
         attackState = true;
         Idle();
-        attackWarning = StartCoroutine(AttackWarning());
+        attackWarning = StartCoroutine(AttackWarning(waitSecs)); // called once
         yield return new WaitForSeconds(waitSecs);
-        warningEffect = false;
         meleeHitBoxSprite.color = transparent;
         Attack();
-        //Evt_MeleeAttack?.Invoke(damage);
         yield return new WaitForSeconds(0.5f);
         attackState = false;
         playerInSight = false;
     }
-    protected virtual IEnumerator AttackWarning()
+    protected virtual IEnumerator AttackWarning(float timer)
     {
-        warningEffect = true;
         flashupColor = lightRed;
         flashoutColor = transparent;
         Color temp;
-        // flash in 0.5s
-        //
-        while (warningEffect)
+        while (timer > 0)
         {
-            lerpValue += Time.deltaTime;
-            // red to nothing originally, then keeps inversing until the state is out. Flash in and out in 0.5s totally
-            meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue / 0.25f);
-            if (lerpValue / 0.25f > 1)
+            timer -= Time.deltaTime;
+            lerpValue += Time.deltaTime*2;
+             // Red to nothing originally, then keeps inversing until the timer (attack waiting time) is out. Flash in and out in 1s totally
+            meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue);
+            if (lerpValue > 1)
             {
-                //Debug.Break();
                 lerpValue = 0f;
                 temp = flashupColor;
                 flashupColor = flashoutColor;
                 flashoutColor = temp;
-                yield return null;
             }
+            yield return null;
         }
         //
-        if (!warningEffect) { lerpValue = 0f; }
+        if (timer < 0) { lerpValue = 0f; }
     }
     protected override void update2()
     {

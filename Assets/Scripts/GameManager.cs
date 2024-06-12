@@ -66,8 +66,7 @@ public class GameManager : MonoBehaviour
     public Enemy enemy;
     public Boss boss;
 
-    //
-    private static GameManager instance; // Singleton instance
+    //private static GameManager instance; // Singleton instance
     private int score = 0;
     private int highScore = 0;
     // wave info
@@ -82,8 +81,6 @@ public class GameManager : MonoBehaviour
     private bool isSpawning = false;
     private int enemiesTypesCount;
     private List<Enemy> loadedEnemyPrefabs = new List<Enemy>();
-    //public Enemy[] EnemiesPrefabs;
-    // camera boundaries
     private float minX, maxX, minY, maxY;
 
     public TextMeshProUGUI ScoreText;
@@ -97,7 +94,10 @@ public class GameManager : MonoBehaviour
     private string wavePath = Path.Combine(Application.streamingAssetsPath, "WaveData.json");
     private string enemyListPath = Path.Combine(Application.streamingAssetsPath, "EnemyList.json");
     private string profilePath;
-
+    // show dam pop up
+    public GameObject damagePopUpPrefab;
+    public TextMeshProUGUI WaveNotification;
+    public TextMeshProUGUI Tutorial;
     public Canvas GameOverScreen;
     private int enemyIndex;
     public Character MainPlayer
@@ -122,20 +122,13 @@ public class GameManager : MonoBehaviour
     {
         get { return highScore; }
     }
-
-    //public Enemy[] enemyPrefab;  // Prefab of the enemy to spawn
-
     // Getter for the singleton instance
     public static GameManager Instance { get; private set; }
-
-    public void EnemiesCountDecrease()
-    {
-        enemiesCount--;
-    }
+    [field: SerializeField] public HealthBar[] HealthBars { get; private set; } // Health Bars
 
     private void Awake()
     {
-        
+
         if (Instance == null)
         {
             //Purpose: Files placed in the Resources folder are included in the build and can be loaded at runtime using Resources.Load.
@@ -157,9 +150,100 @@ public class GameManager : MonoBehaviour
             //DontDestroyOnLoad(Instance);
         }
     }
-
-    [field: SerializeField] public HealthBar[] HealthBars { get; private set; } // Health Bars
-
+    private void Start()
+    {
+        StartCoroutine(ShowTutorial(3f));
+        ReadProfile();
+        ScoreText.text = "Score: " + score.ToString();
+        HighScoreText.text = "High Score: " + highScore.ToString();
+    }
+    private void Update()
+    {
+        if (!PauseAndContinue.gameIsPaused)
+        {
+            CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
+            // managing allEnemiesSpawned variable
+            if (numberOfEnemiesSpawn == 0)
+            {
+                allEnemiesSpawned = true;
+            }
+            else allEnemiesSpawned = false;
+            // if player or boss dies, its respective health bar toggles off
+            // Toggle on when it appears.
+            if (MainPlayer == null)
+            {
+                HealthBars[0].gameObject.SetActive(false);
+                GameOverScreen.gameObject.SetActive(true);
+                SaveProfile();
+            }
+            else
+            {
+                HealthBars[0].gameObject.SetActive(true);
+            }
+            if (Boss == null)
+            {
+                HealthBars[1].gameObject.SetActive(false);
+            }
+            else { HealthBars[1].gameObject.SetActive(true); }
+            //Spawn next wave
+            if (enemiesCount == 0 && allEnemiesSpawned)
+            {
+                bossSpawned = false;
+                waveNumber++;
+                WaveNotification.text = "Wave " + waveNumber.ToString(); // Update wave notification
+                if (waveNumber <= 12)
+                {
+                    LoadNewWave(waveNumber - 1);
+                }
+                else { LoadNewWave(11); }
+                StartCoroutine(NotifyWave(5f));
+            }
+            //
+            if (enemiesCount < maxEnemiesCount && !allEnemiesSpawned && !isSpawning)
+            {
+                isSpawning = true;
+                StartCoroutine(SpawnEnemies(spawnSpeed));
+            }
+            // show score and high score
+            ScoreText.text = "Score: " + score.ToString();
+            HighScoreText.text = "High Score: " + highScore.ToString();
+            // Check for high score update
+            if (score > highScore)
+            {
+                highScore = score;
+            }
+        }
+    }
+    // Register Player and Boss
+    public void RegisterPlayer(Character player)
+    {
+        MainPlayer = player;
+    }
+    public void RegisterBoss(Character boss)
+    {
+        Boss = boss;
+    }
+    // Save and read profile
+    private void SaveProfile()
+    {
+        playerProfile.HighScore = highScore;
+        string highScoreJSON = JsonUtility.ToJson(playerProfile);
+        File.WriteAllText(profilePath, highScoreJSON);
+    }
+    private void ReadProfile()
+    {
+        if (File.Exists(profilePath))
+        {
+            string json = File.ReadAllText(profilePath);
+            playerProfile = JsonUtility.FromJson<PlayerProfile>(json);
+            highScore = playerProfile.HighScore;
+        }
+        else
+        {
+            SaveProfile();
+        }
+    }
+    // Load from JSON
     private void LoadEnemyPrefabs(int number)
     {
         if (loadedEnemyPrefabs.Count > 0)
@@ -209,7 +293,7 @@ public class GameManager : MonoBehaviour
         // getting original stats
         LoadCharacterStats();
         statsMultiplier = wavedata.Waves[number].StatsMultiplier;
-        Debug.Log("Stats Multiplier: " + statsMultiplier);
+        //Debug.Log("Stats Multiplier: " + statsMultiplier);
         // buff enemies stats
         statsContainer.BuffEnemiesHealthAndDamage(statsMultiplier);
         // enemy.LoadStats(statsContainer.enemy_stats);
@@ -233,84 +317,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-    private void Start()
-    {
-        ReadProfile();
-        ScoreText.text = "Score: " + score.ToString();
-        HighScoreText.text = "High Score: " + highScore.ToString();
-    }
-
-    private void Update()
-    {
-        if (!PauseAndContinue.gameIsPaused)
-        {
-            CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
-            // managing allEnemiesSpawned variable
-            if (numberOfEnemiesSpawn == 0)
-            {
-                allEnemiesSpawned = true;
-            }
-            else allEnemiesSpawned = false;
-            // if player or boss dies, its respective health bar toggles off
-            // Toggle on when it appears.
-            if (MainPlayer == null)
-            {
-                HealthBars[0].gameObject.SetActive(false);
-                GameOverScreen.gameObject.SetActive(true);
-                SaveProfile();
-            }
-            else
-            {
-                HealthBars[0].gameObject.SetActive(true);
-            }
-            if (Boss == null)
-            {
-                HealthBars[1].gameObject.SetActive(false);
-            }
-            else { HealthBars[1].gameObject.SetActive(true); }
-            //spawn next wave
-            if (enemiesCount == 0 && allEnemiesSpawned)
-            {
-                bossSpawned = false;
-                waveNumber++;
-                if (waveNumber <= 12)
-                {
-                    LoadNewWave(waveNumber - 1);
-                }
-                else { LoadNewWave(11); }
-            }
-            //
-            if (enemiesCount < maxEnemiesCount && !allEnemiesSpawned && !isSpawning)
-            {
-                isSpawning = true;
-                Debug.Log("spawn enemies");
-                StartCoroutine(SpawnEnemies(spawnSpeed));
-            }
-            // show score and high score
-            ScoreText.text = "Score: " + score.ToString();
-            HighScoreText.text = "High Score: " + highScore.ToString();
-            // Check for high score update
-            if (score > highScore)
-            {
-                highScore = score;
-            }
-        }
-    }
-
-    public void RegisterPlayer(Character player)
-    {
-        MainPlayer = player;
-    }
-    public void RegisterBoss(Character boss)
-    {
-        Boss = boss;
-    }
-
-    // Method to spawn an enemy
+    // Spawn Enemies Couroutine
     private IEnumerator SpawnEnemies(float spawnSpeed)
     {
-        Debug.Log(Time.time);
         yield return new WaitForSeconds(spawnSpeed);
         if (!bossSpawned)
         {
@@ -323,7 +332,7 @@ public class GameManager : MonoBehaviour
         enemiesCount++;
         numberOfEnemiesSpawn--;
         isSpawning = false;
-        yield return null;
+        //yield return null;
     }
 
     private void SpawnWithoutBoss()
@@ -358,48 +367,49 @@ public class GameManager : MonoBehaviour
             newcharacter.LoadStats(statsContainer.boss_stats);
         }
     }
+    // Other simple functions
+    public void EnemiesCountDecrease()
+    {
+        enemiesCount--;
+    }
     private Vector2 GetRandomSpawnPosition()
     {
         // Return a random position within some bounds (adjust to your needs)
         return new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(0f, 30f));
     }
-
-
-    // show dam pop up
-    public GameObject damagePopUpPrefab;
-
     public void ShowDamagePopUp(Vector3 position, string damage)
     {
         GameObject damagePopUp = Instantiate(damagePopUpPrefab, position, Quaternion.identity);
         DamagePopUp popUpScript = damagePopUp.GetComponent<DamagePopUp>();
         popUpScript.SetDamageText(damage);
     }
-
-    // Method to update score
     public void AddScore(int amount)
     {
         score += amount;
     }
-    // Method to update high score
-    private void SaveProfile()
+    private IEnumerator NotifyWave(float duration)
     {
-        playerProfile.HighScore = highScore;
-        string highScoreJSON = JsonUtility.ToJson(playerProfile);
-        File.WriteAllText(profilePath, highScoreJSON);
+        WaveNotification.gameObject.SetActive(true);
+        yield return new WaitForSeconds(duration);
+        WaveNotification.gameObject.SetActive(false);
     }
-    private void ReadProfile()
+    private IEnumerator ShowTutorial(float duration)
     {
-        if (File.Exists(profilePath))
+        Tutorial.gameObject.SetActive(true);
+        string path = "Assets/Resources/Tutorial.txt";
+        // show each tutorial lines for 4s. 
+        StreamReader reader = new StreamReader(path);
+        while (reader.Peek() > 0)
         {
-            string json = File.ReadAllText(profilePath);
-            playerProfile = JsonUtility.FromJson<PlayerProfile>(json);
-            highScore = playerProfile.HighScore;
+            Tutorial.text = reader.ReadLine();
+            Debug.Log("Tutorial text: " + Tutorial.text);
+            // delay 3s before move on
+            yield return new WaitForSeconds(duration);
         }
-        else
-        {
-            SaveProfile();
-        }
+        reader.Close();
+        Tutorial.gameObject.SetActive(false);
     }
+
 }
 
 

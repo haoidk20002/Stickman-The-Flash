@@ -33,7 +33,7 @@ public class Boss : Enemy
             Prepare();
         }
         else { Idle(); }
-        attackWarning = StartCoroutine(AttackWarning());
+        attackWarning = StartCoroutine(AttackWarning(waitSecs));
         // calculate destination
         dashDestination.x = transform.position.x + directionSign * 200f;
         // get player's x pos (attack special 2)
@@ -52,7 +52,6 @@ public class Boss : Enemy
         }
         else
         {
-            Debug.Log(specialAttackNumber);
             switch (specialAttackNumber)
             {
                 case 1:
@@ -68,9 +67,9 @@ public class Boss : Enemy
     }
 
 
-    protected override IEnumerator AttackWarning()
+    protected override IEnumerator AttackWarning(float timer)
     {
-        if (specialAttack && specialAttackNumber == 1) // change warning
+        if (specialAttack && specialAttackNumber == 1) 
         {
             dashAttackHitbox.GetComponent<SpriteRenderer>().size = new Vector2(10f, 10f);
         }
@@ -78,31 +77,29 @@ public class Boss : Enemy
         {
             basicAttackHitBox.GetComponent<SpriteRenderer>().size = new Vector2(5.9f, 10f);
         }
-        warningEffect = true;
         flashupColor = lightRed;
         flashoutColor = transparent;
         Color temp;
-        // flash in 0.5s
         if (!specialAttack || (specialAttack && specialAttackNumber == 1))
         {
-            while (warningEffect)
+            while (timer > 0)
             {
-                lerpValue += Time.fixedDeltaTime;
-                // red to nothing originally, then keeps inversing until the state is out. Flash in and out in 1s totally
-                meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue / 1f);
-                if (lerpValue / 1f > 1)
+                timer -= Time.deltaTime;
+                lerpValue += Time.deltaTime*2;
+                // Red to nothing originally, then keeps inversing until the timer (attack waiting time) is out. Flash in and out in 1s totally
+                meleeHitBoxSprite.color = Color.Lerp(flashupColor, flashoutColor, lerpValue);
+                if (lerpValue > 1)
                 {
                     //Debug.Break();
                     lerpValue = 0f;
                     temp = flashupColor;
                     flashupColor = flashoutColor;
                     flashoutColor = temp;
-                    yield return null;
                 }
+                yield return null;
             }
         }
-        //
-        if (!warningEffect) { lerpValue = 0f; }
+        if (timer < 0) { lerpValue = 0f; }
     }
     private void DisableDash()
     {
@@ -130,7 +127,6 @@ public class Boss : Enemy
         {
             //specialAttackNumber = UnityEngine.Random.Range(1, 3);
             specialAttackNumber = 1;
-            Debug.Log("Special Number: " + specialAttackNumber);
             if (specialAttackNumber == 1)
             {
                 stats.detectRange = 20f;
