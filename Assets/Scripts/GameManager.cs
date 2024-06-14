@@ -45,6 +45,11 @@ public class Wave
     public int[] Enemies;
 }
 [System.Serializable]
+public class Settings
+{
+    public float MusicLevel;
+    public float SFXLevel;
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -67,6 +72,7 @@ public class GameManager : MonoBehaviour
     public Boss boss;
 
     //private static GameManager instance; // Singleton instance
+    public Slider SFXSlider, MusicSlider;
     private int score = 0;
     private int highScore = 0;
     // wave info
@@ -87,6 +93,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI HighScoreText;
     // JSON file handling objects and variables
     private PlayerProfile playerProfile = new PlayerProfile();
+    public Settings _settings = new Settings();
     private WaveData wavedata = new WaveData();
     private EnemyList enemyList = new EnemyList();
     private CharacterStatsContainer statsContainer = new CharacterStatsContainer();
@@ -94,6 +101,7 @@ public class GameManager : MonoBehaviour
     private string wavePath = Path.Combine(Application.streamingAssetsPath, "WaveData.json");
     private string enemyListPath = Path.Combine(Application.streamingAssetsPath, "EnemyList.json");
     private string profilePath;
+    private string settingsPath;
     // show dam pop up
     public GameObject damagePopUpPrefab;
     public TextMeshProUGUI WaveNotification;
@@ -144,6 +152,10 @@ public class GameManager : MonoBehaviour
             profilePath = Path.Combine(Application.dataPath, "PlayerProfile.json"); // for testing
             Debug.Log(profilePath);
 
+            //profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json"); // for build version
+            settingsPath = Path.Combine(Application.dataPath, "Settings.json"); // for testing
+            Debug.Log(settingsPath);
+
             Instance = this;
             LoadCharacterStats();
             LoadWaveData();
@@ -153,6 +165,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(ShowTutorial(3f));
+        ReadSettings();
         ReadProfile();
         ScoreText.text = "Score: " + score.ToString();
         HighScoreText.text = "High Score: " + highScore.ToString();
@@ -161,6 +174,7 @@ public class GameManager : MonoBehaviour
     {
         if (!PauseAndContinue.gameIsPaused)
         {
+
             CameraBounds.GetCameraBoundsLocation(Camera.main, out minX, out maxX, out minY, out maxX);
             // managing allEnemiesSpawned variable
             if (numberOfEnemiesSpawn == 0)
@@ -302,7 +316,6 @@ public class GameManager : MonoBehaviour
         maxEnemiesCount = wavedata.Waves[number].MaxEnemiesCount;
         spawnSpeed = wavedata.Waves[number].SpawnSpeed;
     }
-
     private void LoadCharacterStats()
     {
         if (File.Exists(statsPath))
@@ -402,12 +415,32 @@ public class GameManager : MonoBehaviour
         while (reader.Peek() > 0)
         {
             Tutorial.text = reader.ReadLine();
-            Debug.Log("Tutorial text: " + Tutorial.text);
+            //Debug.Log("Tutorial text: " + Tutorial.text);
             // delay 3s before move on
             yield return new WaitForSeconds(duration);
         }
         reader.Close();
         Tutorial.gameObject.SetActive(false);
+    }
+    private void ReadSettings()
+    {
+        if (File.Exists(settingsPath))
+        {
+            string json = File.ReadAllText(settingsPath);
+            _settings = JsonUtility.FromJson<Settings>(json);
+            SFXSlider.value = _settings.SFXLevel;
+            MusicSlider.value = _settings.MusicLevel;
+        }
+        else
+        {
+            _settings.SFXLevel = 1f;
+            _settings.MusicLevel = 1f;
+            SaveSettings();
+        }
+    }
+    public void SaveSettings(){
+        string settingJSON = JsonUtility.ToJson(_settings);
+        File.WriteAllText(settingsPath, settingJSON);
     }
 
 }

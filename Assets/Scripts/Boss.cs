@@ -125,8 +125,8 @@ public class Boss : Enemy
     {
         if (attackCount == SpecialAttackCondition && !specialAttack)
         {
-            //specialAttackNumber = UnityEngine.Random.Range(1, 3);
-            specialAttackNumber = 1;
+            specialAttackNumber = UnityEngine.Random.Range(1, 3);
+            //specialAttackNumber = 1;
             if (specialAttackNumber == 1)
             {
                 stats.detectRange = 20f;

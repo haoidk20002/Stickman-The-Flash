@@ -27,6 +27,7 @@ public class MeleeBullet : MonoBehaviour
     public Action<Character, int> OnHit;
     private void OnTriggerEnter2D(Collider2D other)
     {
+        //Debug.Log(other.gameObject.name);
         var otherCharacter = other.GetComponent<Character>();
         //Debug.Log("Character1: " + character);
         if (otherCharacter != null && !otherCharacter.characterHealth.IsDead)

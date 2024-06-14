@@ -106,15 +106,16 @@ public abstract class Character : MonoBehaviour
         // Basic Attack Initialize
         basicAttack.Init(); // Initialize Basic Attack Hitbox
         basicAttack.Evt_EnableBullet += value => basicAttackHitBox.GetComponent<BoxCollider2D>().enabled = value;
-        basicAttackHitBox.OnHit += DealDmg;
+        basicAttackHitBox.OnHit = DealDmg;
+        //basicAttack.Evt_PlayAttackSound+= PlayPunchEffect;
         // Dash Attack Initialize
         dashAttack.Init();
         dashAttack.Evt_EnableBullet += value => dashAttackHitbox.GetComponent<BoxCollider2D>().enabled = value;
-        dashAttackHitbox.OnHit += DealDmg;
+        dashAttackHitbox.OnHit = DealDmg;
         // Spinning Attack Initialize
         spinningAttack.Init();
         spinningAttack.Evt_EnableBullet += value => spinningAttackHitbox.GetComponent<CircleCollider2D>().enabled = value;
-        spinningAttackHitbox.OnHit += DealDmg;
+        spinningAttackHitbox.OnHit = DealDmg;
         // Get sprite renderer
         meleeHitBoxSprite = basicAttackHitBox.GetComponent<SpriteRenderer>();
 
@@ -156,8 +157,12 @@ public abstract class Character : MonoBehaviour
         // only set value playingAnim after the added anim started playing
     }
     protected abstract Character FindTarget();
+    public void PlayPunchEffect(){
+        SoundManager.Instance.PlaySoundEffect(3,transform,1f);
+    }
     protected void Attack()
     {
+        SoundManager.Instance.PlaySoundEffect(3,transform,1f);
         isAttacking = true;
         attackAnimTime = basicAttack.AttackTime;
         PlayAnimation(basicAttack.AttackAnim, basicAttack.AttackTime, false);
@@ -215,17 +220,14 @@ public abstract class Character : MonoBehaviour
     }
     protected void Run()
     {
-        if (gameObject.tag == "Player")
-        {
-            PlayAnimation(runAnimationName, 0f, true);
-        }
-        else if (isGrounded == true && gameObject.tag == "Boss" || gameObject.tag == "Enemy")
+        if (gameObject.tag == "Player" ||isGrounded == true && (gameObject.tag == "Boss" || gameObject.tag == "Enemy"))
         {
             PlayAnimation(runAnimationName, 0f, true);
         }
     }
     protected void Dash(float duration)
     {
+        SoundManager.Instance.PlaySoundEffect(2,transform,0.5f);
         PlayAnimation(dashAttack.AttackAnim, duration, true);
     }
 
@@ -272,6 +274,7 @@ public abstract class Character : MonoBehaviour
     }
     protected void DealDmg(Character enemy, int value)
     {
+        Debug.Log("Attacked");
         if (enemy != this)
         {
             if (enemy.isImmune) return; // if other is immune, no damage => BeingHit not called
@@ -280,9 +283,10 @@ public abstract class Character : MonoBehaviour
     }
     protected void BeingHit(int damage)
     {
+        Debug.Log("punched");
         BeingHit2();
         isDamaged = true;
-        SoundManager.Instance.PlaySoundEffect(0,transform,1f);
+        SoundManager.Instance.PlaySoundEffect(0,transform,0.75f);
         damagedAnimTime = setdamagedAnimTime;
         characterHealth.TakeDamage(damage);
         // Show damage pop up
@@ -321,6 +325,7 @@ public abstract class Character : MonoBehaviour
     {
         if (spinningAttack.IsPerforming)
         {
+            SoundManager.Instance.PlaySoundEffect(4,transform,1f);
             spinningAttack.CancelAttack();
             isAttacking = false;
             EndSpin();
@@ -454,6 +459,8 @@ public class UnitAttack
     [SerializeField] private float enableBulletTime;
     [SerializeField] private float disableBulletTime;
     public event Action<bool> Evt_EnableBullet;
+    public event Action Evt_PlayAttackSound;
+    //private Character _character;
 
 
     public Action OnEnd;
@@ -463,6 +470,7 @@ public class UnitAttack
 
     public void Init()
     {
+        //_character = character;
         Evt_EnableBullet?.Invoke(false);
         _currentTime = -1;
     }
@@ -480,7 +488,8 @@ public class UnitAttack
             //Debug.Log("Current: "+_currentTime +"Enable at: " + enableBulletTime + "Enable?: " + _isEnableBullet);
             if (_currentTime >= enableBulletTime && !_isEnableBullet)
             {
-                //Debug.Log("Hit");
+                //_character.PlayPunchEffect();
+                Evt_PlayAttackSound?.Invoke();
                 Evt_EnableBullet?.Invoke(true);
                 _isEnableBullet = true;
             }
