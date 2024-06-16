@@ -1,7 +1,6 @@
 using UnityEngine;
 using Spine.Unity;
 using Unity.Collections;
-using UnityEditor.U2D.Animation;
 using System;
 using System.ComponentModel;
 using System.Collections;
@@ -13,7 +12,7 @@ public class Player : Character
 {
     private HealthBar _playerHealth;
     private float cooldown = 0.5f, lastAttackedAt = 0f;
-    [SerializeField] private float attackRange; 
+    [SerializeField] private float attackRange;
     [SerializeField] private float minSwipeDistance;
     private float minX, maxX, maxY, minY;
     private float swipeMagnitude, playerWidth, playerHeight, direction;
@@ -213,7 +212,7 @@ public class Player : Character
         dashAttackHitbox.GetComponent<BoxCollider2D>().offset = new Vector2(0f, 0f);
         isAttacking = false;
         isDashing = false;
-        if (swipeDirectionOnScreen.y < -0.2f) 
+        if (swipeDirectionOnScreen.y < -0.2f)
         {
             //Debug.Log(swipeDirectionOnScreen.y);
             isFalling = true;
@@ -250,17 +249,33 @@ public class Player : Character
             }
             // Teleport: Click to desired destination and the player teleports after releasing click
             // Move: Click, swipe, then release to move according to the swipe direction
-            if (Input.GetMouseButtonDown(0))
+            // if (Input.GetMouseButtonDown(0))
+            // {
+            //     // target: actual destination, click_position:  desired destination
+            //     startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //     startScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+            // }
+            // if (Input.GetMouseButtonUp(0))
+            // {
+            //     endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //     endScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+            //     SwipeOrTeleport();
+            // }
+            if (Input.touchCount == 1)
             {
-                // target: actual destination, click_position:  desired destination
-                startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                startScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-            }
-            if (Input.GetMouseButtonUp(0))
-            {
-                endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                endScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-                SwipeOrTeleport();
+                Touch touch = Input.GetTouch(0);
+
+                if (touch.phase == TouchPhase.Began)
+                {
+                    startPos = Camera.main.ScreenToWorldPoint(touch.position);
+                    startScreenPos = Camera.main.ScreenToViewportPoint(touch.position);
+                }
+                else if (touch.phase == TouchPhase.Ended)
+                {
+                    endPos = Camera.main.ScreenToWorldPoint(touch.position);
+                    endScreenPos = Camera.main.ScreenToViewportPoint(touch.position);
+                    SwipeOrTeleport();
+                }
             }
 
             // lock player in camera, reset velocity when hit camera bound 

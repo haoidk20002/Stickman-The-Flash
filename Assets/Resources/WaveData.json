@@ -1,0 +1,124 @@
+{
+    "Waves": [
+        {
+            "WaveName": "Wave 1",
+            "StatsMultiplier": 1,
+            "NumberOfEnemiesSpawn": 2,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 3,
+            "Enemies":[
+                1
+            ]
+        },
+        {
+            "WaveName": "Wave 2",
+            "StatsMultiplier": 1,
+            "NumberOfEnemiesSpawn": 5,
+            "MaxEnemiesCount" : 3,
+            "SpawnSpeed": 3,
+            "Enemies":[
+                1
+            ]
+        },
+        {
+            "WaveName": "Wave 3",
+            "StatsMultiplier": 2,
+            "NumberOfEnemiesSpawn": 10,
+            "MaxEnemiesCount" : 5,
+            "SpawnSpeed": 1,
+            "Enemies":[
+                1
+            ]
+        },
+        {
+            "WaveName": "Wave 4",
+            "StatsMultiplier": 2,
+            "NumberOfEnemiesSpawn": 12,
+            "MaxEnemiesCount" : 5,
+            "SpawnSpeed": 1,
+            "Enemies":[
+                1
+            ]
+        },
+        {
+            "WaveName": "Wave 5",
+            "StatsMultiplier": 1,
+            "NumberOfEnemiesSpawn": 1,
+            "MaxEnemiesCount" : 1,
+            "SpawnSpeed": 1,
+            "Enemies":[
+                2
+            ]
+        },
+        {
+            "WaveName": "Wave 6",
+            "StatsMultiplier": 2,
+            "NumberOfEnemiesSpawn": 1,
+            "MaxEnemiesCount" : 1,
+            "SpawnSpeed": 0.75,
+            "Enemies":[
+                2
+            ]
+        },
+        {
+            "WaveName": "Wave 7",
+            "StatsMultiplier": 2,
+            "NumberOfEnemiesSpawn": 5,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 0.75,
+            "Enemies":[
+                1,2
+            ]
+        },
+        {
+            "WaveName": "Wave 8",
+            "StatsMultiplier": 2,
+            "NumberOfEnemiesSpawn": 2,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 0.75,
+            "Enemies":[
+                1,2
+            ]
+        },
+        {
+            "WaveName": "Wave 9",
+            "StatsMultiplier": 3,
+            "NumberOfEnemiesSpawn": 2,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 0.5,
+            "Enemies":[
+                1,2
+            ]
+        },
+        {
+            "WaveName": "Wave 10",
+            "StatsMultiplier": 1,
+            "NumberOfEnemiesSpawn": 2,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 1,
+            "Enemies":[
+                1,2
+            ]
+        },
+        {
+            "WaveName": "Wave 11",
+            "StatsMultiplier": 1,
+            "NumberOfEnemiesSpawn": 2,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 1,
+            "Enemies":[
+                1,2
+            ]
+        },
+        {
+            "WaveName": "Wave 12",
+            "StatsMultiplier": 1,
+            "NumberOfEnemiesSpawn": 2,
+            "MaxEnemiesCount" : 2,
+            "SpawnSpeed": 1,
+            "Enemies":[
+                1,2
+            ]
+        }
+    ]
+}

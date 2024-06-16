@@ -148,12 +148,12 @@ public class GameManager : MonoBehaviour
             //Purpose: The persistentDataPath is used for storing files that need to be persistent across sessions. Files saved here are not included in the initial build but can be created or modified at runtime.
             //Usage: Ideal for saving game progress, player settings, or downloaded content.
 
-            //profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json"); // for build version
-            profilePath = Path.Combine(Application.dataPath, "PlayerProfile.json"); // for testing
+            profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json"); // for build version
+            //profilePath = Path.Combine(Application.dataPath, "PlayerProfile.json"); // for testing
             Debug.Log(profilePath);
 
-            //profilePath = Path.Combine(Application.persistentDataPath, "PlayerProfile.json"); // for build version
-            settingsPath = Path.Combine(Application.dataPath, "Settings.json"); // for testing
+            settingsPath = Path.Combine(Application.persistentDataPath, "Settings.json"); // for build version
+            //settingsPath = Path.Combine(Application.dataPath, "Settings.json"); // for testing
             Debug.Log(settingsPath);
 
             Instance = this;
@@ -264,24 +264,37 @@ public class GameManager : MonoBehaviour
         {
             loadedEnemyPrefabs.Clear();
         }
-        if (File.Exists(enemyListPath))
+        // if (File.Exists(enemyListPath))
+        // {
+        //     try
+        //     {
+        //         string jsonText = File.ReadAllText(enemyListPath);
+        //         enemyList = JsonUtility.FromJson<EnemyList>(jsonText);
+        //         foreach (EnemyPrefabData a in enemyList.enemyPrefabs)
+        //         {
+        //             if (wavedata.Waves[number].Enemies.Contains(a.id))
+        //             {
+        //                 loadedEnemyPrefabs.Add(Resources.Load<Enemy>(a.prefabPath));
+        //             }
+        //             // Load Prefabs if enemies ID exist in Enemies[] of WaveData
+        //         }
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         Debug.LogError(e);
+        //     }
+        // }
+        var jsonFile = Resources.Load<TextAsset>("EnemyList");
+        if (jsonFile != null)
         {
-            try
+            enemyList = JsonUtility.FromJson<EnemyList>(jsonFile.txt);
+            foreach (EnemyPrefabData a in enemyList.enemyPrefabs)
             {
-                string jsonText = File.ReadAllText(enemyListPath);
-                enemyList = JsonUtility.FromJson<EnemyList>(jsonText);
-                foreach (EnemyPrefabData a in enemyList.enemyPrefabs)
+                if (wavedata.Waves[number].Enemies.Contains(a.id))
                 {
-                    if (wavedata.Waves[number].Enemies.Contains(a.id))
-                    {
-                        loadedEnemyPrefabs.Add(Resources.Load<Enemy>(a.prefabPath));
-                    }
-                    // Load Prefabs if enemies ID exist in Enemies[] of WaveData
+                    loadedEnemyPrefabs.Add(Resources.Load<Enemy>(a.prefabPath));
                 }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
+                // Load Prefabs if enemies ID exist in Enemies[] of WaveData
             }
         }
         else
@@ -291,10 +304,19 @@ public class GameManager : MonoBehaviour
     }
     private void LoadWaveData()
     {
-        if (File.Exists(wavePath))
+        // if (File.Exists(wavePath))
+        // {
+        //     string jsonText = File.ReadAllText(wavePath);
+        //     wavedata = JsonUtility.FromJson<WaveData>(jsonText);
+        // }
+        // else
+        // {
+        //     Debug.LogError("JSON file not found!");
+        // }
+        var jsonFile = Resources.Load<TextAsset>("WaveData");
+        if (jsonFile != null)
         {
-            string jsonText = File.ReadAllText(wavePath);
-            wavedata = JsonUtility.FromJson<WaveData>(jsonText);
+            wavedata = JsonUtility.FromJson<WaveData>(jsonFile.txt);
         }
         else
         {
@@ -318,10 +340,22 @@ public class GameManager : MonoBehaviour
     }
     private void LoadCharacterStats()
     {
-        if (File.Exists(statsPath))
+        // if (File.Exists(statsPath))
+        // {
+        //     string jsonText = File.ReadAllText(statsPath);
+        //     statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText);
+        //     player.LoadStats(statsContainer.player_stats);
+
+
+        // }
+        // else
+        // {
+        //     Debug.LogError("Character stats JSON file not found!");
+        // }
+        var jsonFile = Resources.Load<TextAsset>("CharacterStats");
+        if (jsonFile != null)
         {
-            string jsonText = File.ReadAllText(statsPath);
-            statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonText);
+            statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonFile.txt);
             player.LoadStats(statsContainer.player_stats);
         }
         else
@@ -438,7 +472,8 @@ public class GameManager : MonoBehaviour
             SaveSettings();
         }
     }
-    public void SaveSettings(){
+    public void SaveSettings()
+    {
         string settingJSON = JsonUtility.ToJson(_settings);
         File.WriteAllText(settingsPath, settingJSON);
     }

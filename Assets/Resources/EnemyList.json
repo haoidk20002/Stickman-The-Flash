@@ -1,0 +1,15 @@
+{
+    "enemyPrefabs":
+    [
+        {
+            "id": 1,
+            "name":"Enemy",
+            "prefabPath": "Enemy"
+        },
+        {
+            "id": 2,
+            "name":"Boss",
+            "prefabPath": "Boss"
+        }
+    ]
+}
