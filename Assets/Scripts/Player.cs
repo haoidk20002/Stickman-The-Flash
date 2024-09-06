@@ -173,8 +173,8 @@ public class Player : Character
         //currentTimer = timer;
         Turn(swipeDirection.x);
         //Debug.Log("Swipe direction y: " + swipeDirection.y + "Dash y destination: " + dashDestination.y);
-        dashDestination.x = transform.position.x + swipeDirection.x * 10;
-        dashDestination.y = transform.position.y + swipeDirection.y * 10;
+        dashDestination.x = transform.position.x + swipeDirection.x * 20;
+        dashDestination.y = transform.position.y + swipeDirection.y * 20;
         DashAttack(); // Dash can be disabled when touching ground from above, hit camera bounds
     }
     // Unused concept (Shooting)
@@ -220,6 +220,40 @@ public class Player : Character
         else { isFalling = false; }
         if (isGrounded) { Land(); }
     }
+    protected void MouseControl()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            // target: actual destination, click_position:  desired destination
+            startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            startScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            endScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+            SwipeOrTeleport();
+        }
+    }
+    protected void TouchCountrol()
+    {
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                startPos = Camera.main.ScreenToWorldPoint(touch.position);
+                startScreenPos = Camera.main.ScreenToViewportPoint(touch.position);
+            }
+            else if (touch.phase == TouchPhase.Ended)
+            {
+                endPos = Camera.main.ScreenToWorldPoint(touch.position);
+                endScreenPos = Camera.main.ScreenToViewportPoint(touch.position);
+                SwipeOrTeleport();
+            }
+        }
+    }
 
     protected override void update2()
     {
@@ -249,34 +283,8 @@ public class Player : Character
             }
             // Teleport: Click to desired destination and the player teleports after releasing click
             // Move: Click, swipe, then release to move according to the swipe direction
-            // if (Input.GetMouseButtonDown(0))
-            // {
-            //     // target: actual destination, click_position:  desired destination
-            //     startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //     startScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-            // }
-            // if (Input.GetMouseButtonUp(0))
-            // {
-            //     endPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //     endScreenPos = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-            //     SwipeOrTeleport();
-            // }
-            if (Input.touchCount == 1)
-            {
-                Touch touch = Input.GetTouch(0);
-
-                if (touch.phase == TouchPhase.Began)
-                {
-                    startPos = Camera.main.ScreenToWorldPoint(touch.position);
-                    startScreenPos = Camera.main.ScreenToViewportPoint(touch.position);
-                }
-                else if (touch.phase == TouchPhase.Ended)
-                {
-                    endPos = Camera.main.ScreenToWorldPoint(touch.position);
-                    endScreenPos = Camera.main.ScreenToViewportPoint(touch.position);
-                    SwipeOrTeleport();
-                }
-            }
+            //MouseControl();
+            TouchCountrol();
 
             // lock player in camera, reset velocity when hit camera bound 
             // to do that, get half player hurtbox's size  and limiting pos relative to the bound (sideway only) (5f)

@@ -2,8 +2,8 @@
   "player_stats": {
     "health": 50,
     "damage": 10,
-    "moveSpeed": 200,
-    "detectRange": 1.5
+    "moveSpeed": 225,
+    "detectRange": 2
   },
   "boss_stats": {
     "health": 75,

@@ -287,7 +287,7 @@ public class GameManager : MonoBehaviour
         var jsonFile = Resources.Load<TextAsset>("EnemyList");
         if (jsonFile != null)
         {
-            enemyList = JsonUtility.FromJson<EnemyList>(jsonFile.txt);
+            enemyList = JsonUtility.FromJson<EnemyList>(jsonFile.text);
             foreach (EnemyPrefabData a in enemyList.enemyPrefabs)
             {
                 if (wavedata.Waves[number].Enemies.Contains(a.id))
@@ -316,7 +316,7 @@ public class GameManager : MonoBehaviour
         var jsonFile = Resources.Load<TextAsset>("WaveData");
         if (jsonFile != null)
         {
-            wavedata = JsonUtility.FromJson<WaveData>(jsonFile.txt);
+            wavedata = JsonUtility.FromJson<WaveData>(jsonFile.text);
         }
         else
         {
@@ -355,7 +355,7 @@ public class GameManager : MonoBehaviour
         var jsonFile = Resources.Load<TextAsset>("CharacterStats");
         if (jsonFile != null)
         {
-            statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonFile.txt);
+            statsContainer = JsonUtility.FromJson<CharacterStatsContainer>(jsonFile.text);
             player.LoadStats(statsContainer.player_stats);
         }
         else
@@ -443,17 +443,24 @@ public class GameManager : MonoBehaviour
     private IEnumerator ShowTutorial(float duration)
     {
         Tutorial.gameObject.SetActive(true);
-        string path = "Assets/Resources/Tutorial.txt";
-        // show each tutorial lines for 4s. 
-        StreamReader reader = new StreamReader(path);
-        while (reader.Peek() > 0)
+        // Load the tutorial text file from the Resources folder
+        TextAsset tutorialTextAsset = Resources.Load<TextAsset>("Tutorial");
+        if (tutorialTextAsset == null)
         {
-            Tutorial.text = reader.ReadLine();
-            //Debug.Log("Tutorial text: " + Tutorial.text);
-            // delay 3s before move on
-            yield return new WaitForSeconds(duration);
+            Debug.LogError("Tutorial.txt not found in Resources");
+            yield break;
         }
-        reader.Close();
+        // Read the text asset line by line
+        using (StringReader reader = new StringReader(tutorialTextAsset.text))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                Tutorial.text = line;
+                // Delay for the specified duration before moving on to the next line
+                yield return new WaitForSeconds(duration);
+            }
+        }
         Tutorial.gameObject.SetActive(false);
     }
     private void ReadSettings()

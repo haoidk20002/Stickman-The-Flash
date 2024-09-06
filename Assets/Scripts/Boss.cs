@@ -129,13 +129,13 @@ public class Boss : Enemy
             //specialAttackNumber = 1;
             if (specialAttackNumber == 1)
             {
-                stats.detectRange = 20f;
+                stats.detectRange = 30f;
                 stats.moveSpeed = dashSpeed;
                 waitTimer = 3f;
             }
             else
             {
-                stats.detectRange = 20f;
+                stats.detectRange = 30f;
                 waitTimer = 3f;
             }
             specialAttack = true;
@@ -143,7 +143,7 @@ public class Boss : Enemy
         }
         else if (!specialAttack)
         {
-            stats.detectRange = 5f;
+            stats.detectRange = 7.5f;
             stats.moveSpeed = normalMoveSpeed;
             waitTimer = 0.5f;
         }
